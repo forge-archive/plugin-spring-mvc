@@ -19,6 +19,7 @@ import org.jboss.forge.parser.xml.Node;
 import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.project.dependencies.DependencyBuilder;
 import org.jboss.forge.project.facets.DependencyFacet;
+import org.jboss.forge.project.facets.MetadataFacet;
 import org.jboss.forge.project.facets.ResourceFacet;
 import org.jboss.forge.project.Project;
 import org.jboss.shrinkwrap.descriptor.api.spec.jpa.persistence.PersistenceDescriptor;
@@ -95,9 +96,9 @@ public class SpringPlugin implements Plugin {
      // Add the support for the Spring MVC dependency
     DependencyBuilder springMVC = DependencyBuilder.create("org.springframework:spring-webmvc:3.1.0.RC1");
     deps.addDependency(springMVC);
-
+    
     out.println("Added Spring 3.1.0.RC1 dependencies to pom.xml.");
-  }
+}
 
   /**
    * The 'persistence' command is used to configure the persistence layer for the application.
@@ -106,10 +107,14 @@ public class SpringPlugin implements Plugin {
    * This command should perform the necessary steps to configure Spring persistence, e.g. an EntityManager JNDI look-up.
    */
   @Command("persistence")
-  public void persistenceSpring(PipeOut out)
+  public void springPersistence(PipeOut out)
   {
       // Use a ResourceFacet object to write to a new XML file.
       ResourceFacet resources = project.getFacet(ResourceFacet.class);
+      
+      // Use a MetadataFacet object to retrieve the project's name.
+      MetadataFacet meta = project.getFacet(MetadataFacet.class);
+      String projectName = meta.getProjectName();
       
       /*
        * Use a PersistenceFacet object to retrieve the project's persistence configuration.
@@ -142,7 +147,7 @@ public class SpringPlugin implements Plugin {
       Node emf = new Node("jee:jndi-lookup", beans);
       emf.setComment(false);
       emf.attribute("id", "entityManagerFactory");
-      emf.attribute("jndi-name", "java:comp/env/persistence" + unitName);
+      emf.attribute("jndi-name", "java:comp/env/persistence/" + unitName);
       emf.attribute("expected-type", "javax.persistence.EntityManagerFactory");
       
       /*
@@ -154,11 +159,46 @@ public class SpringPlugin implements Plugin {
       // Write the XML tree to a file, using the <beans> root node.
       String file = parser.toXMLString(beans);
       resources.createResource(file.toCharArray(), "META-INF/applicationContext.xml");
+      
+      // Create a web.xml file and define the persistence unit in web.xml.
+      Node webapp = new Node("webapp");
+      webapp.attribute("version", "2.5");
+      webapp.attribute("xmlns", "http://java.sun.com/xml/ns/javaee");
+      webapp.attribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+      webapp.attribute("xsi:schemaLocation", "http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd");
+      webapp.attribute("metadata-complete", "true");
+      
+      // Add the project name as an attribute of web.xml.
+      Node displayName = new Node("display");
+      displayName.text(projectName);
+      
+      // Include the files containing the web application's context.
+      Node contextParam = new Node("context-param", displayName);
+      Node contextConfig = new Node("param-name", contextParam);
+      contextConfig.text("contextConfigLocation");
+      Node configLocation = new Node("param-value", contextConfig);
+      configLocation.text("classpath:/META-INF/applicationContext.xml");
+      
+      // Define a ContextLoaderListener.
+      Node listener = new Node("listener", webapp);
+      Node cll = new Node("listener-class", listener);
+      cll.text("org.springframework.web.context.ContextLoaderListener");
+      
+      // Define a persistence unit to be referenced in the application context.
+      Node persistenceContextRef = new Node("persistence-context-ref", webapp);
+      Node persistenceContextRefName = new Node("persistence-context-ref-name", persistenceContextRef);
+      persistenceContextRefName.text("persistence/" + unitName + "/entityManager");
+      Node persistenceUnitName = new Node("persistence-unit-name", persistenceContextRef);
+      persistenceUnitName.text(unitName);
+      
+      file = parser.toXMLString(webapp);
+      resources.createResource(file.toCharArray(), "../webapp/WEB-INF/web.xml");
   }
   
   /**
    * The 'entity' command is used to create a new entity class.
    * This command invokes the 'entity' plugin provided with Forge.
+   * We include this command so that users can create entities using either method.
    */
   @Command("entity")
   public void createEntity(@Option(required = true, name = "named", description = "The @Entity name") final String entityName,
@@ -180,7 +220,12 @@ public class SpringPlugin implements Plugin {
   public void setupMVC(PipeOut out, @Option(required=true, name="package", description="Package containing Spring controllers")
                           final String mvcPackage)
   {
+      // Use a ResourceFacet object to retrieve and update XML context files.
       ResourceFacet resources = this.project.getFacet(ResourceFacet.class);
+      
+      // Use a MetadataFacet object to retrieve the project's name.
+      MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
+      String projectName = meta.getProjectName();
       
       /*
        * Ensure that the META-INF/applicationContext.xml file exists.
@@ -191,20 +236,19 @@ public class SpringPlugin implements Plugin {
           return;
       }
 
-      // Retrieve the current contents of applicationContext.xml.
-      FileResource<?> applicationContext = resources.getResource("META-INF/applicationContext.xml");
-      Node beans = parser.parse(applicationContext.getResourceInputStream());
+      // Create a new mvc-context.xml file for the application.
+      Node beans = new Node("beans");
       
-      // Add the Spring <context> and Spring <mvc> namespaces.
+      // Add the appropriate Schema references.
+      beans.attribute("xmlns", "http://www.springframework.org/schema/beans");
+      beans.attribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");    
       beans.attribute("xmlns:mvc", "http://www.springframework.org/schema/mvc");
       beans.attribute("xmlns:context", "http://www.springframework.org/schema/context");
 
       // Add the schema files for the <context> and <mvc> namespaces.
       String schemaLoc = "http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd";
       schemaLoc += " http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd";
-      schemaLoc += " http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd";
       schemaLoc += " http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd";
-      schemaLoc += " http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd";
       beans.attribute("xsi:schemaLocation", schemaLoc);
       
       // Scan the given package for any classes with MVC annotations.
@@ -222,9 +266,39 @@ public class SpringPlugin implements Plugin {
       mvcStatic.attribute("mapping", "/static/**");
       mvcStatic.attribute("location", "/");
       
-      // Write the updated applicationContext.xml file.
+      // Write the mvc-context.xml file.
       String file = parser.toXMLString(beans);
-      resources.createResource(file.toCharArray(), "META-INF/applicationContext.xml");
+      String filename = projectName.toLowerCase().replace(' ', '-');
+      resources.createResource(file.toCharArray(), "../webapp/WEB-INF/" + filename + ".xml");
+      
+      // Retrieve the WEB-INF/web.xml file to be edited.
+      
+      FileResource<?> webXML = resources.getResource("../webapp/WEB-INF/web.xml");
+      Node webapp = parser.parse(webXML.getResourceInputStream());
+      
+      // Define a Dispatcher servlet, named after the project.
+      Node servlet = new Node("servlet", webapp);
+      String servName = projectName.replace(' ', (char) 0);
+      Node servletName = new Node("servlet-name", servlet);
+      servletName.text(servName);
+      Node servletClass = new Node("servlet-class", servlet);
+      servletClass.text("org.springframework.web.servlet.DispatcherServlet");
+      Node initParam = new Node("init-param", servlet);
+      Node paramName = new Node("param-name", initParam);
+      paramName.text("contextConfigLocation");
+      Node paramValue = new Node("param-value", initParam);
+      paramValue.text("/WEB-INF/" + filename + ".xml");
+      Node loadOnStartup = new Node("load-on-startup", servlet);
+      loadOnStartup.text(1);
+      
+      Node servletMapping = new Node("servlet-mapping", webapp);
+      Node servletNameRepeat = new Node("servlet-name", servletMapping);
+      servletNameRepeat.text(projectName.replace(' ', (char) 0));
+      Node url = new Node("url-pattern", servletMapping);
+      url.text('/');
+      
+      file = parser.toXMLString(webapp);
+      resources.createResource(file.toCharArray(), "../webapp/WEB-INF/web.xml");
   }
   
 }
