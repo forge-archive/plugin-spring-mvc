@@ -18,13 +18,13 @@ import org.jboss.forge.spec.javaee.jpa.EntityPlugin;
 import org.jboss.forge.parser.xml.Node;
 import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.project.dependencies.DependencyBuilder;
-import org.jboss.forge.project.dependencies.ScopeType;
 import org.jboss.forge.project.facets.DependencyFacet;
 import org.jboss.forge.project.facets.ResourceFacet;
 import org.jboss.forge.project.Project;
 import org.jboss.shrinkwrap.descriptor.api.spec.jpa.persistence.PersistenceDescriptor;
 
 /**
+ * Forge plugin to create a simple Spring MVC web application.
  * 
  * @author <a href="mailto:rbradley@redhat.com">Ryan Bradley</a>
  *
@@ -65,35 +65,35 @@ public class SpringPlugin implements Plugin {
      * Use the Forge DependencyBuilder to add Maven dependencies to the POM.
      * Add the Spring ASM dependency.
      */ 
-    DependencyBuilder springAsm = DependencyBuilder.create("org.springframework:spring-asm:3.1.0.RC1").setScopeType(ScopeType.COMPILE);
+    DependencyBuilder springAsm = DependencyBuilder.create("org.springframework:spring-asm:3.1.0.RC1");
     deps.addDependency(springAsm);
 
     // Add the Spring beans dependency
-    DependencyBuilder springBeans = DependencyBuilder.create("org.springframework:spring-beans:3.1.0.RC1").setScopeType(ScopeType.COMPILE);
+    DependencyBuilder springBeans = DependencyBuilder.create("org.springframework:spring-beans:3.1.0.RC1");
     deps.addDependency(springBeans);
 
     // Add the Spring context dependency
-    DependencyBuilder springContext = DependencyBuilder.create("org.springframework:spring-context:3.1.0.RC1").setScopeType(ScopeType.COMPILE);
+    DependencyBuilder springContext = DependencyBuilder.create("org.springframework:spring-context:3.1.0.RC1");
     deps.addDependency(springContext);
 
     // Add the support for the Spring context dependency
-    DependencyBuilder springContextSupport = DependencyBuilder.create("org.springframework:spring-context-support:3.1.0.RC1").setScopeType(ScopeType.COMPILE);
+    DependencyBuilder springContextSupport = DependencyBuilder.create("org.springframework:spring-context-support:3.1.0.RC1");
     deps.addDependency(springContextSupport); 
 
     // Add the support for the Spring core
-    DependencyBuilder springCore = DependencyBuilder.create("org.springframework:spring-core:3.1.0.RC1").setScopeType(ScopeType.COMPILE);
+    DependencyBuilder springCore = DependencyBuilder.create("org.springframework:spring-core:3.1.0.RC1");
     deps.addDependency(springCore); 
 
      // Add the support for the Spring expression dependency
-    DependencyBuilder springExpression = DependencyBuilder.create("org.springframework:spring-expression:3.1.0.RC1").setScopeType(ScopeType.COMPILE);
+    DependencyBuilder springExpression = DependencyBuilder.create("org.springframework:spring-expression:3.1.0.RC1");
     deps.addDependency(springExpression);
 
     // Add the support for the Spring web dependency
-    DependencyBuilder springWeb = DependencyBuilder.create("org.springframework:spring-web:3.1.0.RC1").setScopeType(ScopeType.COMPILE);
+    DependencyBuilder springWeb = DependencyBuilder.create("org.springframework:spring-web:3.1.0.RC1");
     deps.addDependency(springWeb);
 
      // Add the support for the Spring MVC dependency
-    DependencyBuilder springMVC = DependencyBuilder.create("org.springframework:spring-webmvc:3.1.0.RC1").setScopeType(ScopeType.COMPILE);
+    DependencyBuilder springMVC = DependencyBuilder.create("org.springframework:spring-webmvc:3.1.0.RC1");
     deps.addDependency(springMVC);
 
     out.println("Added Spring 3.1.0.RC1 dependencies to pom.xml.");
