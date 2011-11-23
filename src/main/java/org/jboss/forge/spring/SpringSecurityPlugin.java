@@ -8,7 +8,6 @@ import org.jboss.forge.shell.plugins.Command;
 import org.jboss.forge.shell.plugins.PipeOut;
 import org.jboss.forge.shell.plugins.Plugin;
 import org.jboss.forge.shell.plugins.Alias;
-import org.jboss.forge.shell.ShellPrompt;
 import javax.inject.Inject;
 
 
@@ -24,9 +23,6 @@ import javax.inject.Inject;
 public class SpringSecurityPlugin implements Plugin 
 {
 
-	@Inject
-	private ShellPrompt prompt;
-	
 	@Inject
 	private Project project;
 	

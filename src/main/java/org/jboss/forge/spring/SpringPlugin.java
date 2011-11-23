@@ -1,24 +1,32 @@
 package org.jboss.forge.spring;
 
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.forge.resources.FileResource;
+import org.jboss.forge.resources.Resource;
+import org.jboss.forge.resources.java.JavaResource;
+import org.jboss.forge.shell.ShellMessages;
 import org.jboss.forge.shell.plugins.Plugin;
 import org.jboss.forge.shell.plugins.Alias;
-import org.jboss.forge.shell.PromptType;
-import org.jboss.forge.shell.Shell;
-import org.jboss.forge.shell.ShellPrompt;
-
 import javax.inject.Inject;
+import javax.persistence.Entity;
 
+import org.jboss.forge.shell.plugins.Current;
 import org.jboss.forge.shell.plugins.Option;
 import org.jboss.forge.shell.plugins.PipeOut;
 import org.jboss.forge.shell.plugins.DefaultCommand;
 import org.jboss.forge.shell.plugins.Command;
 import org.jboss.forge.spec.javaee.PersistenceFacet;
-import org.jboss.forge.spec.javaee.jpa.EntityPlugin;
+import org.jboss.forge.parser.java.Field;
+import org.jboss.forge.parser.java.JavaClass;
+import org.jboss.forge.parser.java.JavaSource;
 import org.jboss.forge.parser.xml.Node;
 import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.project.dependencies.DependencyBuilder;
 import org.jboss.forge.project.facets.DependencyFacet;
+import org.jboss.forge.project.facets.JavaSourceFacet;
 import org.jboss.forge.project.facets.MetadataFacet;
 import org.jboss.forge.project.facets.ResourceFacet;
 import org.jboss.forge.project.Project;
@@ -33,13 +41,11 @@ import org.jboss.shrinkwrap.descriptor.api.spec.jpa.persistence.PersistenceDescr
 
 @Alias("spring")
 public class SpringPlugin implements Plugin {
-
-  @Inject
-  private ShellPrompt prompt;
   
   @Inject
-  private Shell shell;
-  
+  @Current
+  private Resource<?> currentResource;
+    
   @Inject
   private Project project;
   
@@ -148,7 +154,7 @@ public class SpringPlugin implements Plugin {
       emf.setComment(false);
       emf.attribute("id", "entityManagerFactory");
       emf.attribute("jndi-name", "java:comp/env/persistence/" + unitName);
-      emf.attribute("expected-type", "javax.persistence.EntityManagerFactory");
+      emf.attribute("expected-type", "javax.persistence.EntityManager");
       
       /*
        *  Add the <tx:annotation-driven/> element for use of the @Transactional annotation.
@@ -162,7 +168,7 @@ public class SpringPlugin implements Plugin {
       
       // Create a web.xml file and define the persistence unit in web.xml.
       Node webapp = new Node("webapp");
-      webapp.attribute("version", "2.5");
+      webapp.attribute("version", "3.0");
       webapp.attribute("xmlns", "http://java.sun.com/xml/ns/javaee");
       webapp.attribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
       webapp.attribute("xsi:schemaLocation", "http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd");
@@ -196,27 +202,10 @@ public class SpringPlugin implements Plugin {
   }
   
   /**
-   * The 'entity' command is used to create a new entity class.
-   * This command invokes the 'entity' plugin provided with Forge.
-   * We include this command so that users can create entities using either method.
-   */
-  @Command("entity")
-  public void createEntity(@Option(required = true, name = "named", description = "The @Entity name") final String entityName,
-                          @Option(required = false, name = "package", type = PromptType.JAVA_PACKAGE, description = "The package name") final String packageName)
-  {
-      EntityPlugin entityPlugin = new EntityPlugin(this.project, this.shell);
-      try {
-        entityPlugin.newEntity(entityName, packageName);
-    } catch (Throwable e) {
-        e.printStackTrace();
-    }
-  }
-  
-  /**
-   * The 'mvc-setup' command configures Spring MVC in the application context.
+   * The 'web-mvc' command configures Spring MVC in the application context.
    * This command will be necessary to deploy the application, once we have created MVC controllers.
    */
-  @Command("mvc-setup")
+  @Command("web-mvc")
   public void setupMVC(PipeOut out, @Option(required=true, name="package", description="Package containing Spring controllers")
                           final String mvcPackage)
   {
@@ -231,8 +220,8 @@ public class SpringPlugin implements Plugin {
        * Ensure that the META-INF/applicationContext.xml file exists.
        * If it does not exist, tell the user that they may need to execute 'spring persistence'.
        */
-      if(!resources.getResource("META-INF/applicationContext.xml").exists()) {
-          out.println("The file 'META-INF/applicationContext.xml' does not exist.  Have you executed 'spring persistence' yet?");
+      if(!resources.getResource("../webapp/WEB-INF/web.xml").exists()) {
+          out.println("The file 'WEB-INF/web.xml' does not exist.  Have you executed 'spring persistence' yet?");
           return;
       }
 
@@ -269,7 +258,7 @@ public class SpringPlugin implements Plugin {
       // Write the mvc-context.xml file.
       String file = parser.toXMLString(beans);
       String filename = projectName.toLowerCase().replace(' ', '-');
-      resources.createResource(file.toCharArray(), "../webapp/WEB-INF/" + filename + ".xml");
+      resources.createResource(file.toCharArray(), "../webapp/WEB-INF/" + filename + "-mvc-context.xml");
       
       // Retrieve the WEB-INF/web.xml file to be edited.
       
@@ -299,6 +288,95 @@ public class SpringPlugin implements Plugin {
       
       file = parser.toXMLString(webapp);
       resources.createResource(file.toCharArray(), "../webapp/WEB-INF/web.xml");
+  }
+  
+  /**
+   * The 'mvc-from-entity' command creates a web controller from an entity.
+   * When the application is deployed on the selected container, these controllers will provide a web view of the selected entity.
+   * @throws FileNotFoundException 
+   */
+  @Command("mvc-from-entity")
+  public void generateFromEntity(PipeOut out, 
+          @Option(required = false) JavaResource[] targets,
+          @Option(flagOnly = true, name = "overwrite") boolean overwrite)
+          throws FileNotFoundException
+  {
+      JavaSourceFacet source = this.project.getFacet(JavaSourceFacet.class);
+      ResourceFacet resources = this.project.getFacet(ResourceFacet.class);
+      MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
+      
+      // Retrieve the base package that will be scanned for controllers.
+      String projectName = meta.getProjectName();
+      String filePath = "../webapp/WEB-INF/" + projectName.replace(' ', '-') + "-mvc-context.xml";
+      Resource<?> mvcContext = resources.getResource(filePath);
+      Node beans = parser.parse(mvcContext.getResourceInputStream());
+      Node contextScan = beans.getSingle("context:component-scan");
+      String mvcPackage = contextScan.getAttribute("base-package");
+
+      // If no target is specified, use the file that is currently open.
+      if(targets == null || (targets.length < 1) && (currentResource instanceof JavaResource)) {
+          targets = new JavaResource[] {(JavaResource) currentResource};
+      }
+      
+      // Reduced the passed list of targets to a list of @Entity targets.
+      List<JavaResource> javaTargets = selectTargets(out, targets);
+      
+      // If there are no entities passed, return an error message to the user.
+      if(javaTargets.isEmpty()) {
+          ShellMessages.error(out, "Must specify a domain @Entity on which to operate.");
+          return;
+      }
+      
+      // For each @Entity that is detected, create a Spring MVC controller.
+      for(JavaResource jr : javaTargets) {
+          JavaClass entity = (JavaClass) ((JavaResource) jr).getJavaSource();
+          // Call to a function which creates the Spring MVC controller from the given entity.
+          JavaClass controller = generateController(entity, mvcPackage);
+          source.saveJavaSource(controller);
+      }   
+      
+      JavaClass entity = (JavaClass) ((JavaResource) currentResource).getJavaSource();
+      
+      ShellMessages.success(out, "Generated Spring MVC Controller for [" + entity.getQualifiedName() + "]");
+  }
+  
+  public List<JavaResource> selectTargets(PipeOut out, Resource<?>[] targets)
+          throws FileNotFoundException
+  {
+      List<JavaResource> results = new ArrayList<JavaResource>();
+      
+      if(targets == null) {
+          targets = new Resource<?>[] {};
+      }
+      
+      for(Resource<?> r : targets) {
+          if(r instanceof JavaResource) {
+              JavaSource<?> entity = ((JavaResource) r).getJavaSource();
+              if(entity instanceof JavaClass) {
+                  if(entity.hasAnnotation(Entity.class)) {
+                      results.add((JavaResource) r);
+                  }
+                  else {
+                      ShellMessages.info(out, "Skipped non-@Entity Java resource [" + entity.getQualifiedName() + "]");
+                  }
+              }
+              else {
+                  ShellMessages.info(out, "Skipped non-@Entity Java resource [" + entity.getQualifiedName() + "]");
+              }
+          }
+      }
+      
+      return results;
+  }
+  
+  public JavaClass generateController(JavaClass entity, String mvcPackage)
+  {
+      JavaClass controller = null;
+      
+      controller.setPackage(mvcPackage);
+      controller.addAnnotation("org.springframework.stereotype.Controller");
+      
+      return controller;
   }
   
 }
