@@ -315,7 +315,7 @@ public class SpringPlugin implements Plugin {
    * When the application is deployed on the selected container, these controllers will provide a web view of the selected entity.
    * @throws FileNotFoundException 
    */
-/*  @Command("mvc-from-entity")
+  @Command("mvc-from-entity")
   public void generateFromEntity(PipeOut out, 
           @Option(required = false) JavaResource[] targets,
           @Option(flagOnly = true, name = "overwrite") boolean overwrite)
@@ -406,5 +406,5 @@ public class SpringPlugin implements Plugin {
       
       return controller;
   }
-  */
+  
 }
