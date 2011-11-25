@@ -1,0 +1,1 @@
+The 'plugin-springmvc' repository contains the source code for a Forge plugin.  This plugin can be used to create a Spring MVC web application.  As well, it contains a Spring Security plugin which can be used to implement Spring Security in the web application.
