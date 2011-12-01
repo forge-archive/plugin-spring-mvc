@@ -36,4 +36,5 @@ public class @{entity.getName()}Controller
 		List<@{entity.getName()}> entities = @{ccEntity}Dao.getAllEntities();
 		return entities;
 	}
+	
 }
