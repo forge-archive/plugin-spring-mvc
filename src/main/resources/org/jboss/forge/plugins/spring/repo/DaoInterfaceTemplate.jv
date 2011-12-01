@@ -1,0 +1,20 @@
+package @{daoPackage};
+
+import java.util.List;
+
+import @{entity.getQualifiedName()};
+
+public interface @{entity.getName()}Dao
+{
+
+	public List<@{entity.getName()}> getAllEntities();
+	
+	public @{entity.getName()} getById(Long id);
+	
+	public void update(@{entity.getName()} entity);
+	
+	public void remove(@{entity.getName()} entity);
+	
+	public void removeById(Long id);
+
+}

@@ -1,0 +1,50 @@
+package @{daoPackage};
+
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+
+import @{entity.getQualifiedName()};
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public class @{entity.getName()}DaoImpl implements @{entity.getName()}Dao
+{
+
+	@Autowired
+	private EntityManager entityManager;
+
+	@SuppressWarnings("unchecked")
+	public List<@{entity.getName()}> getAllEntities()
+	{
+		Query query = entityManager.createQuery("select e from " + "@{entity.getName()}" + " e");
+		List<@{entity.getName()}> entities = query.getResultList();
+		return entities;
+	}
+	
+	public @{entity.getName()} getById(Long id)
+	{
+		return entityManager.find(@{entity.getName()}.class, id);
+	}
+	
+	public void update(@{entity.getName()} entity)
+	{
+		entityManager.persist(entity);
+		return;
+	}
+	
+	public void remove(@{entity.getName()} entity)
+	{
+		entityManager.remove(entity);
+		return;
+	}
+	
+	public void removeById(Long id)
+	{
+		entityManager.remove(entityManager.find(@{entity.getName()}.class, id));
+		return;
+	}
+}

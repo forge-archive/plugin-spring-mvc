@@ -1,4 +1,4 @@
-package org.jboss.forge.plugins.spring.mvc;
+package org.jboss.forge.plugins.spring;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -12,6 +12,7 @@ import org.jboss.forge.resources.java.JavaResource;
 import org.jboss.forge.shell.ShellMessages;
 import org.jboss.forge.shell.plugins.Plugin;
 import org.jboss.forge.shell.plugins.Alias;
+
 import javax.inject.Inject;
 import javax.persistence.Entity;
 
@@ -23,7 +24,9 @@ import org.jboss.forge.shell.plugins.Command;
 import org.jboss.forge.spec.javaee.PersistenceFacet;
 import org.jboss.forge.parser.JavaParser;
 import org.jboss.forge.parser.java.JavaClass;
+import org.jboss.forge.parser.java.JavaInterface;
 import org.jboss.forge.parser.java.JavaSource;
+import org.jboss.forge.parser.java.impl.JavaClassImpl;
 import org.jboss.forge.parser.xml.Node;
 import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.project.dependencies.DependencyBuilder;
@@ -33,7 +36,9 @@ import org.jboss.forge.project.facets.MetadataFacet;
 import org.jboss.forge.project.facets.ResourceFacet;
 import org.jboss.forge.project.Project;
 import org.jboss.seam.render.TemplateCompiler;
+import org.jboss.seam.render.spi.TemplateResolver;
 import org.jboss.seam.render.template.CompiledTemplateResource;
+import org.jboss.seam.render.template.resolver.ClassLoaderTemplateResolver;
 import org.jboss.shrinkwrap.descriptor.api.spec.jpa.persistence.PersistenceDescriptor;
 
 /**
@@ -53,16 +58,26 @@ public class SpringPlugin implements Plugin {
   @Inject
   private Project project;
   
-  @Inject
-  private XMLParser parser;
-  
   // Members for the 'mvc-from-entity' command.
-  private static final String SPRING_CONTROLLER_TEMPLATE = "org/jboss/forge/plugins/spring/mvc/SpringController.jv";
+  private static final String SPRING_CONTROLLER_TEMPLATE = "org/jboss/forge/plugins/spring/mvc/SpringControllerTemplate.jv";
+  private static final String DAO_INTERFACE_TEMPLATE = "org/jboss/forge/plugins/spring/repo/DaoInterfaceTemplate.jv";
+  private static final String DAO_IMPLEMENTATION_TEMPLATE = "org/jboss/forge/plugins/spring/repo/DaoImplementationTemplate.jv";
 
-  @Inject
   private TemplateCompiler compiler;
+  private TemplateResolver<ClassLoader> resolver;
   
   private CompiledTemplateResource springControllerTemplate;
+  private CompiledTemplateResource daoInterfaceTemplate;
+  private CompiledTemplateResource daoImplentationTemplate;
+  
+  @Inject
+  public SpringPlugin(TemplateCompiler compiler)
+  {
+      this.compiler = compiler;
+      
+      this.resolver = new ClassLoaderTemplateResolver(SpringPlugin.class.getClassLoader());
+      compiler.getTemplateResolverFactory().addResolver(resolver);
+  }
   
   @DefaultCommand
   public void defaultCommand(PipeOut out) 
@@ -120,7 +135,7 @@ public class SpringPlugin implements Plugin {
     deps.addDependency(mvel);
     
     // Add Seam Render dependency for controller generation.
-    DependencyBuilder seamRender = DependencyBuilder.create("org.jboss.seam.render:seam-render:1.0.0.Alpha4");
+    DependencyBuilder seamRender = DependencyBuilder.create("org.jboss.seam.render:seam-render:1.0.0.Alpha5");
     deps.addDependency(seamRender);
     
     out.println("Added Spring 3.1.0.RC1 dependencies to pom.xml.");
@@ -183,7 +198,7 @@ public class SpringPlugin implements Plugin {
       Node tx = new Node("tx:annotation-driven", beans);
       
       // Write the XML tree to a file, using the <beans> root node.
-      String file = parser.toXMLString(beans);
+      String file = XMLParser.toXMLString(beans);
       resources.createResource(file.toCharArray(), "META-INF/applicationContext.xml");
       
       // Create a web.xml file and define the persistence unit in web.xml.
@@ -217,7 +232,7 @@ public class SpringPlugin implements Plugin {
       Node persistenceUnitName = new Node("persistence-unit-name", persistenceContextRef);
       persistenceUnitName.text(unitName);
       
-      file = parser.toXMLString(webapp);
+      file = XMLParser.toXMLString(webapp);
       resources.createResource(file.toCharArray(), "../webapp/WEB-INF/web.xml");
   }
   
@@ -276,14 +291,29 @@ public class SpringPlugin implements Plugin {
       mvcStatic.attribute("location", "/");
       
       // Write the mvc-context.xml file.
-      String file = parser.toXMLString(beans);
+      String file = XMLParser.toXMLString(beans);
       String filename = projectName.toLowerCase().replace(' ', '-');
       resources.createResource(file.toCharArray(), "../webapp/WEB-INF/" + filename + "-mvc-context.xml");
+      
+      // Update the applicationContext.xml file to scan for DAO implementations.
+      FileResource<?> applicationContext = resources.getResource("META-INF/applicationContext.xml");
+      beans = XMLParser.parse(applicationContext.getResourceInputStream());
+      beans.attribute("xmlns:context", "http://www.springframework.org/schema/context");
+      
+      Node componentScan = new Node("context:component-scan", beans);
+      componentScan.attribute("base-package", meta.getTopLevelPackage() + ".repo");
+      
+      schemaLoc = beans.getAttribute("xsi:schemaLocation");
+      schemaLoc += " http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd";
+      beans.attribute("xsi:schemaLocation", schemaLoc);
+      
+      file = XMLParser.toXMLString(beans);
+      resources.createResource(file.toCharArray(), "META-INF/applicationContext.xml");
       
       // Retrieve the WEB-INF/web.xml file to be edited.
       
       FileResource<?> webXML = resources.getResource("../webapp/WEB-INF/web.xml");
-      Node webapp = parser.parse(webXML.getResourceInputStream());
+      Node webapp = XMLParser.parse(webXML.getResourceInputStream());
       
       // Define a Dispatcher servlet, named after the project.
       Node servlet = new Node("servlet", webapp);
@@ -306,7 +336,7 @@ public class SpringPlugin implements Plugin {
       Node url = new Node("url-pattern", servletMapping);
       url.text('/');
       
-      file = parser.toXMLString(webapp);
+      file = XMLParser.toXMLString(webapp);
       resources.createResource(file.toCharArray(), "../webapp/WEB-INF/web.xml");
   }
   
@@ -329,7 +359,7 @@ public class SpringPlugin implements Plugin {
       String projectName = meta.getProjectName();
       String filePath = "../webapp/WEB-INF/" + projectName.replace(' ', '-') + "-mvc-context.xml";
       Resource<?> mvcContext = resources.getResource(filePath);
-      Node beans = parser.parse(mvcContext.getResourceInputStream());
+      Node beans = XMLParser.parse(mvcContext.getResourceInputStream());
       Node contextScan = beans.getSingle("context:component-scan");
       String mvcPackage = contextScan.getAttribute("base-package");
 
@@ -350,10 +380,17 @@ public class SpringPlugin implements Plugin {
       // For each @Entity that is detected, create a Spring MVC controller.
       for(JavaResource jr : javaTargets) {
           JavaClass entity = (JavaClass) ((JavaResource) jr).getJavaSource();
+          
+          // Call to a function which creates a DAO interface and implementation for the given entity.
+          String daoPackage = meta.getTopLevelPackage() + ".repo";
+          generateDao(entity, daoPackage);
+          
           // Call to a function which creates the Spring MVC controller from the given entity.
-          List<Resource<?>> controller = generateController(entity, mvcPackage);
-          if(!controller.isEmpty()) {
-              java.saveJavaSource((JavaSource<?>) controller.get(0));
+          JavaClass controller = generateController(entity, mvcPackage, daoPackage);
+          Resource<?> resource = java.getJavaResource(controller);
+          
+          if(!resource.exists()) {
+              java.saveJavaSource(controller);
               ShellMessages.success(out, "Generated Spring MVC Controller for [" + entity.getQualifiedName() + "]");
           }
       }
@@ -389,22 +426,47 @@ public class SpringPlugin implements Plugin {
       return results;
   }
   
-  public List<Resource<?>> generateController(JavaClass entity, String mvcPackage)
+  public void generateDao(JavaClass entity, String daoPackage) throws FileNotFoundException
+  {
+      JavaSourceFacet java = this.project.getFacet(JavaSourceFacet.class);
+      
+      if(this.daoInterfaceTemplate == null) {
+          daoInterfaceTemplate = compiler.compile(DAO_INTERFACE_TEMPLATE);
+      }
+      
+      if(this.daoImplentationTemplate == null) {
+          daoImplentationTemplate = compiler.compile(DAO_IMPLEMENTATION_TEMPLATE);
+      }
+      
+      Map<Object, Object> context = new HashMap<Object, Object>();
+      context.put("entity", entity);
+      context.put("daoPackage", daoPackage);
+      
+      // Create the DAO interface and its implementation from the specified templates.
+      JavaInterface daoInterface = JavaParser.parse(JavaInterface.class, this.daoInterfaceTemplate.render(context));
+      java.saveJavaSource(daoInterface);
+      JavaClassImpl daoImpl = JavaParser.parse(JavaClassImpl.class, this.daoImplentationTemplate.render(context));
+      java.saveJavaSource(daoImpl);
+      
+      return;
+  }
+  
+  public JavaClass generateController(JavaClass entity, String mvcPackage, String daoPackage)
   {
       if(this.springControllerTemplate == null) {
           springControllerTemplate = compiler.compile(SPRING_CONTROLLER_TEMPLATE);
       }
-      
-      List<Resource<?>> controller = new ArrayList<Resource<?>>();
-      
+
       Map<Object, Object> context = new HashMap<Object, Object>();
       context.put("entity", entity);
       context.put("mvcPackage", mvcPackage);
+      context.put("daoPackage", daoPackage);
+      String ccEntity = entity.getName().substring(0, 1).toLowerCase() + entity.getName().substring(1);
+      context.put("ccEntity", ccEntity);
       
       JavaClass entityController = JavaParser.parse(JavaClass.class, this.springControllerTemplate.render(context));
-      controller.add((Resource<?>) entityController);      
       
-      return controller;
+      return entityController;
   }
   
 }

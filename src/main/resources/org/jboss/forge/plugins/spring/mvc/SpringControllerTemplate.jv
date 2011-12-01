@@ -1,0 +1,39 @@
+package @{mvcPackage};
+
+import java.util.List;
+
+import @{entity.getQualifiedName()};
+import @{daoPackage}.@{entity.getName()}Dao;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+@Controller
+@RequestMapping("/@{entity.getName().toLowerCase()}s")
+public class @{entity.getName()}Controller
+{
+  
+    @Autowired
+      private @{entity.getName()}Dao @{ccEntity}Dao;
+      
+	@RequestMapping(value="/{id}", method=RequestMethod.GET)
+	public String viewEntity(@PathVariable("id") Long id, Model model)
+	{
+		@{entity.getName()} entity = @{ccEntity}Dao.getById(id);
+		model.addAttribute("entity", entity);
+		return "viewEntity";
+	}
+	
+	@RequestMapping(method=RequestMethod.GET)
+	public @ModelAttribute("entities")
+	List<@{entity.getName()}> viewAll()
+	{
+		List<@{entity.getName()}> entities = @{ccEntity}Dao.getAllEntities();
+		return entities;
+	}
+}
