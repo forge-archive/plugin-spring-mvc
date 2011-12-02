@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 @Controller
-@RequestMapping("/@{entity.getName().toLowerCase()}s")
+@RequestMapping("/@{entityPlural}")
 public class @{entity.getName()}Controller
 {
 
@@ -48,10 +48,10 @@ public class @{entity.getName()}Controller
 		return entities;
 	}
 	
-	@RequestMapping(method=RequestMethod.POST)
-	public String removeEntity(@{entity.getName()} entity)
+	@RequestMapping(value="/{id}/delete", method=RequestMethod.POST)
+	public String removeEntity(@PathVariable("id") Long id)
 	{
-		@{ccEntity}Dao.remove(entity);
+		@{ccEntity}Dao.removeById(id);
 		return "viewEntities";
 	}
 	
@@ -59,14 +59,14 @@ public class @{entity.getName()}Controller
 	public String updateEntity(@{entity.getName()} entity, Model model)
 	{
 		@{ccEntity}Dao.update(entity);
-		model.add("entity", entity);
+		model.addAttribute("entity", entity);
 		return "viewEntity";
 	}
 	
-	@RequestMapping(value="/create", method=RequestMethod.POST, produces="application/json")
-	public String create()
+	@RequestMapping(method=RequestMethod.POST)
+	public String create(@{entity.getName()} entity)
 	{
-		@{entity.getName()} entity = new @{entity.getName()}();
+		@{ccEntity}Dao.update(entity);
 		return "viewEntities";
 	}
 }

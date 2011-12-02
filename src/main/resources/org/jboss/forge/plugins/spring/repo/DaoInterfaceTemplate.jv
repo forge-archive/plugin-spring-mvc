@@ -13,7 +13,7 @@ public interface @{entity.getName()}Dao
 	
 	public void update(@{entity.getName()} entity);
 	
-	public void remove(@{entity.getName()} entity);
+	public void delete(@{entity.getName()} entity);
 	
 	public void removeById(Long id);
 

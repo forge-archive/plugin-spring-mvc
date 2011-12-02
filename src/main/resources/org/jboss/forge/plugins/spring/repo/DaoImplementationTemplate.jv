@@ -32,11 +32,11 @@ public class @{entity.getName()}DaoImpl implements @{entity.getName()}Dao
 	
 	public void update(@{entity.getName()} entity)
 	{
-		entityManager.persist(entity);
+		entityManager.merge(entity);
 		return;
 	}
 	
-	public void remove(@{entity.getName()} entity)
+	public void delete(@{entity.getName()} entity)
 	{
 		entityManager.remove(entity);
 		return;

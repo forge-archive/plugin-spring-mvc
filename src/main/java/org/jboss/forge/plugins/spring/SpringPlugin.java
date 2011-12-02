@@ -13,6 +13,8 @@ import org.jboss.forge.shell.ShellMessages;
 import org.jboss.forge.shell.plugins.Plugin;
 import org.jboss.forge.shell.plugins.Alias;
 
+import static org.jvnet.inflector.Noun.pluralOf;
+
 import javax.inject.Inject;
 import javax.persistence.Entity;
 
@@ -494,6 +496,7 @@ public class SpringPlugin implements Plugin {
       context.put("entity", entity);
       context.put("mvcPackage", mvcPackage);
       context.put("daoPackage", daoPackage);
+      context.put("entityPlural", pluralOf(entity.getName().toLowerCase()));
       String ccEntity = entity.getName().substring(0, 1).toLowerCase() + entity.getName().substring(1);
       context.put("ccEntity", ccEntity);
       
