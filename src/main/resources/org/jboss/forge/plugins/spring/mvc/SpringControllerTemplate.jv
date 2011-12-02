@@ -17,10 +17,16 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @RequestMapping("/@{entity.getName().toLowerCase()}s")
 public class @{entity.getName()}Controller
 {
-  
+
+	// Inject the appropriate data-access object for the given entity.
     @Autowired
       private @{entity.getName()}Dao @{ccEntity}Dao;
-      
+    
+    /*
+    * viewEntity(id, model) - returns the view of a single entity in the database,
+    * specified by its id.  The entity is passed to a JSP template via a Model object,
+    * and a String, representing the name of the JSP view, is returned.
+    */
 	@RequestMapping(value="/{id}", method=RequestMethod.GET)
 	public String viewEntity(@PathVariable("id") Long id, Model model)
 	{
@@ -29,6 +35,11 @@ public class @{entity.getName()}Controller
 		return "viewEntity";
 	}
 	
+	/*
+    * viewAll() - returns a view with all entities currently in the database.
+    * The list of entities is passed to the JSP template via a ModelAttribute,
+    * which is returned by the function.
+    */
 	@RequestMapping(method=RequestMethod.GET)
 	public @ModelAttribute("entities")
 	List<@{entity.getName()}> viewAll()
@@ -37,4 +48,25 @@ public class @{entity.getName()}Controller
 		return entities;
 	}
 	
+	@RequestMapping(method=RequestMethod.POST)
+	public String removeEntity(@{entity.getName()} entity)
+	{
+		@{ccEntity}Dao.remove(entity);
+		return "viewEntities";
+	}
+	
+	@RequestMapping(value="/{id}", method=RequestMethod.POST)
+	public String updateEntity(@{entity.getName()} entity, Model model)
+	{
+		@{ccEntity}Dao.update(entity);
+		model.add("entity", entity);
+		return "viewEntity";
+	}
+	
+	@RequestMapping(value="/create", method=RequestMethod.POST, produces="application/json")
+	public String create()
+	{
+		@{entity.getName()} entity = new @{entity.getName()}();
+		return "viewEntities";
+	}
 }

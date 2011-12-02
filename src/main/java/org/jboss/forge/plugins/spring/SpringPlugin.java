@@ -397,6 +397,12 @@ public class SpringPlugin implements Plugin {
       
   }
   
+  /**
+   * Helper function for the 'mvc-from-entity' command, takes in an array of target Resource objects,
+   * and returns a list of JavaResource objects which are annotated with @Entity, and should have 
+   * a controller and DAO objects created for them.
+   * @throws FileNotFoundException
+   */  
   public List<JavaResource> selectTargets(PipeOut out, Resource<?>[] targets)
           throws FileNotFoundException
   {
@@ -406,6 +412,10 @@ public class SpringPlugin implements Plugin {
           targets = new Resource<?>[] {};
       }
       
+      /*
+       * Loop through the resource list, 'targets', passed to the function, and check for any
+       * JavaResources (i.e. classes) that have the @Entity annotation.
+       */
       for(Resource<?> r : targets) {
           if(r instanceof JavaResource) {
               JavaSource<?> entity = ((JavaResource) r).getJavaSource();
@@ -426,37 +436,60 @@ public class SpringPlugin implements Plugin {
       return results;
   }
   
+  /**
+   * Helper function for the 'mvc-from-entity' command.  Given a JavaClass, annotated with @Entity, and a
+   * target package, this function generates a DAO interface and its implementation from template.  The resulting
+   * interface and its implementation can be found in 'daoPacakge'.
+   * 
+   * NOTE: The templates for the DAO objects can be found in src/main/resources/org/jboss/forge/plugins/spring/repo
+   *@throws FileNotFoundException
+   */
   public void generateDao(JavaClass entity, String daoPackage) throws FileNotFoundException
   {
       JavaSourceFacet java = this.project.getFacet(JavaSourceFacet.class);
       
+      // Compile the DAO interface template.
       if(this.daoInterfaceTemplate == null) {
           daoInterfaceTemplate = compiler.compile(DAO_INTERFACE_TEMPLATE);
       }
       
+      // Compile the DAO interface implementation template.
       if(this.daoImplentationTemplate == null) {
           daoImplentationTemplate = compiler.compile(DAO_IMPLEMENTATION_TEMPLATE);
       }
       
+      // Pass the entity itself and the target package to the templates via a HashMap object.
       Map<Object, Object> context = new HashMap<Object, Object>();
       context.put("entity", entity);
       context.put("daoPackage", daoPackage);
       
       // Create the DAO interface and its implementation from the specified templates.
       JavaInterface daoInterface = JavaParser.parse(JavaInterface.class, this.daoInterfaceTemplate.render(context));
-      java.saveJavaSource(daoInterface);
       JavaClassImpl daoImpl = JavaParser.parse(JavaClassImpl.class, this.daoImplentationTemplate.render(context));
+
+      // Save the created interface and class implementation, so they can be referenced by the controller.
+      java.saveJavaSource(daoInterface);
       java.saveJavaSource(daoImpl);
       
       return;
   }
   
+  /**
+   * Helper function for the 'mvc-from-entity' command.  Given a JavaClass, annotated with
+   * @Entity, a target package, mvcPackage, and a package containing the entity's DAO, daoPackage,
+   * this function creates a Spring MVC controller from template.  The resulting controller can be
+   * found in 'mvcPackage'.
+   * 
+   * NOTE: The template for the controller can be found in src/main/resources/org/jboss/forge/plugins/spring/mvc
+   */
   public JavaClass generateController(JavaClass entity, String mvcPackage, String daoPackage)
   {
+      // Compile the Spring Controller template.
       if(this.springControllerTemplate == null) {
           springControllerTemplate = compiler.compile(SPRING_CONTROLLER_TEMPLATE);
       }
 
+      // Pass the entity, the target package, and the entity's DAO package to the template via a HashMap.
       Map<Object, Object> context = new HashMap<Object, Object>();
       context.put("entity", entity);
       context.put("mvcPackage", mvcPackage);
@@ -464,8 +497,10 @@ public class SpringPlugin implements Plugin {
       String ccEntity = entity.getName().substring(0, 1).toLowerCase() + entity.getName().substring(1);
       context.put("ccEntity", ccEntity);
       
+      // Create a Spring MVC controller for the entity from the template.
       JavaClass entityController = JavaParser.parse(JavaClass.class, this.springControllerTemplate.render(context));
       
+      // Return the controller to the function for the 'mvc-from'entity' command.
       return entityController;
   }
   
