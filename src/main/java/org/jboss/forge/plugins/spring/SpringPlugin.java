@@ -23,6 +23,7 @@ import org.jboss.forge.shell.plugins.Option;
 import org.jboss.forge.shell.plugins.PipeOut;
 import org.jboss.forge.shell.plugins.DefaultCommand;
 import org.jboss.forge.shell.plugins.Command;
+import org.jboss.forge.shell.plugins.SetupCommand;
 import org.jboss.forge.spec.javaee.PersistenceFacet;
 import org.jboss.forge.parser.JavaParser;
 import org.jboss.forge.parser.java.JavaClass;
@@ -35,7 +36,10 @@ import org.jboss.forge.project.dependencies.DependencyBuilder;
 import org.jboss.forge.project.facets.DependencyFacet;
 import org.jboss.forge.project.facets.JavaSourceFacet;
 import org.jboss.forge.project.facets.MetadataFacet;
+import org.jboss.forge.project.facets.PackagingFacet;
 import org.jboss.forge.project.facets.ResourceFacet;
+import org.jboss.forge.project.packaging.PackagingType;
+import org.jboss.forge.project.services.ProjectFactory;
 import org.jboss.forge.project.Project;
 import org.jboss.seam.render.TemplateCompiler;
 import org.jboss.seam.render.spi.TemplateResolver;
@@ -91,11 +95,15 @@ public class SpringPlugin implements Plugin {
    * The 'setup' command is used to initialize the project as a simple Spring Web MVC project.
    * For example, this command will add the necessary dependencies to the project's POM.xml file. 
    */
-  @Command("setup")
+  @SetupCommand
   public void setupProject(PipeOut out)
   {  
     // Use the DependencyFacet interface to add each Spring dependency to the POM.
-    DependencyFacet deps = project.getFacet(DependencyFacet.class); 
+    DependencyFacet deps = project.getFacet(DependencyFacet.class);
+    
+    // Use the PackagingFacet interface to modify product packaging for a WAR, not a JAR.
+    PackagingFacet packaging = project.getFacet(PackagingFacet.class);
+    packaging.setPackagingType(PackagingType.WAR);
 
     /*
      * Use the Forge DependencyBuilder to add Maven dependencies to the POM.
@@ -131,14 +139,6 @@ public class SpringPlugin implements Plugin {
      // Add the support for the Spring MVC dependency
     DependencyBuilder springMVC = DependencyBuilder.create("org.springframework:spring-webmvc:3.1.0.RC1");
     deps.addDependency(springMVC);
-    
-    // Add support for MVEL, for controller generation.
-    DependencyBuilder mvel = DependencyBuilder.create("org.mvel:mvel2:2.0.11");
-    deps.addDependency(mvel);
-    
-    // Add Seam Render dependency for controller generation.
-    DependencyBuilder seamRender = DependencyBuilder.create("org.jboss.seam.render:seam-render:1.0.0.Alpha5");
-    deps.addDependency(seamRender);
     
     out.println("Added Spring 3.1.0.RC1 dependencies to pom.xml.");
 }
@@ -490,7 +490,7 @@ public class SpringPlugin implements Plugin {
       if(this.springControllerTemplate == null) {
           springControllerTemplate = compiler.compile(SPRING_CONTROLLER_TEMPLATE);
       }
-
+      
       // Pass the entity, the target package, and the entity's DAO package to the template via a HashMap.
       Map<Object, Object> context = new HashMap<Object, Object>();
       context.put("entity", entity);

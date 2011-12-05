@@ -5,6 +5,9 @@ import java.util.List;
 import @{entity.getQualifiedName()};
 import @{daoPackage}.@{entity.getName()}Dao;
 
+import org.jboss.forge.parser.java.Field;
+import org.jboss.forge.parser.java.JavaClass;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,7 +23,7 @@ public class @{entity.getName()}Controller
 
 	// Inject the appropriate data-access object for the given entity.
     @Autowired
-      private @{entity.getName()}Dao @{ccEntity}Dao;
+	private @{entity.getName()}Dao @{ccEntity}Dao;
     
     /*
     * viewEntity(id, model) - returns the view of a single entity in the database,
@@ -32,6 +35,8 @@ public class @{entity.getName()}Controller
 	{
 		@{entity.getName()} entity = @{ccEntity}Dao.getById(id);
 		model.addAttribute("entity", entity);
+		List<Field<JavaClass>> fields = ((JavaClass) entity).getFields();
+		model.addAttribute("fields", fields);
 		return "viewEntity";
 	}
 	
@@ -51,8 +56,8 @@ public class @{entity.getName()}Controller
 	@RequestMapping(value="/{id}/delete", method=RequestMethod.POST)
 	public String removeEntity(@PathVariable("id") Long id)
 	{
-		@{ccEntity}Dao.removeById(id);
-		return "viewEntities";
+		@{ccEntity}Dao.deleteById(id);
+		return "viewAll";
 	}
 	
 	@RequestMapping(value="/{id}", method=RequestMethod.POST)

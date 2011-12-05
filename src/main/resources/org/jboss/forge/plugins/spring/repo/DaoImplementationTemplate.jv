@@ -42,7 +42,7 @@ public class @{entity.getName()}DaoImpl implements @{entity.getName()}Dao
 		return;
 	}
 	
-	public void removeById(Long id)
+	public void deleteById(Long id)
 	{
 		entityManager.remove(entityManager.find(@{entity.getName()}.class, id));
 		return;
