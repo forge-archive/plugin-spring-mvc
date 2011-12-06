@@ -30,29 +30,30 @@ public class SpringSecurityPlugin implements Plugin
 	{	    
 	    // Use the DependencyFacet interface to add each Spring Security dependency to the POM.
 	    DependencyFacet deps = project.getFacet(DependencyFacet.class);
+	    deps.setProperty("spring.security.version", "3.1.0.CR2");
 	    
 	    /* 
 	     * Create the dependencies using the Forge DependencyBuilder class.
 	     * Add the Spring Security core dependency.
 	     */
-	    DependencyBuilder springSecurityCore = DependencyBuilder.create("org.springframework.security:spring-security-core:3.1.0.CR2");
-	    deps.addDependency(springSecurityCore);
+	    DependencyBuilder secCore = DependencyBuilder.create("org.springframework.security:spring-security-core:{spring.security.version}");
+	    deps.addDependency(secCore);
 	    
 	    // Add the Spring Security config dependency.	    
-	    DependencyBuilder springSecurityConfig = DependencyBuilder.create("org.springframework.security:spring-security-config:3.1.0.CR2");
-	    deps.addDependency(springSecurityConfig);
+	    DependencyBuilder secConfig = DependencyBuilder.create("org.springframework.security:spring-security-config:{spring.security.version}");
+	    deps.addDependency(secConfig);
 	    
 	    // Add the Spring Security access-control list dependency, for domain object security.
-	    DependencyBuilder springSecurityAcl = DependencyBuilder.create("org.springframework.security:spring-security-acl:3.1.0.CR2");
-	    deps.addDependency(springSecurityAcl);
+	    DependencyBuilder secAcl = DependencyBuilder.create("org.springframework.security:spring-security-acl:{spring.security.version}");
+	    deps.addDependency(secAcl);
 	    
 	    // Add the Spring Security web dependency.
-	    DependencyBuilder springSecurityWeb = DependencyBuilder.create("org.springframework.security:spring-security-web:3.1.0.CR2");
-	    deps.addDependency(springSecurityWeb);
+	    DependencyBuilder secWeb = DependencyBuilder.create("org.springframework.security:spring-security-web:{spring.security.version}");
+	    deps.addDependency(secWeb);
 	    
 	    // Add the Spring Security taglibs dependency.
-	    DependencyBuilder springSecurityTaglibs = DependencyBuilder.create("org.springframework.security:spring-security-taglibs:3.1.0.CR2");
-	    deps.addDependency(springSecurityTaglibs);
+	    DependencyBuilder secTaglibs = DependencyBuilder.create("org.springframework.security:spring-security-taglibs:{spring.security.version}");
+	    deps.addDependency(secTaglibs);
 	    
         out.println("Configured the project to use Spring Security 3.1.0.CR2.");
 	}

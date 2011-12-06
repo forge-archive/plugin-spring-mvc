@@ -88,7 +88,7 @@ public class SpringPlugin implements Plugin {
   @DefaultCommand
   public void defaultCommand(PipeOut out) 
   {
-    out.println("Welcome to the Spring plugin for Forge!  To set up the project, execute the command 'spring setup'.");
+    out.println("Welcome to the Spring plugin for Forge!  To set up the project for Spring MVC use, execute the command 'spring setup'.");
   }
 
   /**
@@ -109,36 +109,44 @@ public class SpringPlugin implements Plugin {
      * Use the Forge DependencyBuilder to add Maven dependencies to the POM.
      * Add the Spring ASM dependency.
      */ 
-    DependencyBuilder springAsm = DependencyBuilder.create("org.springframework:spring-asm:3.1.0.RC1");
+    
+    deps.setProperty("spring.version", "3.1.0.RC1");
+    deps.setProperty("forge.api.version", "1.0.0.Beta3");
+    
+    DependencyBuilder springAsm = DependencyBuilder.create("org.springframework:spring-asm:{spring.version}");
     deps.addDependency(springAsm);
 
     // Add the Spring beans dependency
-    DependencyBuilder springBeans = DependencyBuilder.create("org.springframework:spring-beans:3.1.0.RC1");
+    DependencyBuilder springBeans = DependencyBuilder.create("org.springframework:{spring.version}");
     deps.addDependency(springBeans);
 
     // Add the Spring context dependency
-    DependencyBuilder springContext = DependencyBuilder.create("org.springframework:spring-context:3.1.0.RC1");
+    DependencyBuilder springContext = DependencyBuilder.create("org.springframework:{spring.version}");
     deps.addDependency(springContext);
 
     // Add the support for the Spring context dependency
-    DependencyBuilder springContextSupport = DependencyBuilder.create("org.springframework:spring-context-support:3.1.0.RC1");
+    DependencyBuilder springContextSupport = DependencyBuilder.create("org.springframework:{spring.version}");
     deps.addDependency(springContextSupport); 
 
     // Add the support for the Spring core
-    DependencyBuilder springCore = DependencyBuilder.create("org.springframework:spring-core:3.1.0.RC1");
+    DependencyBuilder springCore = DependencyBuilder.create("org.springframework:spring-core:{spring.version}");
     deps.addDependency(springCore); 
 
      // Add the support for the Spring expression dependency
-    DependencyBuilder springExpression = DependencyBuilder.create("org.springframework:spring-expression:3.1.0.RC1");
+    DependencyBuilder springExpression = DependencyBuilder.create("org.springframework:spring-expression:{spring.version}");
     deps.addDependency(springExpression);
 
     // Add the support for the Spring web dependency
-    DependencyBuilder springWeb = DependencyBuilder.create("org.springframework:spring-web:3.1.0.RC1");
+    DependencyBuilder springWeb = DependencyBuilder.create("org.springframework:spring-web:{spring.version}");
     deps.addDependency(springWeb);
 
      // Add the support for the Spring MVC dependency
-    DependencyBuilder springMVC = DependencyBuilder.create("org.springframework:spring-webmvc:3.1.0.RC1");
+    DependencyBuilder springMVC = DependencyBuilder.create("org.springframework:spring-webmvc:{spring.version}");
     deps.addDependency(springMVC);
+    
+    // Add the Forge Java Parser API
+    DependencyBuilder javaParser = DependencyBuilder.create("org.jboss.forge:forge-java-parser-api:{forge.api.version}");
+    deps.addDependency(javaParser);
     
     out.println("Added Spring 3.1.0.RC1 dependencies to pom.xml.");
 }
