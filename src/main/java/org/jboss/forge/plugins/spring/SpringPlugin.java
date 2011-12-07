@@ -38,6 +38,7 @@ import org.jboss.forge.project.facets.JavaSourceFacet;
 import org.jboss.forge.project.facets.MetadataFacet;
 import org.jboss.forge.project.facets.PackagingFacet;
 import org.jboss.forge.project.facets.ResourceFacet;
+import org.jboss.forge.project.facets.WebResourceFacet;
 import org.jboss.forge.project.packaging.PackagingType;
 import org.jboss.forge.project.services.ProjectFactory;
 import org.jboss.forge.project.Project;
@@ -63,6 +64,10 @@ public class SpringPlugin implements Plugin {
     
   @Inject
   private Project project;
+
+  // Use a ProjectFactory to retrieve a WebResourceFacet.
+  @Inject
+  private ProjectFactory factory;
   
   // Members for the 'mvc-from-entity' command.
   private static final String SPRING_CONTROLLER_TEMPLATE = "org/jboss/forge/plugins/spring/mvc/SpringControllerTemplate.jv";
@@ -81,6 +86,10 @@ public class SpringPlugin implements Plugin {
   private CompiledTemplateResource createTemplate;
   private CompiledTemplateResource listTemplate;
   private CompiledTemplateResource viewTemplate;
+  
+  // MVEL 2.0 Test Templates
+  private static final String PROPERTIES_TEMPLATE = "org/jboss/forge/plugins/spring/mvc/properties.jsp";
+  private CompiledTemplateResource propertiesTemplate;
   
   @Inject
   public SpringPlugin(TemplateCompiler compiler)
@@ -107,54 +116,53 @@ public class SpringPlugin implements Plugin {
     // Use the DependencyFacet interface to add each Spring dependency to the POM.
     DependencyFacet deps = project.getFacet(DependencyFacet.class);
     
-    // Use the PackagingFacet interface to modify product packaging for a WAR, not a JAR.
+    // Use the PackagingFacet interface to get, and potentially modify, the project's packaging type.
     PackagingFacet packaging = project.getFacet(PackagingFacet.class);
-    packaging.setPackagingType(PackagingType.WAR);
-
-    /*
-     * Use the Forge DependencyBuilder to add Maven dependencies to the POM.
-     * Add the Spring ASM dependency.
-     */ 
     
-    deps.setProperty("spring.version", "3.1.0.RC1");
+    // If the project was not created as a WAR, change the packaging type to 'WAR' and install a WebResourceFacet.   
+    if(packaging.getPackagingType() != PackagingType.WAR) {
+        packaging.setPackagingType(PackagingType.WAR);
+        factory.installSingleFacet(project, WebResourceFacet.class);
+    }
+
+    // Use the Forge DependencyBuilder to add Maven dependencies to the POM. 
+    String springVersion = "3.1.0.RC1";
+    deps.setProperty("spring.version", springVersion);
     deps.setProperty("forge.api.version", "1.0.0.Beta3");
     
-    DependencyBuilder springAsm = DependencyBuilder.create("org.springframework:spring-asm:{spring.version}");
+    // Add the Spring ASM dependency.
+    DependencyBuilder springAsm = DependencyBuilder.create("org.springframework:spring-asm:${spring.version}");
     deps.addDependency(springAsm);
 
-    // Add the Spring beans dependency
-    DependencyBuilder springBeans = DependencyBuilder.create("org.springframework:{spring.version}");
+    // Add the Spring beans dependency.
+    DependencyBuilder springBeans = DependencyBuilder.create("org.springframework:spring-beans:${spring.version}");
     deps.addDependency(springBeans);
 
-    // Add the Spring context dependency
-    DependencyBuilder springContext = DependencyBuilder.create("org.springframework:{spring.version}");
+    // Add the Spring context dependency.
+    DependencyBuilder springContext = DependencyBuilder.create("org.springframework:spring-context:${spring.version}");
     deps.addDependency(springContext);
 
-    // Add the support for the Spring context dependency
-    DependencyBuilder springContextSupport = DependencyBuilder.create("org.springframework:{spring.version}");
+    // Add the support for the Spring context dependency.
+    DependencyBuilder springContextSupport = DependencyBuilder.create("org.springframework:spring-context-support:${spring.version}");
     deps.addDependency(springContextSupport); 
 
-    // Add the support for the Spring core
-    DependencyBuilder springCore = DependencyBuilder.create("org.springframework:spring-core:{spring.version}");
+    // Add the support for the Spring core.
+    DependencyBuilder springCore = DependencyBuilder.create("org.springframework:spring-core:${spring.version}");
     deps.addDependency(springCore); 
 
-     // Add the support for the Spring expression dependency
-    DependencyBuilder springExpression = DependencyBuilder.create("org.springframework:spring-expression:{spring.version}");
+     // Add the support for the Spring expression dependency.
+    DependencyBuilder springExpression = DependencyBuilder.create("org.springframework:spring-expression:${spring.version}");
     deps.addDependency(springExpression);
 
-    // Add the support for the Spring web dependency
-    DependencyBuilder springWeb = DependencyBuilder.create("org.springframework:spring-web:{spring.version}");
+    // Add the support for the Spring web dependency.
+    DependencyBuilder springWeb = DependencyBuilder.create("org.springframework:spring-web:${spring.version}");
     deps.addDependency(springWeb);
 
-     // Add the support for the Spring MVC dependency
-    DependencyBuilder springMVC = DependencyBuilder.create("org.springframework:spring-webmvc:{spring.version}");
+     // Add the support for the Spring MVC dependency.
+    DependencyBuilder springMVC = DependencyBuilder.create("org.springframework:spring-webmvc:${spring.version}");
     deps.addDependency(springMVC);
     
-    // Add the Forge Java Parser API
-    DependencyBuilder javaParser = DependencyBuilder.create("org.jboss.forge:forge-java-parser-api:{forge.api.version}");
-    deps.addDependency(javaParser);
-    
-    out.println("Added Spring 3.1.0.RC1 dependencies to pom.xml.");
+    out.println("Added Spring " + springVersion + " dependencies to pom.xml.");
 }
 
   /**
@@ -163,24 +171,37 @@ public class SpringPlugin implements Plugin {
    * Thus, the application's persistence layer should already be mostly configured in META-INF/persistence.xml.
    * This command should perform the necessary steps to configure Spring persistence, e.g. an EntityManager JNDI look-up.
    */
-  @Command("persistence")
+  @SuppressWarnings("unused")
+@Command("persistence")
   public void springPersistence(PipeOut out)
   {
       // Use a ResourceFacet object to write to a new XML file.
       ResourceFacet resources = project.getFacet(ResourceFacet.class);
       
+      // Use a WebResourceFacet object to write a new web.xml file.    
+      WebResourceFacet web = project.getFacet(WebResourceFacet.class);
+
       // Use a MetadataFacet object to retrieve the project's name.
       MetadataFacet meta = project.getFacet(MetadataFacet.class);
       String projectName = meta.getProjectName();
       
       /*
+       * First, check to see that a PersistenceFacet has been installed, otherwise, 'persistence setup' may not have been executed.
+       */
+      
+      if(!project.hasFacet(PersistenceFacet.class)) {
+          out.println("No PersistenceFacet installed, have you executed 'persistence setup' yet?");
+          return;
+      }
+      
+      /*
        * Use a PersistenceFacet object to retrieve the project's persistence configuration.
        * This persistence configuration can then be used to retrieve the appropriate persistence unit name (for a JNDI lookup).
        */
+      
       PersistenceFacet jpa = project.getFacet(PersistenceFacet.class);
       PersistenceDescriptor config = jpa.getConfig();
       String unitName = config.listUnits().get(0).getName();
-      out.println(unitName);
       
       // Use the XMLParser provided by Forge to create an applicationContext.xml file.
       
@@ -222,7 +243,7 @@ public class SpringPlugin implements Plugin {
       webapp.attribute("version", "3.0");
       webapp.attribute("xmlns", "http://java.sun.com/xml/ns/javaee");
       webapp.attribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
-      webapp.attribute("xsi:schemaLocation", "http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd");
+      webapp.attribute("xsi:schemaLocation", "http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd");
       webapp.attribute("metadata-complete", "true");
       
       // Add the project name as an attribute of web.xml.
@@ -248,20 +269,25 @@ public class SpringPlugin implements Plugin {
       Node persistenceUnitName = new Node("persistence-unit-name", persistenceContextRef);
       persistenceUnitName.text(unitName);
       
+      // Save the updated web.xml file.
       file = XMLParser.toXMLString(webapp);
-      resources.createResource(file.toCharArray(), "../webapp/WEB-INF/web.xml");
+      web.createWebResource(file.toCharArray(), "WEB-INF/web.xml");
   }
   
   /**
    * The 'web-mvc' command configures Spring MVC in the application context.
    * This command will be necessary to deploy the application, once we have created MVC controllers.
    */
-  @Command("web-mvc")
-  public void setupMVC(PipeOut out, @Option(required=true, name="package", description="Package containing Spring controllers")
+  @SuppressWarnings("unused")
+@Command("web-mvc")
+  public void springMVC(PipeOut out, @Option(required=true, name="package", description="Package containing Spring controllers")
                           final String mvcPackage)
   {
       // Use a ResourceFacet object to retrieve and update XML context files.
       ResourceFacet resources = this.project.getFacet(ResourceFacet.class);
+      
+      // Use a WebResourceFacet object to retrieve and update the MVC context XML and web.xml files.
+      WebResourceFacet web = project.getFacet(WebResourceFacet.class);
       
       // Use a MetadataFacet object to retrieve the project's name.
       MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
@@ -271,7 +297,7 @@ public class SpringPlugin implements Plugin {
        * Ensure that the META-INF/applicationContext.xml file exists.
        * If it does not exist, tell the user that they may need to execute 'spring persistence'.
        */
-      if(!resources.getResource("../webapp/WEB-INF/web.xml").exists()) {
+      if(!web.getWebResource("WEB-INF/web.xml").exists()) {
           out.println("The file 'WEB-INF/web.xml' does not exist.  Have you executed 'spring persistence' yet?");
           return;
       }
@@ -285,7 +311,7 @@ public class SpringPlugin implements Plugin {
       beans.attribute("xmlns:mvc", "http://www.springframework.org/schema/mvc");
       beans.attribute("xmlns:context", "http://www.springframework.org/schema/context");
 
-      // Add the schema files for the <context> and <mvc> namespaces.
+      // Add the schema files for the <context> and <mvc> namespaces to the mvc-context.xml file.
       String schemaLoc = "http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd";
       schemaLoc += " http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd";
       schemaLoc += " http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd";
@@ -306,29 +332,31 @@ public class SpringPlugin implements Plugin {
       mvcStatic.attribute("mapping", "/static/**");
       mvcStatic.attribute("location", "/");
       
-      // Write the mvc-context.xml file.
+      // Write the mvc-context.xml file: 'src/main/webapp/WEB-INF/{lowercase.project.name}-mvc-context.xml'.
       String file = XMLParser.toXMLString(beans);
       String filename = projectName.toLowerCase().replace(' ', '-');
-      resources.createResource(file.toCharArray(), "../webapp/WEB-INF/" + filename + "-mvc-context.xml");
+      web.createWebResource(file.toCharArray(), "WEB-INF/" + filename + "-mvc-context.xml");
       
       // Update the applicationContext.xml file to scan for DAO implementations.
       FileResource<?> applicationContext = resources.getResource("META-INF/applicationContext.xml");
       beans = XMLParser.parse(applicationContext.getResourceInputStream());
       beans.attribute("xmlns:context", "http://www.springframework.org/schema/context");
       
+      // Use a <context:component-scan> to create beans for all DAO interface implementations, annotated as @Repository
       Node componentScan = new Node("context:component-scan", beans);
       componentScan.attribute("base-package", meta.getTopLevelPackage() + ".repo");
       
+      // Include the spring-context schema file, so that the <context> namespace can be used in web.xml.
       schemaLoc = beans.getAttribute("xsi:schemaLocation");
       schemaLoc += " http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd";
       beans.attribute("xsi:schemaLocation", schemaLoc);
       
+      // Save the updated applicationContext.xml file to 'src/main/resources/META-INF/applicationContext.xml'.
       file = XMLParser.toXMLString(beans);
       resources.createResource(file.toCharArray(), "META-INF/applicationContext.xml");
       
-      // Retrieve the WEB-INF/web.xml file to be edited.
-      
-      FileResource<?> webXML = resources.getResource("../webapp/WEB-INF/web.xml");
+      // Retrieve the WEB-INF/web.xml file to be edited.      
+      FileResource<?> webXML = web.getWebResource("WEB-INF/web.xml");
       Node webapp = XMLParser.parse(webXML.getResourceInputStream());
       
       // Define a Dispatcher servlet, named after the project.
@@ -346,14 +374,16 @@ public class SpringPlugin implements Plugin {
       Node loadOnStartup = new Node("load-on-startup", servlet);
       loadOnStartup.text(1);
       
+      // Map the servlet to the '/' URL.
       Node servletMapping = new Node("servlet-mapping", webapp);
       Node servletNameRepeat = new Node("servlet-name", servletMapping);
       servletNameRepeat.text(projectName.replace(' ', (char) 0));
       Node url = new Node("url-pattern", servletMapping);
       url.text('/');
       
+      // Save the updated web.xml file to 'src/main/webapp/WEB-INF/web.xml'.
       file = XMLParser.toXMLString(webapp);
-      resources.createResource(file.toCharArray(), "../webapp/WEB-INF/web.xml");
+      web.createWebResource(file.toCharArray(), "WEB-INF/web.xml");
   }
   
   /**
@@ -368,13 +398,13 @@ public class SpringPlugin implements Plugin {
           throws FileNotFoundException
   {
       JavaSourceFacet java = this.project.getFacet(JavaSourceFacet.class);
-      ResourceFacet resources = this.project.getFacet(ResourceFacet.class);
       MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
+      WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
       
       // Retrieve the base package that will be scanned for controllers.
       String projectName = meta.getProjectName();
-      String filePath = "../webapp/WEB-INF/" + projectName.replace(' ', '-') + "-mvc-context.xml";
-      Resource<?> mvcContext = resources.getResource(filePath);
+      String filePath = "WEB-INF/" + projectName.replace(' ', '-') + "-mvc-context.xml";
+      Resource<?> mvcContext = web.getWebResource(filePath);
       Node beans = XMLParser.parse(mvcContext.getResourceInputStream());
       Node contextScan = beans.getSingle("context:component-scan");
       String mvcPackage = contextScan.getAttribute("base-package");
@@ -489,6 +519,11 @@ public class SpringPlugin implements Plugin {
       // Compile the JSP template for the single entity view.
       if(this.viewTemplate == null) {
           viewTemplate = compiler.compile(VIEW_TEMPLATE);
+      }
+      
+      // Compile the MVEL 2.0 test template
+      if(this.propertiesTemplate == null) {
+          propertiesTemplate = compiler.compile(PROPERTIES_TEMPLATE);
       }
       
       return;
