@@ -6,7 +6,11 @@
   <artifactId>plugin-spring-mvc</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <properties>
-    <forge.api.version>1.0.0.Beta3</forge.api.version>
+    <forge.api.version>1.0.0.Beta4</forge.api.version>
+    <jvnet.version>0.7.0</jvnet.version>    
+    <metawidget.version>1.35-SNAPSHOT</metawidget.version>
+    <mvel.version>2.0.11</mvel.version>
+    <seam-render.version>1.0.0.Alpha5</seam-render.version>
   </properties>
   <dependencies>
     <dependency>
@@ -51,46 +55,16 @@
       <version>4.0.0.CR6</version>
       <scope>provided</scope>
     </dependency>
-<!--     <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-asm</artifactId>
-      <version>3.1.0.RC1</version>
-    </dependency>
     <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-beans</artifactId>
-      <version>3.1.0.RC1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-context</artifactId>
-      <version>3.1.0.RC1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-context-support</artifactId>
-      <version>3.1.0.RC1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-web</artifactId>
-      <version>3.1.0.RC1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-webmvc</artifactId>
-      <version>3.1.0.RC1</version>
-    </dependency>
- -->    <dependency>
       <groupId>org.mvel</groupId>
       <artifactId>mvel2</artifactId>
-      <version>2.0.11</version>
+      <version>${mvel.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.jboss.seam.render</groupId>
       <artifactId>seam-render</artifactId>
-      <version>1.0.0.Alpha5</version>
+      <version>${seam-render.version}</version>
       <scope>provided</scope>
       <exclusions>
       	<exclusion>
@@ -100,9 +74,14 @@
       </exclusions>
     </dependency>
     <dependency>
+    	<groupId>org.metawidget.modules</groupId>
+    	<artifactId>metawidget-all</artifactId>
+    	<version>${metawidget.version}</version>
+    </dependency>
+    <dependency>
     	<groupId>org.jvnet</groupId>
     	<artifactId>inflector</artifactId>
-    	<version>0.7.0</version>
+    	<version>${jvnet.version}</version>
     </dependency>
 <!--     <dependency>
     	<groupId>javax.enterprise</groupId>

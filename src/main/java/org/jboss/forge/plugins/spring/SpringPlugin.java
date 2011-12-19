@@ -47,6 +47,8 @@ import org.jboss.seam.render.spi.TemplateResolver;
 import org.jboss.seam.render.template.CompiledTemplateResource;
 import org.jboss.seam.render.template.resolver.ClassLoaderTemplateResolver;
 import org.jboss.shrinkwrap.descriptor.api.spec.jpa.persistence.PersistenceDescriptor;
+import org.metawidget.util.CollectionUtils;
+import org.metawidget.util.simple.StringUtils;
 
 /**
  * Forge plugin to create a simple Spring MVC web application.
@@ -132,35 +134,35 @@ public class SpringPlugin implements Plugin {
     
     // Add the Spring ASM dependency.
     DependencyBuilder springAsm = DependencyBuilder.create("org.springframework:spring-asm:${spring.version}");
-    deps.addDependency(springAsm);
+    deps.addDirectDependency(springAsm);
 
     // Add the Spring beans dependency.
     DependencyBuilder springBeans = DependencyBuilder.create("org.springframework:spring-beans:${spring.version}");
-    deps.addDependency(springBeans);
+    deps.addDirectDependency(springBeans);
 
     // Add the Spring context dependency.
     DependencyBuilder springContext = DependencyBuilder.create("org.springframework:spring-context:${spring.version}");
-    deps.addDependency(springContext);
+    deps.addDirectDependency(springContext);
 
     // Add the support for the Spring context dependency.
     DependencyBuilder springContextSupport = DependencyBuilder.create("org.springframework:spring-context-support:${spring.version}");
-    deps.addDependency(springContextSupport); 
+    deps.addDirectDependency(springContextSupport); 
 
     // Add the support for the Spring core.
     DependencyBuilder springCore = DependencyBuilder.create("org.springframework:spring-core:${spring.version}");
-    deps.addDependency(springCore); 
+    deps.addDirectDependency(springCore); 
 
      // Add the support for the Spring expression dependency.
     DependencyBuilder springExpression = DependencyBuilder.create("org.springframework:spring-expression:${spring.version}");
-    deps.addDependency(springExpression);
+    deps.addDirectDependency(springExpression);
 
     // Add the support for the Spring web dependency.
     DependencyBuilder springWeb = DependencyBuilder.create("org.springframework:spring-web:${spring.version}");
-    deps.addDependency(springWeb);
+    deps.addDirectDependency(springWeb);
 
      // Add the support for the Spring MVC dependency.
     DependencyBuilder springMVC = DependencyBuilder.create("org.springframework:spring-webmvc:${spring.version}");
-    deps.addDependency(springMVC);
+    deps.addDirectDependency(springMVC);
     
     out.println("Added Spring " + springVersion + " dependencies to pom.xml.");
 }
@@ -279,7 +281,7 @@ public class SpringPlugin implements Plugin {
    * This command will be necessary to deploy the application, once we have created MVC controllers.
    */
   @SuppressWarnings("unused")
-@Command("web-mvc")
+  @Command("web-mvc")
   public void springMVC(PipeOut out, @Option(required=true, name="package", description="Package containing Spring controllers")
                           final String mvcPackage)
   {
@@ -438,7 +440,7 @@ public class SpringPlugin implements Plugin {
           JavaClass controller = generateController(entity, mvcPackage, daoPackage);
           Resource<?> resource = java.getJavaResource(controller);
           
-          if(!resource.exists()) {
+          if(resource.exists()) {
               java.saveJavaSource(controller);
               ShellMessages.success(out, "Generated Spring MVC Controller for [" + entity.getQualifiedName() + "]");
           }
@@ -568,12 +570,12 @@ public class SpringPlugin implements Plugin {
   public JavaClass generateController(JavaClass entity, String mvcPackage, String daoPackage)
   {      
       // Pass the entity, the target package, and the entity's DAO package to the template via a HashMap.
-      Map<Object, Object> context = new HashMap<Object, Object>();
+      Map<Object, Object> context = CollectionUtils.newHashMap();
       context.put("entity", entity);
       context.put("mvcPackage", mvcPackage);
       context.put("daoPackage", daoPackage);
       context.put("entityPlural", pluralOf(entity.getName().toLowerCase()));
-      String ccEntity = entity.getName().substring(0, 1).toLowerCase() + entity.getName().substring(1);
+      String ccEntity = StringUtils.decapitalize(entity.getName());
       context.put("ccEntity", ccEntity);
       
       // Create a Spring MVC controller for the entity from the template.

@@ -37,23 +37,23 @@ public class SpringSecurityPlugin implements Plugin
 	     * Add the Spring Security core dependency.
 	     */
 	    DependencyBuilder secCore = DependencyBuilder.create("org.springframework.security:spring-security-core:{spring.security.version}");
-	    deps.addDependency(secCore);
+	    deps.addDirectDependency(secCore);
 	    
 	    // Add the Spring Security config dependency.	    
 	    DependencyBuilder secConfig = DependencyBuilder.create("org.springframework.security:spring-security-config:{spring.security.version}");
-	    deps.addDependency(secConfig);
+	    deps.addDirectDependency(secConfig);
 	    
 	    // Add the Spring Security access-control list dependency, for domain object security.
 	    DependencyBuilder secAcl = DependencyBuilder.create("org.springframework.security:spring-security-acl:{spring.security.version}");
-	    deps.addDependency(secAcl);
+	    deps.addDirectDependency(secAcl);
 	    
 	    // Add the Spring Security web dependency.
 	    DependencyBuilder secWeb = DependencyBuilder.create("org.springframework.security:spring-security-web:{spring.security.version}");
-	    deps.addDependency(secWeb);
+	    deps.addDirectDependency(secWeb);
 	    
 	    // Add the Spring Security taglibs dependency.
 	    DependencyBuilder secTaglibs = DependencyBuilder.create("org.springframework.security:spring-security-taglibs:{spring.security.version}");
-	    deps.addDependency(secTaglibs);
+	    deps.addDirectDependency(secTaglibs);
 	    
         out.println("Configured the project to use Spring Security 3.1.0.CR2.");
 	}
