@@ -132,7 +132,7 @@ public class SpringPlugin implements Plugin {
     
     deps.setProperty("spring.version", springVersion);
     deps.setProperty("forge.api.version", "1.0.0.Beta3");
-    deps.setProperty("metawidget.version", "1.35-SNAPSHOT");
+    deps.setProperty("metawidget.version", "1.35.Beta1");
     
     // Add the Spring ASM dependency.
     DependencyBuilder springAsm = DependencyBuilder.create("org.springframework:spring-asm:${spring.version}");
@@ -180,7 +180,7 @@ public class SpringPlugin implements Plugin {
    * This command should perform the necessary steps to configure Spring persistence, e.g. an EntityManager JNDI look-up.
    */
   @SuppressWarnings("unused")
-@Command("persistence")
+  @Command("persistence")
   public void springPersistence(PipeOut out)
   {
       // Use a ResourceFacet object to write to a new XML file.
