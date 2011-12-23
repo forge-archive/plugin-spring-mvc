@@ -113,7 +113,7 @@ public class SpringPlugin implements Plugin {
    * For example, this command will add the necessary dependencies to the project's POM.xml file. 
    */
   @SetupCommand
-  public void setupProject(PipeOut out)
+  public void setup(PipeOut out)
   {  
     // Use the DependencyFacet interface to add each Spring dependency to the POM.
     DependencyFacet deps = project.getFacet(DependencyFacet.class);
@@ -127,10 +127,12 @@ public class SpringPlugin implements Plugin {
         factory.installSingleFacet(project, WebResourceFacet.class);
     }
 
-    // Use the Forge DependencyBuilder to add Maven dependencies to the POM. 
+    // Use the Forge DependencyFacet to add Maven dependencies to the POM.
     String springVersion = "3.1.0.RC1";
+    
     deps.setProperty("spring.version", springVersion);
     deps.setProperty("forge.api.version", "1.0.0.Beta3");
+    deps.setProperty("metawidget.version", "1.35-SNAPSHOT");
     
     // Add the Spring ASM dependency.
     DependencyBuilder springAsm = DependencyBuilder.create("org.springframework:spring-asm:${spring.version}");
@@ -148,21 +150,25 @@ public class SpringPlugin implements Plugin {
     DependencyBuilder springContextSupport = DependencyBuilder.create("org.springframework:spring-context-support:${spring.version}");
     deps.addDirectDependency(springContextSupport); 
 
-    // Add the support for the Spring core.
+    // Add the core.
     DependencyBuilder springCore = DependencyBuilder.create("org.springframework:spring-core:${spring.version}");
     deps.addDirectDependency(springCore); 
 
-     // Add the support for the Spring expression dependency.
+     // Add the Spring expression dependency.
     DependencyBuilder springExpression = DependencyBuilder.create("org.springframework:spring-expression:${spring.version}");
     deps.addDirectDependency(springExpression);
 
-    // Add the support for the Spring web dependency.
+    // Add the Spring web dependency.
     DependencyBuilder springWeb = DependencyBuilder.create("org.springframework:spring-web:${spring.version}");
     deps.addDirectDependency(springWeb);
 
-     // Add the support for the Spring MVC dependency.
+     // Add the Spring MVC dependency.
     DependencyBuilder springMVC = DependencyBuilder.create("org.springframework:spring-webmvc:${spring.version}");
     deps.addDirectDependency(springMVC);
+    
+    // Add the Metawidget dependency.
+    DependencyBuilder metawidget = DependencyBuilder.create("org.metawidget.modules:metawidget-all:${metawidget.version}");
+    deps.addDirectDependency(metawidget);
     
     out.println("Added Spring " + springVersion + " dependencies to pom.xml.");
 }
