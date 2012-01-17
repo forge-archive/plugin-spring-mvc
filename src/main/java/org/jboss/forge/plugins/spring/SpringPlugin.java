@@ -29,7 +29,6 @@ import org.jboss.forge.parser.JavaParser;
 import org.jboss.forge.parser.java.JavaClass;
 import org.jboss.forge.parser.java.JavaInterface;
 import org.jboss.forge.parser.java.JavaSource;
-import org.jboss.forge.parser.java.impl.JavaClassImpl;
 import org.jboss.forge.parser.xml.Node;
 import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.project.dependencies.DependencyBuilder;
@@ -556,7 +555,7 @@ public class SpringPlugin implements Plugin {
       
       // Create the DAO interface and its implementation from the specified templates.
       JavaInterface daoInterface = JavaParser.parse(JavaInterface.class, this.daoInterfaceTemplate.render(context));
-      JavaClassImpl daoImpl = JavaParser.parse(JavaClassImpl.class, this.daoImplentationTemplate.render(context));
+      JavaClass daoImpl = JavaParser.parse(JavaClass.class, this.daoImplentationTemplate.render(context));
 
       // Save the created interface and class implementation, so they can be referenced by the controller.
       java.saveJavaSource(daoInterface);

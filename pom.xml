@@ -7,6 +7,9 @@
   <version>1.0.0-SNAPSHOT</version>
   <properties>
     <forge.api.version>1.0.0-SNAPSHOT</forge.api.version>
+    <jvnet.version>0.7.0</jvnet.version>
+    <metawidget.version>1.40-SNAPSHOT</metawidget.version>
+    <mvel.version>2.0.11</mvel.version>
   </properties>
   <dependencies>
     <dependency>
@@ -38,6 +41,21 @@
       <artifactId>seam-render</artifactId>
       <version>1.0.0.Alpha6</version>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jvnet</groupId>
+      <artifactId>inflector</artifactId>
+      <version>${jvnet.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.metawidget.modules</groupId>
+      <artifactId>metawidget-core</artifactId>
+      <version>${metawidget.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mvel</groupId>
+      <artifactId>mvel2</artifactId>
+      <version>${mvel.version}</version>
     </dependency>
   </dependencies>
   <repositories>
