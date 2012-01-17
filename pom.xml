@@ -46,6 +46,8 @@
       <groupId>org.jvnet</groupId>
       <artifactId>inflector</artifactId>
       <version>${jvnet.version}</version>
+      <scope>system</scope>
+      <systemPath>${project.basedir}/src/main/resources/lib/inflector-0.7.0.jar</systemPath>
     </dependency>
     <dependency>
       <groupId>org.metawidget.modules</groupId>

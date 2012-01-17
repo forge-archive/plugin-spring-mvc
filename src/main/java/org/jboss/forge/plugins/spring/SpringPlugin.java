@@ -88,10 +88,6 @@ public class SpringPlugin implements Plugin {
   private CompiledTemplateResource listTemplate;
   private CompiledTemplateResource viewTemplate;
   
-  // MVEL 2.0 Test Templates
-  private static final String PROPERTIES_TEMPLATE = "org/jboss/forge/plugins/spring/mvc/properties.jsp";
-  private CompiledTemplateResource propertiesTemplate;
-  
   @Inject
   public SpringPlugin(TemplateCompiler compiler)
   {
@@ -526,11 +522,6 @@ public class SpringPlugin implements Plugin {
       // Compile the JSP template for the single entity view.
       if(this.viewTemplate == null) {
           viewTemplate = compiler.compile(VIEW_TEMPLATE);
-      }
-      
-      // Compile the MVEL 2.0 test template
-      if(this.propertiesTemplate == null) {
-          propertiesTemplate = compiler.compile(PROPERTIES_TEMPLATE);
       }
       
       return;
