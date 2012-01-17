@@ -6,12 +6,18 @@
   <artifactId>plugin-spring-mvc</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <properties>
-    <forge.api.version>1.0.0.Beta3</forge.api.version>
+    <forge.api.version>1.0.0-SNAPSHOT</forge.api.version>
   </properties>
   <dependencies>
     <dependency>
       <groupId>org.jboss.forge</groupId>
       <artifactId>forge-shell-api</artifactId>
+      <version>${forge.api.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.forge</groupId>
+      <artifactId>forge-javaee-api</artifactId>
       <version>${forge.api.version}</version>
       <scope>provided</scope>
     </dependency>
@@ -26,24 +32,6 @@
       <artifactId>forge-shell</artifactId>
       <version>${forge.api.version}</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.forge</groupId>
-      <artifactId>forge-javaee-impl</artifactId>
-      <version>${forge.api.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.forge</groupId>
-      <artifactId>forge-javaee-api</artifactId>
-      <version>1.0.0.Beta3</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.hibernate</groupId>
-      <artifactId>hibernate-entitymanager</artifactId>
-      <version>4.0.0.CR6</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
@@ -76,28 +64,11 @@
       <version>3.1.0.RC1</version>
     </dependency>
     <dependency>
-      <groupId>org.mvel</groupId>
-      <artifactId>mvel2</artifactId>
-      <version>2.0.11</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>org.jboss.seam.render</groupId>
       <artifactId>seam-render</artifactId>
-      <version>1.0.0.Alpha4</version>
+      <version>1.0.0.Alpha6</version>
       <scope>provided</scope>
-      <exclusions>
-      	<exclusion>
-      		<groupId>org.jboss.seam.solder</groupId>
-      		<artifactId>seam-solder</artifactId>
-      	</exclusion>
-      </exclusions>
     </dependency>
-<!--     <dependency>
-    	<groupId>javax.enterprise</groupId>
-    	<artifactId>cdi-api</artifactId>
-    	<version>1.0-SP1</version>
-    </dependency> -->
   </dependencies>
   <repositories>
     <repository>
