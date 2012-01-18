@@ -1,4 +1,4 @@
-package org.jboss.forge.plugins.spring;
+package org.jboss.forge.spring;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;

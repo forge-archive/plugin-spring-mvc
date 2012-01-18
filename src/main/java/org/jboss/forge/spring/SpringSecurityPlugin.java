@@ -1,4 +1,4 @@
-package org.jboss.forge.plugins.spring;
+package org.jboss.forge.spring;
 
 import org.jboss.forge.project.Project;
 import org.jboss.forge.project.dependencies.DependencyBuilder;
