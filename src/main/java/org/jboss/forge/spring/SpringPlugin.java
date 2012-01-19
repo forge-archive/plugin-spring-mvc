@@ -2,7 +2,6 @@ package org.jboss.forge.spring;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -52,7 +51,7 @@ import org.metawidget.util.simple.StringUtils;
 /**
  * Forge plugin to create a simple Spring MVC web application.
  * 
- * @author <a href="mailto:rbradley@redhat.com">Ryan Bradley</a>
+ * @author <a href="mailto:ryan.k.bradley@gmail.com">Ryan Bradley</a>
  *
  */
 
@@ -447,7 +446,7 @@ public class SpringPlugin implements Plugin {
           @Option(flagOnly = true, name = "overwrite") boolean overwrite)
           throws FileNotFoundException
   {
-      JavaSourceFacet java = this.project.getFacet(JavaSourceFacet.class);
+      this.project.getFacet(JavaSourceFacet.class);
       MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
       WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
       
@@ -493,15 +492,8 @@ public class SpringPlugin implements Plugin {
           
           // Call to a function which creates the Spring MVC controller from the given entity.
           
-          JavaClass controller = generateController(entity, mvcPackage, daoPackage);
-          Resource<?> resource = java.getJavaResource(controller);
-          
-          if(resource.exists()) {
-              java.saveJavaSource(controller);
-              ShellMessages.success(out, "Generated Spring MVC Controller for [" + entity.getQualifiedName() + "]");
-          }
-      }
-      
+          generateController(entity, mvcPackage, daoPackage, out);
+      }      
   }
   
   /**
@@ -606,19 +598,24 @@ public class SpringPlugin implements Plugin {
       
       // Pass the entity itself and the target package to the templates via a HashMap object.
       
-      Map<Object, Object> context = new HashMap<Object, Object>();
+      Map<Object, Object> context = CollectionUtils.newHashMap();
       context.put("entity", entity);
       context.put("daoPackage", daoPackage);
       
       // Create the DAO interface and its implementation from the specified templates.
       
-      JavaInterface daoInterface = JavaParser.parse(JavaInterface.class, this.daoInterfaceTemplate.render(context));
-      JavaClass daoImpl = JavaParser.parse(JavaClass.class, this.daoImplentationTemplate.render(context));
+      try {
+          JavaInterface daoInterface = JavaParser.parse(JavaInterface.class, this.daoInterfaceTemplate.render(context));
+          JavaClass daoImpl = JavaParser.parse(JavaClass.class, this.daoImplentationTemplate.render(context));
 
-      // Save the created interface and class implementation, so they can be referenced by the controller.
-      
-      java.saveJavaSource(daoInterface);
-      java.saveJavaSource(daoImpl);
+          // Save the created interface and class implementation, so they can be referenced by the controller.
+
+          java.saveJavaSource(daoInterface);
+          java.saveJavaSource(daoImpl);
+      }
+      catch (Exception e) {
+          throw new RuntimeException( "Error generating DAO interface/implementation for " + entity.getName(), e);
+      }
       
       return;
   }
@@ -630,27 +627,35 @@ public class SpringPlugin implements Plugin {
    * found in 'mvcPackage'.
    * 
    * NOTE: The template for the controller can be found in src/main/resources/org/jboss/forge/plugins/spring/mvc
+   * @throws FileNotFoundException 
    */
   
-  public JavaClass generateController(JavaClass entity, String mvcPackage, String daoPackage)
-  {      
+  public void generateController(JavaClass entity, String mvcPackage,
+          String daoPackage, PipeOut out)
+  {
+      JavaSourceFacet java = this.project.getFacet(JavaSourceFacet.class);
+      
       // Pass the entity, the target package, and the entity's DAO package to the template via a HashMap.
 	  
       Map<Object, Object> context = CollectionUtils.newHashMap();
       context.put("entity", entity);
       context.put("mvcPackage", mvcPackage);
       context.put("daoPackage", daoPackage);
-      context.put("entityPlural", pluralOf(entity.getName().toLowerCase()));
+      String entityName = entity.getName();
+      context.put("entityPlural", pluralOf(entityName.toLowerCase()));
       String ccEntity = StringUtils.decapitalize(entity.getName());
       context.put("ccEntity", ccEntity);
       
       // Create a Spring MVC controller for the entity from the template.
       
-      JavaClass entityController = JavaParser.parse(JavaClass.class, this.springControllerTemplate.render(context));
+      try {
+          JavaClass entityController = JavaParser.parse(JavaClass.class, this.springControllerTemplate.render(context));
+          java.saveJavaSource(entityController);
+          ShellMessages.success(out, "Generated Spring MVC Controller for [" + entity.getQualifiedName() + "]");
+      }
       
-      // Return the controller to the function for the 'mvc-from'entity' command.
-      
-      return entityController;
-  }
-  
+      catch (Exception e) {
+          throw new RuntimeException("Error generating Spring MVC controller for " + entity.getName(), e);
+      }
+  }  
 }
