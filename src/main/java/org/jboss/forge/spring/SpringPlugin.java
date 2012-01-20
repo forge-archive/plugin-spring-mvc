@@ -57,7 +57,7 @@ import org.metawidget.util.simple.StringUtils;
 
 @Alias("spring")
 public class SpringPlugin implements Plugin {
-  
+
   @Inject
   @Current
   private Resource<?> currentResource;
@@ -308,8 +308,7 @@ public class SpringPlugin implements Plugin {
   
   @SuppressWarnings("unused")
   @Command("web-mvc")
-  public void springMVC(PipeOut out, @Option(required=true, name="package", description="Package containing Spring controllers")
-                          final String mvcPackage)
+  public void springMVC(PipeOut out)
   {
       // Use a ResourceFacet object to retrieve and update XML context files.
 
@@ -323,6 +322,7 @@ public class SpringPlugin implements Plugin {
 
       MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
       String projectName = meta.getProjectName();
+      String mvcPackage = meta.getTopLevelPackage() + ".mvc";
       
       /*
        * Ensure that the META-INF/applicationContext.xml file exists.
@@ -641,8 +641,7 @@ public class SpringPlugin implements Plugin {
       context.put("entity", entity);
       context.put("mvcPackage", mvcPackage);
       context.put("daoPackage", daoPackage);
-      String entityName = entity.getName();
-      context.put("entityPlural", pluralOf(entityName.toLowerCase()));
+      context.put("entityPlural", entity.getName().toLowerCase());
       String ccEntity = StringUtils.decapitalize(entity.getName());
       context.put("ccEntity", ccEntity);
       
