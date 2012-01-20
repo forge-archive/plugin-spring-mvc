@@ -7,11 +7,16 @@
   <version>1.0.0-SNAPSHOT</version>
   <properties>
     <forge.api.version>1.0.0-SNAPSHOT</forge.api.version>
-    <jvnet.version>0.7.0</jvnet.version>
-    <metawidget.version>1.40-SNAPSHOT</metawidget.version>
+    <inflector.version>0.7.0</inflector.version>
+    <metawidget.version>2.0-SNAPSHOT</metawidget.version>
     <mvel.version>2.0.11</mvel.version>
   </properties>
   <dependencies>
+    <dependency>
+      <groupId>net.java.dev.inflector</groupId>
+      <artifactId>inflector</artifactId>
+      <version>${inflector.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.jboss.forge</groupId>
       <artifactId>forge-shell-api</artifactId>
@@ -41,13 +46,6 @@
       <artifactId>seam-render</artifactId>
       <version>1.0.0.Alpha6</version>
       <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jvnet</groupId>
-      <artifactId>inflector</artifactId>
-      <version>${jvnet.version}</version>
-      <scope>system</scope>
-      <systemPath>${basedir}/src/main/resources/lib/inflector-0.7.0.jar</systemPath>
     </dependency>
     <dependency>
       <groupId>org.metawidget.modules</groupId>

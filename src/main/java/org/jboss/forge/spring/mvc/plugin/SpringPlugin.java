@@ -1,4 +1,26 @@
-package org.jboss.forge.spring;
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2011, Red Hat, Inc., and individual contributors
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+package org.jboss.forge.spring.mvc.plugin;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -12,10 +34,10 @@ import org.jboss.forge.shell.ShellMessages;
 import org.jboss.forge.shell.plugins.Plugin;
 import org.jboss.forge.shell.plugins.Alias;
 
-import static org.jvnet.inflector.Noun.pluralOf;
-
 import javax.inject.Inject;
 import javax.persistence.Entity;
+
+import static org.jvnet.inflector.Noun.pluralOf;
 
 import org.jboss.forge.shell.plugins.Current;
 import org.jboss.forge.shell.plugins.Option;
@@ -641,7 +663,7 @@ public class SpringPlugin implements Plugin {
       context.put("entity", entity);
       context.put("mvcPackage", mvcPackage);
       context.put("daoPackage", daoPackage);
-      context.put("entityPlural", entity.getName().toLowerCase());
+      context.put("entityPlural", pluralOf(entity.getName().toLowerCase()));
       String ccEntity = StringUtils.decapitalize(entity.getName());
       context.put("ccEntity", ccEntity);
       
