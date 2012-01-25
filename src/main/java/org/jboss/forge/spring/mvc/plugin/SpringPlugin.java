@@ -44,6 +44,7 @@ import org.jboss.forge.shell.plugins.Option;
 import org.jboss.forge.shell.plugins.PipeOut;
 import org.jboss.forge.shell.plugins.DefaultCommand;
 import org.jboss.forge.shell.plugins.Command;
+import org.jboss.forge.shell.plugins.RequiresFacet;
 import org.jboss.forge.shell.plugins.SetupCommand;
 import org.jboss.forge.spec.javaee.PersistenceFacet;
 import org.jboss.forge.parser.JavaParser;
@@ -78,6 +79,13 @@ import org.metawidget.util.simple.StringUtils;
  */
 
 @Alias("spring")
+@RequiresFacet({ DependencyFacet.class,
+        PackagingFacet.class,
+        ResourceFacet.class,
+        WebResourceFacet.class,
+        MetadataFacet.class,
+        PersistenceFacet.class,
+        JavaSourceFacet.class })
 public class SpringPlugin implements Plugin {
 
   @Inject
@@ -468,7 +476,6 @@ public class SpringPlugin implements Plugin {
           @Option(flagOnly = true, name = "overwrite") boolean overwrite)
           throws FileNotFoundException
   {
-      this.project.getFacet(JavaSourceFacet.class);
       MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
       WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
       
@@ -678,5 +685,5 @@ public class SpringPlugin implements Plugin {
       catch (Exception e) {
           throw new RuntimeException("Error generating Spring MVC controller for " + entity.getName(), e);
       }
-  }  
+  }
 }
