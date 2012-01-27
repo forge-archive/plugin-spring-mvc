@@ -102,12 +102,9 @@ public class SpringPlugin implements Plugin {
   
   // Members for the 'mvc-from-entity' command.
   
-  private static final String SPRING_CONTROLLER_TEMPLATE = "org/jboss/forge/plugins/spring/mvc/SpringControllerTemplate.jv";
-  private static final String DAO_INTERFACE_TEMPLATE = "org/jboss/forge/plugins/spring/repo/DaoInterfaceTemplate.jv";
-  private static final String DAO_IMPLEMENTATION_TEMPLATE = "org/jboss/forge/plugins/spring/repo/DaoImplementationTemplate.jv";
-  private static final String CREATE_TEMPLATE = "org/jboss/forge/plugins/spring/mvc/create.jsp";
-  private static final String LIST_TEMPLATE = "org/jboss/forge/plugins/spring/mvc/list.jsp";
-  private static final String VIEW_TEMPLATE = "org/jboss/forge/plugins/spring/mvc/create.jsp";
+  private static final String SPRING_CONTROLLER_TEMPLATE = "spring/mvc/SpringControllerTemplate.jv";
+  private static final String DAO_INTERFACE_TEMPLATE = "spring/repo/DaoInterfaceTemplate.jv";
+  private static final String DAO_IMPLEMENTATION_TEMPLATE = "spring/repo/DaoImplementationTemplate.jv";
 
   private TemplateCompiler compiler;
   private TemplateResolver<ClassLoader> resolver;
@@ -115,9 +112,6 @@ public class SpringPlugin implements Plugin {
   private CompiledTemplateResource springControllerTemplate;
   private CompiledTemplateResource daoInterfaceTemplate;
   private CompiledTemplateResource daoImplentationTemplate;
-  private CompiledTemplateResource createTemplate;
-  private CompiledTemplateResource listTemplate;
-  private CompiledTemplateResource viewTemplate;
   
   @Inject
   public SpringPlugin(TemplateCompiler compiler)
@@ -590,25 +584,7 @@ public class SpringPlugin implements Plugin {
       if(this.springControllerTemplate == null) {
           springControllerTemplate = compiler.compile(SPRING_CONTROLLER_TEMPLATE);
       }
-      
-      // Compile the JSP template for the create view.
-      
-      if(this.createTemplate == null) {
-          createTemplate = compiler.compile(CREATE_TEMPLATE);
-      }
-      
-      // Compile the JSP template for the list view.
-      
-      if(this.listTemplate == null) {
-          listTemplate = compiler.compile(LIST_TEMPLATE);
-      }
-      
-      // Compile the JSP template for the single entity view.
-      
-      if(this.viewTemplate == null) {
-          viewTemplate = compiler.compile(VIEW_TEMPLATE);
-      }
-      
+            
       return;
   }
   
