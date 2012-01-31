@@ -48,7 +48,7 @@ public class @{entity.getName()}Controller
 		return entities;
 	}
 	
-	@RequestMapping(value="/{id}/delete", method=RequestMethod.POST)
+	@RequestMapping(value="/{id}/remove", method=RequestMethod.POST)
 	public String removeEntity(@PathVariable("id") Long id)
 	{
 		@{ccEntity}Dao.deleteById(id);
@@ -63,7 +63,7 @@ public class @{entity.getName()}Controller
 		return "viewEntity";
 	}
 	
-	@RequestMapping(method=RequestMethod.POST)
+	@RequestMapping(value="/create", method=RequestMethod.POST)
 	public String create(@{entity.getName()} entity)
 	{
 		@{ccEntity}Dao.update(entity);
