@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+<metawidget xmlns="http://metawidget.org"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:processor="java:org.metawidget.statically.faces.component.widgetprocessor"
+	xsi:schemaLocation="http://metawidget.org http://metawidget.org/xsd/metawidget-1.0.xsd
+						java:org.metawidget.statically.faces.component.html http://metawidget.org/xsd/org.metawidget.statically.faces.component.html-1.0.xsd
+						java:org.metawidget.inspector.composite http://metawidget.org/xsd/org.metawidget.inspector.composite-1.0.xsd"
+	version="1.0">
+
+	<!-- metawidget-search.xml is used to generate the search fields -->
+	
+	<staticSpringMetawidget xmlns="java:org.metawidget.statically.spring">
+	
+		<inspector>
+			<compositeInspector xmlns="java:org.metawidget.inspector.composite" config="CompositeInspectorConfig">
+				<inspectors>
+					<array>
+						<propertyTypeInspector xmlns="java:org.metawidget.inspector.propertytype" config="org.metawidget.inspector.impl.BaseObjectInspectorConfig">
+							<propertyStyle>
+								<forgePropertyStyle id="forgePropertyStyle" xmlns="java:org.jboss.forge.spring.metawidget.inspector.propertystyle" config="ForgePropertyStyleConfig">
+									<project>
+										<forgeProject/>
+									</project>
+								</forgePropertyStyle>
+							</propertyStyle>
+						</propertyTypeInspector>
+						<forgeInspector xmlns="java:org.jboss.forge.spring.metawidget.inspector" config="org.metawidget.inspector.impl.BaseObjectInspectorConfig">
+							<propertyStyle>
+								<forgePropertyStyle refId="forgePropertyStyle"/>
+							</propertyStyle>
+						</forgeInspector>
+						<jpaInspector xmlns="java:org.metawidget.inspector.jpa" config="JpaInspectorConfig">
+							<propertyStyle>
+								<forgePropertyStyle refId="forgePropertyStyle"/>
+							</propertyStyle>
+						</jpaInspector>
+						<beanValidationInspector xmlns="java:org.metawidget.inspector.beanvalidation" config="org.metawidget.inspector.impl.BaseObjectInspectorConfig">
+							<propertyStyle>
+								<forgePropertyStyle refId="forgePropertyStyle"/>
+							</propertyStyle>
+						</beanValidationInspector>
+					</array>
+				</inspectors>
+			</compositeInspector>
+		</inspector>
+		
+		<widgetBuilder>
+			<compositeWidgetBuilder xmlns="java:org.metawidget.widgetbuilder.composite" config="CompositeWidgetBuilderConfig">
+				<widgetBuilders>
+					<array>
+						<entityWidgetBuilder xmlns="java:org.jboss.forge.spring.metawidget.widgetbuilder"/>
+						<springWidgetBuilder xmlns="java:org.metawidget.statically.spring.widgetbuilder"/>
+						<htmlWidgetBuilder xmlns="java:org.metawidget.statically.faces.component.html.widgetbuilder"/>
+					</array>
+				</widgetBuilders>
+			</compositeWidgetBuilder>
+		</widgetBuilder>
+
+		<widgetProcessors>
+			<array>
+				<!-- FORGE-468: <requiredAttributeProcessor xmlns="java:org.metawidget.statically.faces.component.widgetprocessor"/> -->
+				<cssStyleProcessor xmlns="java:org.metawidget.statically.spring.widgetprocessor"/>
+				<hiddenFieldProcessor xmlns="java:org.metawidget.statically.spring.widgetprocessor"/>
+				<pathProcessor xmlns="java:org.metawidget.statically.spring.widgetprocessor"/>
+				<unsearchableWidgetProcessor xmlns="java:org.jboss.forge.scaffold.faces.metawidget.widgetprocessor"/>
+			</array>
+		</widgetProcessors>
+
+		<layout>
+			<springTableLayout xmlns="java:org.metawidget.statically.spring.layout" config="HtmlTableLayoutConfig">
+				<columnStyleClasses>
+					<array>
+						<string>label</string>
+						<string>component</string>
+						<string>required</string>
+					</array>
+				</columnStyleClasses>
+				<messageStyleClass>
+					<string>error</string>
+				</messageStyleClass>
+			</htmlPanelGridLayout>
+		</layout>
+		
+	</staticSpringMetawidget>			
+
+</metawidget>
