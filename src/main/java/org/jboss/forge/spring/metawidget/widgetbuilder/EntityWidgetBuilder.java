@@ -45,6 +45,8 @@ import org.metawidget.statically.jsp.html.widgetbuilder.HtmlTableRow;
 import org.metawidget.statically.jsp.html.widgetbuilder.HtmlWidgetBuilder;
 import org.metawidget.statically.jsp.html.widgetprocessor.StandardBindingProcessor;
 import org.metawidget.statically.spring.StaticSpringMetawidget;
+import org.metawidget.statically.spring.widgetbuilder.FormOptionTag;
+import org.metawidget.statically.spring.widgetbuilder.FormOptionsTag;
 import org.metawidget.statically.spring.widgetbuilder.FormSelectTag;
 import org.metawidget.util.ClassUtils;
 import org.metawidget.util.CollectionUtils;
@@ -215,17 +217,16 @@ public class EntityWidgetBuilder
         {
             // Create select menu
             
-            FormSelectTag select = new FormSelectTag();
-            
             String simpleComponentType = ClassUtils.getSimpleName(componentType);
-            String entity = StringUtils.decapitalize(simpleComponentType);
+            String controllerName = StringUtils.decapitalize(simpleComponentType);
             Map<String, String> emptyAttributes = CollectionUtils.newHashMap();
-            
+            FormSelectTag select = createFormSelectTag(controllerName, emptyAttributes);
+            row.getChildren().add(select);
         }
         
         return row;
     }
-    
+
     /**
      * Overridden to add a 'delete' column.
      */
@@ -315,5 +316,31 @@ public class EntityWidgetBuilder
             
             // Ignore bi-directional case
         }
+    }
+    
+    protected FormSelectTag createFormSelectTag(String expression, Map<String, String> attributes) {
+
+        // Write the new SELECT tag
+        
+        FormSelectTag select = new FormSelectTag();
+        
+        // Empty option, as required
+        
+        if(WidgetBuilderUtils.needsEmptyLookupItem(attributes))
+        {
+            FormOptionTag emptyOption = new FormOptionTag();
+            emptyOption.putAttribute("value", "");
+            
+            // Add the empty option to the SELECT tag
+            
+            select.getChildren().add(emptyOption);
+        }
+        
+        // Options tag
+        
+        FormOptionsTag options = new FormOptionsTag();
+        options.putAttribute("items", expression);
+        
+        return select;
     }
 }
