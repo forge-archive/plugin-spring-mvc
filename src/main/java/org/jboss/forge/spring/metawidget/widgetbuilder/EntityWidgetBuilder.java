@@ -221,6 +221,7 @@ public class EntityWidgetBuilder
             String controllerName = StringUtils.decapitalize(simpleComponentType);
             Map<String, String> emptyAttributes = CollectionUtils.newHashMap();
             FormSelectTag select = createFormSelectTag(controllerName, emptyAttributes);
+            select.putAttribute("multiple", "multiple");
             row.getChildren().add(select);
         }
         

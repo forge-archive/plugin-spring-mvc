@@ -22,6 +22,11 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+	  <groupId>org.jboss.forge</groupId>
+	  <artifactId>forge-scaffold-api</artifactId>
+	  <version>${forge.api.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.jboss.forge</groupId>
       <artifactId>forge-test-harness</artifactId>
       <version>${forge.api.version}</version>

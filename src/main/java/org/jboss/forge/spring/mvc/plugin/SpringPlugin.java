@@ -91,7 +91,7 @@ public class SpringPlugin implements Plugin {
   @Inject
   @Current
   private Resource<?> currentResource;
-    
+
   @Inject
   private Project project;
 
@@ -111,7 +111,7 @@ public class SpringPlugin implements Plugin {
   
   private CompiledTemplateResource springControllerTemplate;
   private CompiledTemplateResource daoInterfaceTemplate;
-  private CompiledTemplateResource daoImplentationTemplate;
+  private CompiledTemplateResource daoImplementationTemplate;
   
   @Inject
   public SpringPlugin(TemplateCompiler compiler)
@@ -575,8 +575,8 @@ public class SpringPlugin implements Plugin {
       
       // Compile the DAO interface implementation Java template.
       
-      if(this.daoImplentationTemplate == null) {
-          daoImplentationTemplate = compiler.compile(DAO_IMPLEMENTATION_TEMPLATE);
+      if(this.daoImplementationTemplate == null) {
+          daoImplementationTemplate = compiler.compile(DAO_IMPLEMENTATION_TEMPLATE);
       }
       
       // Compile the Spring MVC controller Java template.
@@ -611,7 +611,7 @@ public class SpringPlugin implements Plugin {
       
       try {
           JavaInterface daoInterface = JavaParser.parse(JavaInterface.class, this.daoInterfaceTemplate.render(context));
-          JavaClass daoImpl = JavaParser.parse(JavaClass.class, this.daoImplentationTemplate.render(context));
+          JavaClass daoImpl = JavaParser.parse(JavaClass.class, this.daoImplementationTemplate.render(context));
 
           // Save the created interface and class implementation, so they can be referenced by the controller.
 
