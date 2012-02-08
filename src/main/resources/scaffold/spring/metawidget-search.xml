@@ -78,7 +78,7 @@
 				<messageStyleClass>
 					<string>error</string>
 				</messageStyleClass>
-			</htmlPanelGridLayout>
+			</springTableLayout>
 		</layout>
 		
 	</staticSpringMetawidget>			
