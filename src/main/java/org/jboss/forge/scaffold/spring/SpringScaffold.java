@@ -38,10 +38,13 @@ import javax.inject.Inject;
 import org.jboss.forge.parser.JavaParser;
 import org.jboss.forge.parser.java.JavaClass;
 import org.jboss.forge.parser.java.JavaInterface;
+import org.jboss.forge.parser.xml.Node;
+import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.project.Project;
 import org.jboss.forge.project.facets.BaseFacet;
 import org.jboss.forge.project.facets.JavaSourceFacet;
 import org.jboss.forge.project.facets.MetadataFacet;
+import org.jboss.forge.project.facets.ResourceFacet;
 import org.jboss.forge.project.facets.WebResourceFacet;
 import org.jboss.forge.project.facets.events.InstallFacets;
 import org.jboss.forge.resources.FileResource;
@@ -65,7 +68,11 @@ import org.metawidget.statically.javacode.StaticJavaMetawidget;
 import org.metawidget.statically.jsp.html.widgetbuilder.HtmlTag;
 import org.metawidget.statically.spring.StaticSpringMetawidget;
 import org.metawidget.util.CollectionUtils;
+import org.metawidget.util.XmlUtils;
 import org.metawidget.util.simple.StringUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 
 /**
  * Facet to generate a UI using the Spring JSP taglib.
@@ -167,6 +174,19 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     public List<Resource<?>> setup(Resource<?> template, boolean overwrite)
     {
         List<Resource<?>> resources = generateIndex(template, overwrite);
+        resources.add(updateApplicationContext());
+        resources.add(setupMVCContext());
+
+        Resource<?> webXML = setupWebXML();
+
+        if (!webXML.exists())
+        {
+            // TODO Suggest executing 'spring persistence'
+            resources.clear();
+            return resources;
+        }
+
+        resources.add(webXML);
 
         return resources;
     }
@@ -214,6 +234,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         try
         {
             JavaSourceFacet java = this.project.getFacet(JavaSourceFacet.class);
+            WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
             MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
             
             loadTemplates();
@@ -236,6 +257,35 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
             // Set context for view generation
 
             context = getTemplateContext(template);
+            context.put("ccEntity", ccEntity);
+            context.put("entityName", StringUtils.uncamelCase(entity.getName()));
+
+            // Prepare entity metawidget
+
+            this.entityMetawidget.setValue(ccEntity);
+            this.entityMetawidget.setPath(entity.getQualifiedName());
+            this.entityMetawidget.setReadOnly(false);
+
+            // Generate create
+
+            writeEntityMetawidget(context, this.createTemplateEntityMetawidgetIndent, this.createTemplateNamespaces);
+
+            result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("scaffold/" + ccEntity + "/create.xhtml"),
+                    this.createTemplate.render(context), overwrite));
+
+            // Generate view
+
+            this.entityMetawidget.setReadOnly(true);
+            writeEntityMetawidget(context, this.viewTemplateEntityMetawidgetIndent, this.viewTemplateNamespaces);
+
+            result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("scaffod/" + ccEntity + "/view.xhtml"),
+                    this.viewTemplate.render(context), overwrite));
+
+            // Generate search - how does it differ between JSF and Spring?
+
+            // Generate navigation
+
+            result.add(generateNavigation(overwrite));
 
             JavaInterface daoInterface = JavaParser.parse(JavaInterface.class, this.daoInterfaceTemplate.render(context));
             JavaClass daoImplementation = JavaParser.parse(JavaClass.class, this.daoImplementationTemplate.render(context));
@@ -260,7 +310,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
             
         } catch (Exception e)
         {
-            throw new RuntimeException("Error generating Spring controller, or backing DAO, for " + entity.getName(), e);
+            throw new RuntimeException("Error generating Spring scaffolding: " + entity.getName(), e);
         }
 
         return result;
@@ -271,9 +321,10 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     public boolean install()
     {
 
-        if(!(this.project.hasFacet(WebResourceFacet.class) && this.project.hasFacet(PersistenceFacet.class)))
+        if(!(this.project.hasFacet(WebResourceFacet.class) && this.project.hasFacet(PersistenceFacet.class)
+                && this.project.hasFacet(SpringFacet.class)))
         {
-            this.install.fire(new InstallFacets(WebResourceFacet.class, PersistenceFacet.class));
+            this.install.fire(new InstallFacets(WebResourceFacet.class, PersistenceFacet.class, SpringFacet.class));
         }
         
         return true;
@@ -302,21 +353,15 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("index.html"),
                 getClass().getResourceAsStream("/scaffold/spring/index.html"), overwrite));
 
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("index.xhtml"), 
-                getClass().getResourceAsStream("/scaffold/spring/index.xhtml"), overwrite));
+        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("index.xhtml"),
+                this.indexTemplate.render(context), overwrite));
 
         result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("error.xhmtl"),
-                getClass().getResourceAsStream("/scaffold/spring/error.xhtml"), overwrite));
+                this.errorTemplate.render(context), overwrite));
 
         // Static resources
 
         return result;
-    }
-
-    @Override
-    public TemplateStrategy getTemplateStrategy()
-    {
-        return new SpringTemplateStrategy(this.project);
     }
 
     @Override
@@ -351,35 +396,208 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     @Override
     public AccessStrategy getAccessStrategy()
     {
-        // TODO Auto-generated method stub
-        return null;
+        return new SpringAccessStrategy(this.project);
+    }
+
+    @Override
+    public TemplateStrategy getTemplateStrategy()
+    {
+        return new SpringTemplateStrategy(this.project);
     }
 
     //
     // Protected methods (nothing is private, to help sub-classing)
     //
 
+    protected Resource<?> updateApplicationContext()
+    {
+        ResourceFacet resources =  this.project.getFacet(ResourceFacet.class);
+        MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
+
+        FileResource<?> applicationContext = resources.getResource("META-INF/applicationContext.xml");
+        Node beans = XMLParser.parse(applicationContext.getResourceInputStream());
+        beans.attribute("xmlns:context", "http://www.springframework.org/schema/context");
+        
+        // Use a <context:component-scan> to create beans for all DAO interface implementations, annotated as @Repository
+        
+        Node componentScan = new Node("context:component-scan", beans);
+        componentScan.attribute("base-package", meta.getTopLevelPackage() + ".repo");
+        
+        // Include the spring-context schema file, so that the <context> namespace can be used in web.xml.
+        
+        String schemaLoc = beans.getAttribute("xsi:schemaLocation");
+        schemaLoc += " http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd";
+        beans.attribute("xsi:schemaLocation", schemaLoc);
+        
+        // Save the updated applicationContext.xml file to 'src/main/resources/META-INF/applicationContext.xml'.
+        
+        String file = XMLParser.toXMLString(beans);
+        resources.createResource(file.toCharArray(), "META-INF/applicationContext.xml");
+        
+        return resources.getResource("META-INF/applicationContext.xml");
+    }
+
+    @SuppressWarnings("unused")
+    protected Resource<?> setupMVCContext()
+    {
+        WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
+        MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
+
+        // Create an mvc-context.xml file for the web application.
+
+        Node beans = new Node("beans");
+
+        // Add the appropriate schema references.
+
+        beans.attribute("xmlns", "http://www.springframework.org/schema/beans");
+        beans.attribute(XMLNS_PREFIX + "xsi", "http://www.w3.org/2001/XMLSchema-instance");
+        beans.attribute(XMLNS_PREFIX + "mvc", "http://www.springframework.org/schema/mvc");
+        beans.attribute(XMLNS_PREFIX + "context", "http://www.springframework.org/schema/context");
+
+        String schemaLoc = "http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd";
+        schemaLoc += " http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd";
+        schemaLoc += " http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd";
+        beans.attribute("xsi:schemaLocation", schemaLoc);
+
+        // Scan the given package for any classes with MVC annotations.
+
+        String mvcPackage = meta.getTopLevelPackage() + ".mvc";
+        Node contextScan = new Node("context:component-scan", beans);
+        contextScan.attribute("base-package", mvcPackage);
+
+        // Indicate the use of annotations for Spring MVC, such as @Controller or @RequestMapping
+        
+        Node mvcAnnotationDriven = new Node("mvc:annotation-driven", beans);
+
+        // Use the Spring MVC default servlet handler
+        
+        Node mvcDefaultServlet = new Node("mvc:default-servlet-handler", beans);
+
+        // Unnecessary if there is no static content, but harmless.
+
+        Node mvcStaticContent = new Node("mvc:resources", beans);
+        mvcStaticContent.attribute("mapping", "/static/**");
+        mvcStaticContent.attribute("location", "/");
+
+        // Write the mvc-context file to 'src/main/webapp/WEB-INF/{lowercase-project-name}-mvc-context.xml'.
+
+        String mvcContextFile = XMLParser.toXMLString(beans);
+        String filename = "WEB-INF" + meta.getProjectName().toLowerCase().replace(' ', '-') + "-mvc-context.xml";
+        web.createWebResource(mvcContextFile.toCharArray(), filename);
+        
+        return web.getWebResource(filename);
+    }
+
+    protected Resource<?> setupWebXML()
+    {
+        WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
+        MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
+
+        String projectName = meta.getProjectName();
+        String filename = "WEB-INF" + projectName.toLowerCase().replace(' ', '-') + "-mvc-context.xml";
+
+        if(!web.getWebResource("WEB-INF/web.xml").exists())
+        {
+            // TODO Should throw an exception, instructing user to execute 'spring persistence'.
+            return null;
+        }
+
+        FileResource<?> webXML = web.getWebResource("WEB-INF/web.xml");
+        Node webapp = XMLParser.parse(webXML.getResourceInputStream());
+
+        // Define a dispatcher servlet, named after the project.
+
+        Node servlet = new Node("servlet", webapp);
+        String servName = projectName.replace(' ', (char) 0);
+        Node servletName = new Node("servlet-name", servlet);
+        servletName.text(servName);
+        Node servletClass = new Node("servlet-class", servlet);
+        servletClass.text("org.springframework.web.servlet.DispatcherServlet");
+        Node initParam = new Node("init-param", servlet);
+        Node paramName = new Node("param-name", initParam);
+        paramName.text("contextConfigLocation");
+        Node paramValue = new Node("param-value", initParam);
+        paramValue.text(filename);
+        Node loadOnStartup = new Node("load-on-startup", servlet);
+        loadOnStartup.text(1);
+
+        // Map the servlet to the '/' URL.
+
+        Node servletMapping = new Node("servlet-mapping", webapp);
+        Node servletNameRepeat = new Node("servlet-name", servletMapping);
+        servletNameRepeat.text(projectName.replace(' ', (char) 0));
+        Node url = new Node("url-pattern", servletMapping);
+        url.text('/');
+
+        // Save the updated web.xml file to 'src/main/webapp/WEB-INF/web.xml'.
+
+        String file = XMLParser.toXMLString(webapp);
+        web.createWebResource(file.toCharArray(), "WEB-INF/web.xml");
+        
+        return web.getWebResource("WEB-INF/web.xml");
+    }
+
     protected void loadTemplates()
     {
         // Compile the DAO interface Java template.
         
-        if(this.daoInterfaceTemplate == null) {
-            daoInterfaceTemplate = compiler.compile(DAO_INTERFACE_TEMPLATE);
+        if (this.daoInterfaceTemplate == null) {
+            this.daoInterfaceTemplate = compiler.compile(DAO_INTERFACE_TEMPLATE);
         }
         
         // Compile the DAO interface implementation Java template.
         
-        if(this.daoImplementationTemplate == null) {
-            daoImplementationTemplate = compiler.compile(DAO_IMPLEMENTATION_TEMPLATE);
+        if (this.daoImplementationTemplate == null) {
+            this.daoImplementationTemplate = compiler.compile(DAO_IMPLEMENTATION_TEMPLATE);
         }
         
         // Compile the Spring MVC controller Java template.
         
-        if(this.springControllerTemplate == null) {
-            springControllerTemplate = compiler.compile(SPRING_CONTROLLER_TEMPLATE);
+        if (this.springControllerTemplate == null) {
+            this.springControllerTemplate = compiler.compile(SPRING_CONTROLLER_TEMPLATE);
         }
-              
-        return;
+
+        if (this.viewTemplate == null)
+        {
+            this.viewTemplate = compiler.compile(VIEW_TEMPLATE);
+            String template = String.valueOf(this.viewTemplate.getCompiledTemplate().getTemplate());
+            this.viewTemplateNamespaces = parseNamespaces(template);
+            this.viewTemplateEntityMetawidgetIndent = parseIndent(template, "@{metawidget}");
+        }
+
+        if (this.createTemplate == null)
+        {
+            this.createTemplate = compiler.compile(CREATE_TEMPLATE);
+            String template = String.valueOf(this.createTemplate.getCompiledTemplate().getTemplate());
+            this.createTemplateNamespaces = parseNamespaces(template);
+            this.createTemplateEntityMetawidgetIndent = parseIndent(template, "@{metawidget}");
+        }
+
+        if (this.searchMetawidget == null)
+        {
+            this.searchTemplate = compiler.compile(SEARCH_TEMPLATE);
+            String template = String.valueOf(this.searchTemplate.getCompiledTemplate().getTemplate());
+            this.searchTemplateNamespaces = parseNamespaces(template);
+            this.searchTemplateSearchMetawidgetIndent = parseIndent(template, "@{searchMetawidget}");
+            this.searchTemplateBeanMetawidgetIndent = parseIndent(template, "@{beanMetawidget}");
+        }
+
+        if (this.navigationTemplate == null)
+        {
+            this.navigationTemplate = compiler.compile(NAVIGATION_TEMPLATE);
+            String template = String.valueOf(this.navigationTemplate.getCompiledTemplate().getTemplate());
+            this.navigationTemplateIndent = parseIndent(template, "@{navigation}");
+        }
+
+        if (this.errorTemplate == null)
+        {
+            this.errorTemplate = compiler.compile(ERROR_TEMPLATE);
+        }
+
+        if (this.indexTemplate == null)
+        {
+            this.indexTemplate = compiler.compile(INDEX_TEMPLATE);
+        }
     }
 
     protected HashMap<Object, Object> getTemplateContext(final Resource<?> template)
@@ -424,4 +642,89 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         return ScaffoldUtil.createOrOverwrite(this.prompt, (FileResource<?>) getTemplateStrategy().getDefaultTemplate(),
                 this.navigationTemplate.render(context), overwrite);
     }
+
+    /**
+     * Parses the given XML and determines what namespaces it already declares. These are later removed from the list of
+     * namespaces that Metawidget introduces.
+     */
+
+    protected Map<String, String> parseNamespaces(final String template)
+    {
+        Map<String, String> namespaces = CollectionUtils.newHashMap();
+        Document document = XmlUtils.documentFromString(template);
+        Element element = document.getDocumentElement();
+        NamedNodeMap attributes = element.getAttributes();
+
+        for (int i = 0; i < attributes.getLength(); i++)
+        {
+            org.w3c.dom.Node node = attributes.item(i);
+            String nodeName = node.getNodeName();
+            int indexOf = nodeName.indexOf(XMLNS_PREFIX);
+
+            if (indexOf == -1)
+            {
+                continue;
+            }
+
+            namespaces.put(nodeName.substring(indexOf + XMLNS_PREFIX.length()), node.getNodeValue());
+        }
+
+        return namespaces;
+    }
+
+    /**
+     * Parses the given XML and determines the indent of the given String namespaces that Metawidget introduces.
+     */
+
+    protected int parseIndent(final String template, final String indentOf)
+    {
+        int indent = 0;
+        int indexOf = template.indexOf(indentOf);
+
+        while ((indexOf > 0) && (template.charAt(indexOf) != '\n'))
+        {
+            if (template.charAt(indexOf) == '\t')
+            {
+                indent++;
+            }
+
+            indexOf--;
+        }
+
+        return indent;
+    }
+
+    /**
+     * Writes the entity Metawidget and its namespaces into the given context.
+     */
+
+    protected void writeEntityMetawidget(final Map<Object, Object> context, final int entityMetawidgetIndent,
+            final Map<String, String> existingNamespaces)
+    {
+        StringWriter writer = new StringWriter();
+        this.entityMetawidget.write(writer, entityMetawidgetIndent);
+        context.put("metawidget", writer.toString().trim());
+
+        Map<String, String> namespaces = this.entityMetawidget.getNamespaces();
+        namespaces.keySet().removeAll(existingNamespaces.keySet());
+        context.put("metawidgetNamespaces", namespacesToString(namespaces));
+    }
+
+    protected String namespacesToString(Map<String, String> namespaces)
+    {
+        StringBuilder builder = new StringBuilder();
+
+        for (Map.Entry<String, String> entry : namespaces.entrySet())
+        {
+            // At the start, break out of the current quote. Field must be in quotes so that we're valid XML
+
+            builder.append("\"\r\n\txmlns:");
+            builder.append(entry.getKey());
+            builder.append("=\"");
+            builder.append(entry.getValue());
+        }
+
+        return builder.toString();
+    }
+
 }
