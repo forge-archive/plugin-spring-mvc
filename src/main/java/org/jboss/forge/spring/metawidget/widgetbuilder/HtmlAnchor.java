@@ -16,7 +16,7 @@
 
 package org.jboss.forge.spring.metawidget.widgetbuilder;
 
-import org.metawidget.statically.jsp.html.widgetbuilder.HtmlTag;
+import org.metawidget.statically.html.widgetbuilder.HtmlTag;
 
 /**
  * @author <a href="mailto:ryan.k.bradley@gmail.com">Ryan Bradley</a>

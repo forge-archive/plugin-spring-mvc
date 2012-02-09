@@ -32,7 +32,7 @@ public class @{entity.getName()}Controller
 	{
 		@{entity.getName()} entity = @{ccEntity}Dao.getById(id);
 		model.addAttribute("entity", entity);
-		return "viewEntity";
+		return "view" + @{entity.getName()};
 	}
 	
 	/*
@@ -64,9 +64,9 @@ public class @{entity.getName()}Controller
 	}
 	
 	@RequestMapping(value="/create", method=RequestMethod.POST)
-	public String create(@{entity.getName()} entity)
+	public String create(@{entity.getName()} @{ccEntity})
 	{
-		@{ccEntity}Dao.update(entity);
+		@{ccEntity}Dao.update(@{ccEntity});
 		return "viewEntities";
 	}
 }

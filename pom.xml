@@ -6,8 +6,8 @@
   <artifactId>plugin-spring-mvc</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <properties>
-    <forge.api.version>1.0.0.CR2</forge.api.version>
     <metawidget.version>2.1-SNAPSHOT</metawidget.version>
+    <forge.api.version>1.0.0-SNAPSHOT</forge.api.version>
   </properties>
   <dependencies>
     <dependency>
@@ -21,16 +21,6 @@
       <artifactId>forge-javaee-api</artifactId>
       <version>${forge.api.version}</version>
       <scope>provided</scope>
-    </dependency>
-    <dependency>
-	  <groupId>org.jboss.forge</groupId>
-	  <artifactId>forge-scaffold-api</artifactId>
-	  <version>${forge.api.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.forge</groupId>
-      <artifactId>forge-javaee-impl</artifactId>
-      <version>${forge.api.version}</version>
     </dependency>
     <dependency>
       <groupId>org.jboss.forge</groupId>
@@ -61,14 +51,26 @@
       <version>${metawidget.version}</version>
     </dependency>
     <dependency>
-    	<groupId>org.metawidget.modules.static.spring</groupId>
-    	<artifactId>metawidget-static-spring</artifactId>
-    	<version>${metawidget.version}</version>
+      <groupId>org.metawidget.modules.static.spring</groupId>
+      <artifactId>metawidget-static-spring</artifactId>
+      <version>${metawidget.version}</version>
     </dependency>
     <dependency>
       <groupId>net.java.dev.inflector</groupId>
       <artifactId>inflector</artifactId>
       <version>0.7.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.forge</groupId>
+      <artifactId>forge-scaffold-api</artifactId>
+      <version>1.0.0.CR2</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.forge</groupId>
+      <artifactId>forge-javaee-impl</artifactId>
+      <version>1.0.0.CR2</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
   <repositories>

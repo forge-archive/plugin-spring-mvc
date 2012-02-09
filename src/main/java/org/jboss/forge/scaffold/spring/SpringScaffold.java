@@ -54,9 +54,9 @@ import org.jboss.forge.scaffold.ScaffoldProvider;
 import org.jboss.forge.scaffold.TemplateStrategy;
 import org.jboss.forge.scaffold.util.ScaffoldUtil;
 import org.jboss.forge.shell.ShellPrompt;
+import org.jboss.forge.shell.plugins.Alias;
 import org.jboss.forge.shell.plugins.RequiresFacet;
 import org.jboss.forge.spec.javaee.PersistenceFacet;
-import org.jboss.forge.spec.javaee.ServletFacet;
 import org.jboss.forge.spring.metawidget.config.ForgeConfigReader;
 import org.jboss.forge.spring.metawidget.widgetbuilder.HtmlAnchor;
 import org.jboss.seam.render.TemplateCompiler;
@@ -65,7 +65,7 @@ import org.jboss.seam.render.template.CompiledTemplateResource;
 import org.jboss.seam.render.template.resolver.ClassLoaderTemplateResolver;
 import org.metawidget.statically.StaticUtils.IndentedWriter;
 import org.metawidget.statically.javacode.StaticJavaMetawidget;
-import org.metawidget.statically.jsp.html.widgetbuilder.HtmlTag;
+import org.metawidget.statically.html.widgetbuilder.HtmlTag;
 import org.metawidget.statically.spring.StaticSpringMetawidget;
 import org.metawidget.util.CollectionUtils;
 import org.metawidget.util.XmlUtils;
@@ -86,6 +86,7 @@ import org.w3c.dom.NamedNodeMap;
  * @author <a href="mailto:ryan.k.bradley@gmail.com">Ryan Bradley</a>
  */
 
+@Alias("spring")
 @RequiresFacet({ WebResourceFacet.class,
             PersistenceFacet.class})
 public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
@@ -99,13 +100,13 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     private static final String SPRING_CONTROLLER_TEMPLATE = "scaffold/spring/SpringControllerTemplate.jv";
     private static final String DAO_INTERFACE_TEMPLATE = "scaffold/spring/DaoInterfaceTemplate.jv";
     private static final String DAO_IMPLEMENTATION_TEMPLATE = "scaffold/spring/DaoImplementationTemplate.jv";
-    private static final String VIEW_TEMPLATE = "scaffold/spring/view.xhtml";
-    private static final String CREATE_TEMPLATE = "scaffold/spring/create.xhtml";
-    private static final String SEARCH_TEMPLATE = "scaffold/spring/search.xhtml";
-    private static final String NAVIGATION_TEMPLATE = "scaffold/spring/page.xhtml";
+    private static final String VIEW_TEMPLATE = "scaffold/spring/view.jsp";
+    private static final String CREATE_TEMPLATE = "scaffold/spring/create.jsp";
+    private static final String SEARCH_TEMPLATE = "scaffold/spring/search.jsp";
+    private static final String NAVIGATION_TEMPLATE = "scaffold/spring/page.jsp";
     
-    private static final String ERROR_TEMPLATE = "scaffold/spring/error.xhtml";
-    private static final String INDEX_TEMPLATE = "scaffold/spring/index.xhtml";
+    private static final String ERROR_TEMPLATE = "scaffold/spring/error.jsp";
+    private static final String INDEX_TEMPLATE = "scaffold/spring/index.jsp";
 
     //
     // Protected members (nothing is private, to help sub-classing)
@@ -270,7 +271,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
             writeEntityMetawidget(context, this.createTemplateEntityMetawidgetIndent, this.createTemplateNamespaces);
 
-            result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("scaffold/" + ccEntity + "/create.xhtml"),
+            result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/" + ccEntity + "/create.jsp"),
                     this.createTemplate.render(context), overwrite));
 
             // Generate view
@@ -278,7 +279,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
             this.entityMetawidget.setReadOnly(true);
             writeEntityMetawidget(context, this.viewTemplateEntityMetawidgetIndent, this.viewTemplateNamespaces);
 
-            result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("scaffod/" + ccEntity + "/view.xhtml"),
+            result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("scaffold/" + ccEntity + "/view.jsp"),
                     this.viewTemplate.render(context), overwrite));
 
             // Generate search - how does it differ between JSF and Spring?
@@ -341,7 +342,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         List<Resource<?>> result = new ArrayList<Resource<?>>();
         WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
 
-        this.project.getFacet(ServletFacet.class).getConfig().welcomeFile("index.html");
         loadTemplates();
 
         generateTemplates(overwrite);
@@ -349,13 +349,13 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         // Basic pages
 
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("index.html"),
-                getClass().getResourceAsStream("/scaffold/spring/index.html"), overwrite));
+/*        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("index.jsp"),
+                getClass().getResourceAsStream("/scaffold/spring/index.jsp"), overwrite));*/
 
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("index.xhtml"),
+        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("index.jsp"),
                 this.indexTemplate.render(context), overwrite));
 
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("error.xhmtl"),
+        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("error.jsp"),
                 this.errorTemplate.render(context), overwrite));
 
         // Static resources
@@ -557,7 +557,11 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         // Add a unique mapping for the error page
 
-        
+        Node errorPage = new Node("error-page", webapp);
+        Node exceptionType = new Node("exception-type", errorPage);
+        exceptionType.text("java.lang.Exception");
+        Node location = new Node("location", errorPage);
+        location.text("WEB-INF/views/error.jsp");
 
         // Save the updated web.xml file to 'src/main/webapp/WEB-INF/web.xml'
 

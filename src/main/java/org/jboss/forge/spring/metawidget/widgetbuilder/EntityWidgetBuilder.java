@@ -35,15 +35,15 @@ import org.metawidget.statically.StaticWidget;
 import org.metawidget.statically.StaticXmlMetawidget;
 import org.metawidget.statically.StaticXmlStub;
 import org.metawidget.statically.StaticXmlWidget;
+import org.metawidget.statically.html.StaticHtmlMetawidget;
+import org.metawidget.statically.html.widgetbuilder.HtmlTable;
+import org.metawidget.statically.html.widgetbuilder.HtmlTableCell;
+import org.metawidget.statically.html.widgetbuilder.HtmlTableRow;
 import org.metawidget.statically.jsp.StaticJspUtils;
-import org.metawidget.statically.jsp.html.StaticHtmlMetawidget;
-import org.metawidget.statically.jsp.html.widgetbuilder.CoreForEach;
-import org.metawidget.statically.jsp.html.widgetbuilder.CoreOut;
-import org.metawidget.statically.jsp.html.widgetbuilder.HtmlTable;
-import org.metawidget.statically.jsp.html.widgetbuilder.HtmlTableCell;
-import org.metawidget.statically.jsp.html.widgetbuilder.HtmlTableRow;
-import org.metawidget.statically.jsp.html.widgetbuilder.HtmlWidgetBuilder;
-import org.metawidget.statically.jsp.html.widgetprocessor.StandardBindingProcessor;
+import org.metawidget.statically.jsp.widgetprocessor.StandardBindingProcessor;
+import org.metawidget.statically.jsp.widgetbuilder.CoreForEach;
+import org.metawidget.statically.jsp.widgetbuilder.CoreOut;
+import org.metawidget.statically.jsp.widgetbuilder.JspWidgetBuilder;
 import org.metawidget.statically.spring.StaticSpringMetawidget;
 import org.metawidget.statically.spring.widgetbuilder.FormOptionTag;
 import org.metawidget.statically.spring.widgetbuilder.FormOptionsTag;
@@ -61,7 +61,7 @@ import org.w3c.dom.NodeList;
  */
 
 public class EntityWidgetBuilder
-        extends HtmlWidgetBuilder {
+        extends JspWidgetBuilder {
     
     //
     // Public methods
@@ -269,7 +269,7 @@ public class EntityWidgetBuilder
     
     @Override
     protected void addColumnComponent(HtmlTableRow row, CoreForEach forEach, Map<String, String> tableAttributes, String elementName,
-            Map<String, String> columnAttributes)
+            Map<String, String> columnAttributes, StaticXmlMetawidget metawidget)
     {
         // Suppress columns that show Collection values (their toString is never very nice)
         
@@ -289,7 +289,7 @@ public class EntityWidgetBuilder
         
         // Create the column
         
-        super.addColumnComponent(row, forEach, tableAttributes, elementName, columnAttributes);
+        super.addColumnComponent(row, forEach, tableAttributes, elementName, columnAttributes, metawidget);
         List<StaticWidget> columns = forEach.getChildren().get(0).getChildren();
         HtmlTableCell column = (HtmlTableCell) columns.get(columns.size()-1);
         
