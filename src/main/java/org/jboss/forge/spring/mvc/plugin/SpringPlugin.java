@@ -67,7 +67,6 @@ import org.jboss.seam.render.TemplateCompiler;
 import org.jboss.seam.render.spi.TemplateResolver;
 import org.jboss.seam.render.template.CompiledTemplateResource;
 import org.jboss.seam.render.template.resolver.ClassLoaderTemplateResolver;
-import org.jboss.shrinkwrap.descriptor.api.spec.jpa.persistence.PersistenceDescriptor;
 import org.metawidget.util.CollectionUtils;
 import org.metawidget.util.simple.StringUtils;
 
@@ -99,7 +98,11 @@ public class SpringPlugin implements Plugin {
   
   @Inject
   private ProjectFactory factory;
-  
+
+  // Default Forge persistence unit name.
+
+  public static final String DEFAULT_UNIT_NAME = "forge-default";
+
   // Members for the 'mvc-from-entity' command.
   
   private static final String SPRING_CONTROLLER_TEMPLATE = "spring/mvc/SpringControllerTemplate.jv";
@@ -211,6 +214,13 @@ public class SpringPlugin implements Plugin {
   @Command("persistence")
   public void springPersistence(PipeOut out)
   {
+      // First, check to see that a PersistenceFacet has been installed, otherwise, 'persistence setup' may not have been executed.
+
+      if(!project.hasFacet(PersistenceFacet.class)) {
+          out.println("No PersistenceFacet installed, have you executed 'persistence setup' yet?");
+          return;
+      }
+
       // Use a ResourceFacet object to write to a new XML file.
 
 	  ResourceFacet resources = project.getFacet(ResourceFacet.class);
@@ -223,25 +233,7 @@ public class SpringPlugin implements Plugin {
 
       MetadataFacet meta = project.getFacet(MetadataFacet.class);
       String projectName = meta.getProjectName();
-      
-      /*
-       * First, check to see that a PersistenceFacet has been installed, otherwise, 'persistence setup' may not have been executed.
-       */
-      
-      if(!project.hasFacet(PersistenceFacet.class)) {
-          out.println("No PersistenceFacet installed, have you executed 'persistence setup' yet?");
-          return;
-      }
-      
-      /*
-       * Use a PersistenceFacet object to retrieve the project's persistence configuration.
-       * This persistence configuration can then be used to retrieve the appropriate persistence unit name (for a JNDI lookup).
-       */
-      
-      PersistenceFacet jpa = project.getFacet(PersistenceFacet.class);
-      PersistenceDescriptor config = jpa.getConfig();
-      String unitName = config.listUnits().get(0).getName();
-      
+
       // Use the XMLParser provided by Forge to create an applicationContext.xml file.
       
       // The top-level element of the XML file, <beans>, will contain schema inclusions.
@@ -268,7 +260,7 @@ public class SpringPlugin implements Plugin {
       Node emf = new Node("jee:jndi-lookup", beans);
       emf.setComment(false);
       emf.attribute("id", "entityManagerFactory");
-      emf.attribute("jndi-name", "java:comp/env/persistence/" + unitName);
+      emf.attribute("jndi-name", "java:comp/env/persistence/" + DEFAULT_UNIT_NAME);
       emf.attribute("expected-type", "javax.persistence.EntityManager");
       
       /*
@@ -315,9 +307,9 @@ public class SpringPlugin implements Plugin {
 
       Node persistenceContextRef = new Node("persistence-context-ref", webapp);
       Node persistenceContextRefName = new Node("persistence-context-ref-name", persistenceContextRef);
-      persistenceContextRefName.text("persistence/" + unitName + "/entityManager");
+      persistenceContextRefName.text("persistence/" + DEFAULT_UNIT_NAME + "/entityManager");
       Node persistenceUnitName = new Node("persistence-unit-name", persistenceContextRef);
-      persistenceUnitName.text(unitName);
+      persistenceUnitName.text(DEFAULT_UNIT_NAME);
       
       // Save the updated web.xml file.
       
