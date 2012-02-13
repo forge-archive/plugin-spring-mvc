@@ -65,26 +65,26 @@
       <version>0.7.0</version>
     </dependency>
     <dependency>
-      <groupId>org.jboss.forge</groupId>
-      <artifactId>forge-scaffold-api</artifactId>
-      <version>1.0.0.CR2</version>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-entitymanager</artifactId>
       <scope>provided</scope>
     </dependency>
-    <dependency>
+<!--     <dependency>
+      <groupId>org.jboss.spec.javax.faces</groupId>
+      <artifactId>jboss-jsf-api_2.0_spec</artifactId>
+      <version>1.0.0.Final</version>
+      <scope>provided</scope>
+    </dependency>
+ -->    <dependency>
       <groupId>org.jboss.forge</groupId>
-      <artifactId>forge-javaee-impl</artifactId>
-      <version>1.0.0.CR2</version>
+      <artifactId>forge-scaffold-api</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.jboss.forge</groupId>
       <artifactId>forge-javaee-api</artifactId>
       <version>1.0.0-SNAPSHOT</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.hibernate</groupId>
-      <artifactId>hibernate-entitymanager</artifactId>
       <scope>provided</scope>
     </dependency>
   </dependencies>
