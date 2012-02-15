@@ -96,17 +96,15 @@ public class SpringPlugin implements Plugin {
      * For example, this command will add the necessary dependencies to the project's POM.xml file. 
     */
 
-    @DefaultCommand
     @SetupCommand
     public void setup(PipeOut out)
     {  
-        // Use the DependencyFacet interface to add each Spring dependency to the POM.
+        // Get the required Facets to add dependencies and create web.xml and the business context XML file
 
         DependencyFacet deps = project.getFacet(DependencyFacet.class);
-
-        // Use the PackagingFacet interface to get, and potentially modify, the project's packaging type.
-
         PackagingFacet packaging = project.getFacet(PackagingFacet.class);
+        ResourceFacet resources = project.getFacet(ResourceFacet.class);
+        WebResourceFacet web = project.getFacet(WebResourceFacet.class);
 
         // If the project was not created as a WAR, change the packaging type to 'WAR' and install a WebResourceFacet.
 
@@ -116,52 +114,21 @@ public class SpringPlugin implements Plugin {
             this.install.fire(new InstallFacets(WebResourceFacet.class));
         }
 
-        // Use the Forge DependencyFacet to add Maven dependencies to the POM.
+        // Use the Forge DependencyFacet to add Spring dependencies to the POM.
 
         String springVersion = "3.1.0.RC1";
 
         deps.setProperty("spring.version", springVersion);
 
-        // Add the Spring ASM dependency.
-
-        DependencyBuilder springAsm = DependencyBuilder.create("org.springframework:spring-asm:${spring.version}");
-        deps.addDirectDependency(springAsm);
-
-        // Add the Spring beans dependency.
-
-        DependencyBuilder springBeans = DependencyBuilder.create("org.springframework:spring-beans:${spring.version}");
-        deps.addDirectDependency(springBeans);
-
-        // Add the Spring context dependency.
-
-        DependencyBuilder springContext = DependencyBuilder.create("org.springframework:spring-context:${spring.version}");
-        deps.addDirectDependency(springContext);
-
-        // Add the support for the Spring context dependency.
-
-        DependencyBuilder springContextSupport = DependencyBuilder.create("org.springframework:spring-context-support:${spring.version}");
-        deps.addDirectDependency(springContextSupport); 
-
-        // Add the Spring core.
-
-        DependencyBuilder springCore = DependencyBuilder.create("org.springframework:spring-core:${spring.version}");
-        deps.addDirectDependency(springCore); 
-
-         // Add the Spring expression dependency.
-
-        DependencyBuilder springExpression = DependencyBuilder.create("org.springframework:spring-expression:${spring.version}");
-        deps.addDirectDependency(springExpression);
-
-        // Add the Spring web dependency.
-
-        DependencyBuilder springWeb = DependencyBuilder.create("org.springframework:spring-web:${spring.version}");
-        deps.addDirectDependency(springWeb);
-
-         // Add the Spring MVC dependency.
-
-        DependencyBuilder springMVC = DependencyBuilder.create("org.springframework:spring-webmvc:${spring.version}");
-        deps.addDirectDependency(springMVC);
-
+        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-asm:${spring.version}"));
+        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-beans:${spring.version}"));
+        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-context:${spring.version}"));
+        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-context-support:${spring.version}"));
+        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-core:${spring.version}"));
+        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-expression:${spring.version}"));
+        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-web:${spring.version}"));
+        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-webmvc:${spring.version}"));
+ 
         out.println("Added Spring " + springVersion + " dependencies to pom.xml.");
     }
 
