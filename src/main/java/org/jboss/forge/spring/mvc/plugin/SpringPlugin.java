@@ -159,12 +159,12 @@ public class SpringPlugin implements Plugin {
 
         // Add the project display name to web.xml
 
-        Node displayName = new Node("display", webapp);
-        displayName.text(meta.getProjectName());
+        Node display = new Node("display", webapp);
+        display.text(meta.getProjectName());
 
         // Add applicationContext.xml to the web application's context
 
-        Node contextParam = new Node("context-param", displayName);
+        Node contextParam = new Node("context-param", display);
         Node contextConfig = new Node("param-name", contextParam);
         contextConfig.text("contextConfigLocation");
         Node configLocation = new Node("param-value", contextConfig);

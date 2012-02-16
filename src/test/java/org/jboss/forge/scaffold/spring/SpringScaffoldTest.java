@@ -23,6 +23,8 @@
 package org.jboss.forge.scaffold.spring;
 
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.forge.parser.xml.Node;
+import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.project.Project;
 import org.jboss.forge.project.facets.MetadataFacet;
 import org.jboss.forge.project.facets.ResourceFacet;
@@ -56,11 +58,28 @@ public class SpringScaffoldTest extends AbstractSpringScaffoldTest
         FileResource<?> applicationContext = resources.getResource("META-INF/spring/applicationContext.xml");
         Assert.assertTrue(applicationContext.exists());
 
+        Node beans = XMLParser.parse(applicationContext.getResourceInputStream());
+        Assert.assertTrue(beans.getChildren().size() == 1);
+        Assert.assertNotNull(beans.get("context:component-scan"));
+        Assert.assertEquals(meta.getTopLevelPackage() + ".repo", beans.get("context:component-scan").get(0).getAttribute("base-package"));
+
         FileResource<?> webXML = web.getWebResource("WEB-INF/web.xml");
         Assert.assertTrue(webXML.exists());
 
+        Node webapp = XMLParser.parse(webXML.getResourceInputStream());
+        Assert.assertTrue(webapp.getChildren().size() == 5);
+        Assert.assertEquals("WEB-INF/views/error.jsp", webapp.get("error-page").get(0).get("location").get(0).getText());
+        Assert.assertEquals("classpath:/META-INF/spring/applicationContext.xml", webapp.get("display").get(0)
+                .get("context-param").get(0).get("param-name").get(0).get("param-value").get(0).getText());
+
         FileResource<?> mvcContext = web.getWebResource("WEB-INF/" + meta.getProjectName().toLowerCase().replace(' ', '-') + "-mvc-context.xml");
         Assert.assertTrue(mvcContext.exists());
+
+        beans = XMLParser.parse(mvcContext.getResourceInputStream());
+        Assert.assertEquals(meta.getTopLevelPackage() + ".mvc", beans.get("context:component-scan").get(0).getAttribute("base-package"));
+        Assert.assertFalse(beans.get("mvc:annotation-driven").isEmpty());
+        Assert.assertFalse(beans.get("mvc:default-servlet-handler").isEmpty());
+        Assert.assertEquals(2, beans.get("bean").size());
     }
 
 }

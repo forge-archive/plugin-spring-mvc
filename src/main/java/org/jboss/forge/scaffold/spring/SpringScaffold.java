@@ -509,11 +509,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         String projectName = meta.getProjectName();
         String filename = "WEB-INF" + projectName.toLowerCase().replace(' ', '-') + "-mvc-context.xml";
 
-        if(!web.getWebResource("WEB-INF/web.xml").exists())
-        {
-            // TODO Should throw an exception, instructing user to execute 'spring persistence'.
-            return null;
-        }
+        // Retrieve the existing web.xml file
 
         FileResource<?> webXML = web.getWebResource("WEB-INF/web.xml");
         Node webapp = XMLParser.parse(webXML.getResourceInputStream());
