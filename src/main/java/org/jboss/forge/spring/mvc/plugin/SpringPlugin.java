@@ -140,14 +140,8 @@ public class SpringPlugin implements Plugin {
 
         beans.attribute("xmlns", "http://www.springframework.org/schema/beans");
         beans.attribute(XMLNS_PREFIX + "xsi", "http://www.w3.org/2001/XMLSchema-instance");
-        beans.attribute(XMLNS_PREFIX + "tx", "http://www.springframework.org/schema/tx");
         String schemaLoc = "http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd";
-        schemaLoc += " http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd";
         beans.attribute("xsi:schemaLocation", schemaLoc);
-
-        // Indicate that Spring transactions will be annotation driven (potentially move to 'spring persistence' command?)
-
-        beans.createChild("tx:annotation-driven");
 
         // Write applicationContext.xml
 
@@ -213,13 +207,19 @@ public class SpringPlugin implements Plugin {
 
         Node beans = XMLParser.parse(resources.getResource("META-INF/spring/applicationContext.xml").getResourceInputStream());
         beans.attribute("xmlns:jee", "http://www.springframework.org/schema/jee");
+        beans.attribute(XMLNS_PREFIX + "tx", "http://www.springframework.org/schema/tx");
 
         // Add the schema for the 'jee' namespace to the applicationContext.xml file
 
         String schemaLoc = beans.getAttribute("xsi:schemaLocation");
         schemaLoc = " http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd";
+        schemaLoc += " http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd";
         beans.attribute("xsi:schemaLocation", schemaLoc);
 
+        // Indicate that Spring transactions will be annotation driven (potentially move to 'spring persistence' command?)
+
+        beans.createChild("tx:annotation-driven");
+        
         // Perform a JNDI lookup to retrieve an EntityManagerFactory, of type javax.persistence.EntityManagerFactory.
 
         Node emf = new Node("jee:jndi-lookup", beans);
