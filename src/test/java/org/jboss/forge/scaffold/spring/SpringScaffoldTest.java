@@ -31,6 +31,7 @@ import org.jboss.forge.project.facets.ResourceFacet;
 import org.jboss.forge.project.facets.WebResourceFacet;
 import org.jboss.forge.resources.FileResource;
 import org.jboss.forge.scaffold.spring.AbstractSpringScaffoldTest;
+import org.jboss.forge.shell.exceptions.PluginExecutionException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -82,4 +83,22 @@ public class SpringScaffoldTest extends AbstractSpringScaffoldTest
         Assert.assertEquals(2, beans.get("bean").size());
     }
 
+    @Test(expected = PluginExecutionException.class)
+    public void testCannotGenerateFromEntityUntilScaffoldInstalled() throws Exception
+    {
+        initializeJavaProject();
+
+        getShell().execute("spring setup");
+
+        queueInputLines("");
+        getShell().execute("persistence --provider HIBERNATE --container JBOSS_AS7");
+
+        getShell().execute("spring persistence");
+
+        queueInputLines("");
+        getShell().execute("entity --named Customer");
+
+        queueInputLines("", "");
+        getShell().execute("scaffold from-entity --scaffoldType spring");
+    }
 }
