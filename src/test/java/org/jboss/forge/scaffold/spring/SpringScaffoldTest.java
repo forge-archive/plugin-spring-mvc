@@ -47,6 +47,7 @@ public class SpringScaffoldTest extends AbstractSpringScaffoldTest
     public void testSetupScaffold() throws Exception
     {
         Project project = setupScaffoldProject();
+        getShell().execute("spring persistence");
 
         MetadataFacet meta = project.getFacet(MetadataFacet.class);
         ResourceFacet resources = project.getFacet(ResourceFacet.class);
@@ -60,7 +61,7 @@ public class SpringScaffoldTest extends AbstractSpringScaffoldTest
         Assert.assertTrue(applicationContext.exists());
 
         Node beans = XMLParser.parse(applicationContext.getResourceInputStream());
-        Assert.assertTrue(beans.getChildren().size() == 1);
+        Assert.assertTrue(beans.getChildren().size() == 3);
         Assert.assertNotNull(beans.get("context:component-scan"));
         Assert.assertEquals(meta.getTopLevelPackage() + ".repo", beans.get("context:component-scan").get(0).getAttribute("base-package"));
 
@@ -68,7 +69,7 @@ public class SpringScaffoldTest extends AbstractSpringScaffoldTest
         Assert.assertTrue(webXML.exists());
 
         Node webapp = XMLParser.parse(webXML.getResourceInputStream());
-        Assert.assertTrue(webapp.getChildren().size() == 5);
+        Assert.assertTrue(webapp.getChildren().size() == 6);
         Assert.assertEquals("WEB-INF/views/error.jsp", webapp.get("error-page").get(0).get("location").get(0).getText());
         Assert.assertEquals("classpath:/META-INF/spring/applicationContext.xml", webapp.get("display").get(0)
                 .get("context-param").get(0).get("param-name").get(0).get("param-value").get(0).getText());
@@ -91,7 +92,7 @@ public class SpringScaffoldTest extends AbstractSpringScaffoldTest
         getShell().execute("spring setup");
 
         queueInputLines("");
-        getShell().execute("persistence --provider HIBERNATE --container JBOSS_AS7");
+        getShell().execute("persistence setup --provider HIBERNATE --container JBOSS_AS7");
 
         getShell().execute("spring persistence");
 
@@ -101,4 +102,16 @@ public class SpringScaffoldTest extends AbstractSpringScaffoldTest
         queueInputLines("", "");
         getShell().execute("scaffold from-entity --scaffoldType spring");
     }
+
+    @Override
+    protected Project setupScaffoldProject() throws Exception
+    {
+        Project project = initializeJavaProject();
+        getShell().execute("spring setup");
+        queueInputLines("HIBERNATE", "JBOSS_AS7", "");
+        getShell().execute("persistence setup");
+        queueInputLines("", "", "2", "", "", "");
+        getShell().execute("scaffold setup --scaffoldType spring --overwrite true");
+        return project;
+    }    
 }

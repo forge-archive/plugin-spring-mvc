@@ -68,8 +68,7 @@ import org.jboss.forge.project.Project;
         WebResourceFacet.class,
         MetadataFacet.class,
         PersistenceFacet.class,
-        JavaSourceFacet.class,
-        SpringScaffold.class })
+        JavaSourceFacet.class })
 public class SpringPlugin implements Plugin {
 
     //
@@ -235,7 +234,7 @@ public class SpringPlugin implements Plugin {
           
         // Add a persistence unit definition in web.xml.
 
-        Node webapp = XMLParser.parse(resources.getResource("WEB-INF/web.xml").getResourceInputStream());
+        Node webapp = XMLParser.parse(web.getWebResource("WEB-INF/web.xml").getResourceInputStream());
 
         // Define a persistence unit to be referenced in the application context.
 
