@@ -3,9 +3,7 @@
 <html>
 
 	<head>
-		<title>Create a new @{entityName}</title>
+		<title>Page</title>
 	</head>
-	
-	@{metawidget}
-	
+
 </html>

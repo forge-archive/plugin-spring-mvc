@@ -3,9 +3,7 @@
 <html>
 
 	<head>
-		<title>Create a new @{entityName}</title>
+		<title>@(entityName} Index</title>
 	</head>
-	
-	@{metawidget}
-	
+
 </html>
