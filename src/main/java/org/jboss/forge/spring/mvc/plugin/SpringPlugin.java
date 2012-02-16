@@ -29,6 +29,7 @@ import org.jboss.forge.shell.plugins.Alias;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 
+import org.jboss.forge.shell.plugins.DefaultCommand;
 import org.jboss.forge.shell.plugins.Help;
 import org.jboss.forge.shell.plugins.PipeOut;
 import org.jboss.forge.shell.plugins.Command;
@@ -250,6 +251,7 @@ public class SpringPlugin implements Plugin {
         web.createWebResource(file.toCharArray(), "WEB-INF/web.xml");
     }
 
+    @DefaultCommand
     @Command("help")
     public void help(PipeOut out)
     {
