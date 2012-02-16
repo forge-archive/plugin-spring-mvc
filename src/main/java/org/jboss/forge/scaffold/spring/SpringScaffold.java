@@ -177,17 +177,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         List<Resource<?>> resources = generateIndex(template, overwrite);
         resources.add(updateApplicationContext());
         resources.add(setupMVCContext());
-
-        Resource<?> webXML = setupWebXML();
-
-        if (!webXML.exists())
-        {
-            // TODO Suggest executing 'spring persistence'
-            resources.clear();
-            return resources;
-        }
-
-        resources.add(webXML);
+        resources.add(updateWebXML());
 
         return resources;
     }
@@ -344,7 +334,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         loadTemplates();
 
-        generateTemplates(overwrite);
+//        generateTemplates(overwrite);
         HashMap<Object, Object> context = getTemplateContext(template);
 
         // Basic pages
@@ -415,9 +405,9 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         ResourceFacet resources =  this.project.getFacet(ResourceFacet.class);
         MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
 
-        FileResource<?> applicationContext = resources.getResource("META-INF/applicationContext.xml");
+        FileResource<?> applicationContext = resources.getResource("META-INF/spring/applicationContext.xml");
         Node beans = XMLParser.parse(applicationContext.getResourceInputStream());
-        beans.attribute("xmlns:context", "http://www.springframework.org/schema/context");
+        beans.attribute(XMLNS_PREFIX + "context", "http://www.springframework.org/schema/context");
         
         // Use a <context:component-scan> to create beans for all DAO interface implementations, annotated as @Repository
         
@@ -433,12 +423,9 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         // Save the updated applicationContext.xml file to 'src/main/resources/META-INF/applicationContext.xml'.
         
         String file = XMLParser.toXMLString(beans);
-        resources.createResource(file.toCharArray(), "META-INF/applicationContext.xml");
-        
-        return resources.getResource("META-INF/applicationContext.xml");
+        return resources.createResource(file.toCharArray(), "META-INF/spring/applicationContext.xml");
     }
 
-    @SuppressWarnings("unused")
     protected Resource<?> setupMVCContext()
     {
         WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
@@ -468,11 +455,11 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         // Indicate the use of annotations for Spring MVC, such as @Controller or @RequestMapping
         
-        Node mvcAnnotationDriven = new Node("mvc:annotation-driven", beans);
+        beans.createChild("mvc:annotation-driven");
 
         // Use the Spring MVC default servlet handler
         
-        Node mvcDefaultServlet = new Node("mvc:default-servlet-handler", beans);
+        beans.createChild("mvc:default-servlet-handler");
 
         // Add an InternalViewResolver, mapping all .jsp pages
 
@@ -514,7 +501,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         return web.getWebResource(filename);
     }
 
-    protected Resource<?> setupWebXML()
+    protected Resource<?> updateWebXML()
     {
         WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
         MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
