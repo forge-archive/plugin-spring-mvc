@@ -495,7 +495,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         // Write the mvc-context file to 'src/main/webapp/WEB-INF/{lowercase-project-name}-mvc-context.xml'.
 
         String mvcContextFile = XMLParser.toXMLString(beans);
-        String filename = "WEB-INF" + meta.getProjectName().toLowerCase().replace(' ', '-') + "-mvc-context.xml";
+        String filename = "WEB-INF/" + meta.getProjectName().toLowerCase().replace(' ', '-') + "-mvc-context.xml";
         web.createWebResource(mvcContextFile.toCharArray(), filename);
         
         return web.getWebResource(filename);
