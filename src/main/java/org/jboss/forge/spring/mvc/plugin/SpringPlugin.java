@@ -184,7 +184,7 @@ public class SpringPlugin implements Plugin {
         // Save the web.xml file to WEB-INF/web.xml
 
         file = XMLParser.toXMLString(webapp);
-        web.createWebResource(file.toCharArray(), "WEB-INF/spring");
+        web.createWebResource(file.toCharArray(), "WEB-INF/web.xml");
     }
 
     /**
