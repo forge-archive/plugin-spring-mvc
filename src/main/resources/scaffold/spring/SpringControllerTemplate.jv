@@ -19,27 +19,16 @@ public class @{entity.getName()}Controller
 {
 
 	// Inject the appropriate data-access object for the given entity.
+	
     @Autowired
 	private @{entity.getName()}Dao @{ccEntity}Dao;
-    
-    /*
-    * viewEntity(id, model) - returns the view of a single entity in the database,
-    * specified by its id.  The entity is passed to a JSP template via a Model object,
-    * and a String, representing the name of the JSP view, is returned.
-    */
-	@RequestMapping(value="/{id}", method=RequestMethod.GET)
-	public String viewEntity(@PathVariable("id") Long id, Model model)
-	{
-		@{entity.getName()} entity = @{ccEntity}Dao.getById(id);
-		model.addAttribute("entity", entity);
-		return "view" + @{entity.getName()};
-	}
-	
+
 	/*
     * viewAll() - returns a view with all entities currently in the database.
     * The list of entities is passed to the JSP template via a ModelAttribute,
     * which is returned by the function.
     */
+
 	@RequestMapping(method=RequestMethod.GET)
 	public @ModelAttribute("entities")
 	List<@{entity.getName()}> viewAll()
@@ -47,26 +36,39 @@ public class @{entity.getName()}Controller
 		List<@{entity.getName()}> entities = @{ccEntity}Dao.getAllEntities();
 		return entities;
 	}
-	
-	@RequestMapping(value="/{id}/remove", method=RequestMethod.POST)
+
+    /*
+    * viewEntity(id) - returns the view of a single entity in the database,
+    * specified by its id.  The entity is passed to a JSP template via a Model object,
+    * and a String, representing the name of the JSP view, is returned.
+    */
+
+	@RequestMapping(value="/{id}", method=RequestMethod.GET)
+	public String viewEntity(@PathVariable("id") Long id, Model model)
+	{
+		@{entity.getName()} entity = @{ccEntity}Dao.getById(id);
+		model.addAttribute("entity", entity);
+		return "view" + @{entity.getName()};
+	}
+
+	@RequestMapping(value="/{id}", method=RequestMethod.POST)
+	public String updateEntity(@{entity.getName()} entity)
+	{
+		@{ccEntity}Dao.update(entity);
+		return "view" + @{entity.getName()};
+	}
+
+	@RequestMapping(value="/{id}", method=RequestMethod.DELETE)
 	public String removeEntity(@PathVariable("id") Long id)
 	{
 		@{ccEntity}Dao.deleteById(id);
-		return "viewAll";
+		return "view" + @{entityPlural};
 	}
-	
-	@RequestMapping(value="/{id}", method=RequestMethod.POST)
-	public String updateEntity(@{entity.getName()} entity, Model model)
-	{
-		@{ccEntity}Dao.update(entity);
-		model.addAttribute("entity", entity);
-		return "viewEntity";
-	}
-	
+
 	@RequestMapping(value="/create", method=RequestMethod.POST)
 	public String create(@{entity.getName()} @{ccEntity})
 	{
 		@{ccEntity}Dao.update(@{ccEntity});
-		return "viewEntities";
+		return "view" + @{entityPlural};
 	}
 }
