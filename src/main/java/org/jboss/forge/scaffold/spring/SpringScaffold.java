@@ -592,7 +592,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         {
             this.viewTemplate = compiler.compile(VIEW_TEMPLATE);
             String template = String.valueOf(this.viewTemplate.getCompiledTemplate().getTemplate());
-            this.viewTemplateNamespaces = parseNamespaces(template);
             this.viewTemplateEntityMetawidgetIndent = parseIndent(template, "@{metawidget}");
         }
 
@@ -600,7 +599,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         {
             this.createTemplate = compiler.compile(CREATE_TEMPLATE);
             String template = String.valueOf(this.createTemplate.getCompiledTemplate().getTemplate());
-//            this.createTemplateNamespaces = parseNamespaces(template);
             this.createTemplateEntityMetawidgetIndent = parseIndent(template, "@{metawidget}");
         }
 
@@ -608,7 +606,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         {
             this.searchTemplate = compiler.compile(SEARCH_TEMPLATE);
             String template = String.valueOf(this.searchTemplate.getCompiledTemplate().getTemplate());
-            this.searchTemplateNamespaces = parseNamespaces(template);
             this.searchTemplateSearchMetawidgetIndent = parseIndent(template, "@{searchMetawidget}");
             this.searchTemplateBeanMetawidgetIndent = parseIndent(template, "@{beanMetawidget}");
         }
