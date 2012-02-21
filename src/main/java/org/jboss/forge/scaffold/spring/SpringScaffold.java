@@ -253,7 +253,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
             // Prepare entity metawidget
 
-            this.entityMetawidget.setValue(ccEntity);
+            this.entityMetawidget.putAttribute("value", ccEntity);
             this.entityMetawidget.setPath(entity.getQualifiedName());
             this.entityMetawidget.setReadOnly(false);
 
@@ -261,7 +261,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
             writeEntityMetawidget(context, this.createTemplateEntityMetawidgetIndent, this.createTemplateNamespaces);
 
-            result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/" + ccEntity + "/create.jsp"),
+            result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/create" + entity.getName() + ".jsp"),
                     this.createTemplate.render(context), overwrite));
 
             // Generate view
@@ -411,8 +411,11 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         
         // Use a <context:component-scan> to create beans for all DAO interface implementations, annotated as @Repository
         
-        Node componentScan = new Node("context:component-scan", beans);
-        componentScan.attribute("base-package", meta.getTopLevelPackage() + ".repo");
+        if (beans.get("context:component-scan").isEmpty())
+        {
+            Node componentScan = new Node("context:component-scan", beans);
+            componentScan.attribute("base-package", meta.getTopLevelPackage() + ".repo");            
+        }
         
         // Include the spring-context schema file, so that the <context> namespace can be used in web.xml.
         
@@ -516,35 +519,46 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         // Define a dispatcher servlet, named after the project.
 
-        Node servlet = new Node("servlet", webapp);
-        String servName = projectName.replace(' ', (char) 0);
-        Node servletName = new Node("servlet-name", servlet);
-        servletName.text(servName);
-        Node servletClass = new Node("servlet-class", servlet);
-        servletClass.text("org.springframework.web.servlet.DispatcherServlet");
-        Node initParam = new Node("init-param", servlet);
-        Node paramName = new Node("param-name", initParam);
-        paramName.text("contextConfigLocation");
-        Node paramValue = new Node("param-value", initParam);
-        paramValue.text(filename);
-        Node loadOnStartup = new Node("load-on-startup", servlet);
-        loadOnStartup.text(1);
+        if (webapp.get("servlet").isEmpty())
+        {
+            Node servlet = new Node("servlet", webapp);
+            String servName = projectName.replace(' ', (char) 0);
+            Node servletName = new Node("servlet-name", servlet);
+            servletName.text(servName);
+            Node servletClass = new Node("servlet-class", servlet);
+            servletClass.text("org.springframework.web.servlet.DispatcherServlet");
+            Node initParam = new Node("init-param", servlet);
+            Node paramName = new Node("param-name", initParam);
+            paramName.text("contextConfigLocation");
+            Node paramValue = new Node("param-value", initParam);
+            paramValue.text(filename);
+            Node loadOnStartup = new Node("load-on-startup", servlet);
+            loadOnStartup.text(1);            
+        }
 
         // Map the servlet to the '/' URL
 
-        Node servletMapping = new Node("servlet-mapping", webapp);
-        Node servletNameRepeat = new Node("servlet-name", servletMapping);
-        servletNameRepeat.text(projectName.replace(' ', (char) 0));
-        Node url = new Node("url-pattern", servletMapping);
-        url.text('/');
+        if (webapp.get("servlet-mapping").isEmpty())
+        {
+            Node servletMapping = new Node("servlet-mapping", webapp);
+            Node servletNameRepeat = new Node("servlet-name", servletMapping);
+            servletNameRepeat.text(projectName.replace(' ', (char) 0));
+            Node url = new Node("url-pattern", servletMapping);
+            url.text('/');            
+        }
 
         // Add a unique mapping for the error page
 
-        Node errorPage = new Node("error-page", webapp);
-        Node exceptionType = new Node("exception-type", errorPage);
-        exceptionType.text("java.lang.Exception");
-        Node location = new Node("location", errorPage);
-        location.text("WEB-INF/views/error.jsp");
+        // TODO: This may need to be refactored later, to allow multiple error page locations.
+
+        if (webapp.get("error-page").isEmpty())
+        {
+            Node errorPage = new Node("error-page", webapp);
+            Node exceptionType = new Node("exception-type", errorPage);
+            exceptionType.text("java.lang.Exception");
+            Node location = new Node("location", errorPage);
+            location.text("WEB-INF/views/error.jsp");            
+        }
 
         // Save the updated web.xml file to 'src/main/webapp/WEB-INF/web.xml'
 
@@ -586,7 +600,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         {
             this.createTemplate = compiler.compile(CREATE_TEMPLATE);
             String template = String.valueOf(this.createTemplate.getCompiledTemplate().getTemplate());
-            this.createTemplateNamespaces = parseNamespaces(template);
+//            this.createTemplateNamespaces = parseNamespaces(template);
             this.createTemplateEntityMetawidgetIndent = parseIndent(template, "@{metawidget}");
         }
 

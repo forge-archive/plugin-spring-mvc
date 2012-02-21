@@ -22,7 +22,6 @@
 
 package org.jboss.forge.spring.mvc.plugin;
 
-import org.jboss.forge.scaffold.spring.SpringScaffold;
 import org.jboss.forge.shell.plugins.Plugin;
 import org.jboss.forge.shell.plugins.Alias;
 
@@ -158,22 +157,33 @@ public class SpringPlugin implements Plugin {
 
         // Add the project display name to web.xml
 
-        Node display = new Node("display", webapp);
-        display.text(meta.getProjectName());
+        if (webapp.get("display").isEmpty())
+        {
+            Node display = webapp.createChild("display");
+            display.text(meta.getProjectName());            
+        }
+
+        Node display = webapp.get("display").get(0);
 
         // Add applicationContext.xml to the web application's context
 
-        Node contextParam = new Node("context-param", display);
-        Node contextConfig = new Node("param-name", contextParam);
-        contextConfig.text("contextConfigLocation");
-        Node configLocation = new Node("param-value", contextConfig);
-        configLocation.text("classpath:/META-INF/spring/applicationContext.xml");
+        if (display.getChildren().isEmpty())
+        {
+            Node contextParam = new Node("context-param", display);
+            Node contextConfig = new Node("param-name", contextParam);
+            contextConfig.text("contextConfigLocation");
+            Node configLocation = new Node("param-value", contextConfig);
+            configLocation.text("classpath:/META-INF/spring/applicationContext.xml");            
+        }
 
         // Define a ContextLoaderListener
 
-        Node listener = new Node("listener", webapp);
-        Node cll = new Node("listener-class", listener);
-        cll.text("org.springframework.web.context.ContextLoaderListener");
+        if (webapp.get("listener").isEmpty())
+        {
+            Node listener = new Node("listener", webapp);
+            Node cll = new Node("listener-class", listener);
+            cll.text("org.springframework.web.context.ContextLoaderListener");            
+        }
 
         // Save the web.xml file to WEB-INF/web.xml
 
@@ -205,7 +215,7 @@ public class SpringPlugin implements Plugin {
         WebResourceFacet web = project.getFacet(WebResourceFacet.class);
 
         Node beans = XMLParser.parse(resources.getResource("META-INF/spring/applicationContext.xml").getResourceInputStream());
-        beans.attribute("xmlns:jee", "http://www.springframework.org/schema/jee");
+        beans.attribute(XMLNS_PREFIX + "jee", "http://www.springframework.org/schema/jee");
         beans.attribute(XMLNS_PREFIX + "tx", "http://www.springframework.org/schema/tx");
 
         // Add the schema for the 'jee' namespace to the applicationContext.xml file
@@ -217,15 +227,21 @@ public class SpringPlugin implements Plugin {
 
         // Indicate that Spring transactions will be annotation driven (potentially move to 'spring persistence' command?)
 
-        beans.createChild("tx:annotation-driven");
+        if (beans.get("tx:annotation-driven").isEmpty())
+        {
+            beans.createChild("tx:annotation-driven");
+        }
         
         // Perform a JNDI lookup to retrieve an EntityManagerFactory, of type javax.persistence.EntityManagerFactory.
 
-        Node emf = new Node("jee:jndi-lookup", beans);
-        emf.setComment(false);
-        emf.attribute("id", "entityManagerFactory");
-        emf.attribute("jndi-name", "java:comp/env/persistence/" + DEFAULT_UNIT_NAME);
-        emf.attribute("expected-type", "javax.persistence.EntityManager");
+        if (beans.get("jee:jndi-lookup").isEmpty())
+        {
+            Node emf = new Node("jee:jndi-lookup", beans);
+            emf.setComment(false);
+            emf.attribute("id", "entityManagerFactory");
+            emf.attribute("jndi-name", "java:comp/env/persistence/" + DEFAULT_UNIT_NAME);
+            emf.attribute("expected-type", "javax.persistence.EntityManager");           
+        }
 
         // Write the XML tree to a file, using the <beans> root node.
     
@@ -238,11 +254,14 @@ public class SpringPlugin implements Plugin {
 
         // Define a persistence unit to be referenced in the application context.
 
-        Node persistenceContextRef = new Node("persistence-context-ref", webapp);
-        Node persistenceContextRefName = new Node("persistence-context-ref-name", persistenceContextRef);
-        persistenceContextRefName.text("persistence/" + DEFAULT_UNIT_NAME + "/entityManager");
-        Node persistenceUnitName = new Node("persistence-unit-name", persistenceContextRef);
-        persistenceUnitName.text(DEFAULT_UNIT_NAME);
+        if (webapp.get("persistence-context-ref").isEmpty())
+        {
+            Node persistenceContextRef = new Node("persistence-context-ref", webapp);
+            Node persistenceContextRefName = new Node("persistence-context-ref-name", persistenceContextRef);
+            persistenceContextRefName.text("persistence/" + DEFAULT_UNIT_NAME + "/entityManager");
+            Node persistenceUnitName = new Node("persistence-unit-name", persistenceContextRef);
+            persistenceUnitName.text(DEFAULT_UNIT_NAME);            
+        }
 
         // Save the updated web.xml file.
 
