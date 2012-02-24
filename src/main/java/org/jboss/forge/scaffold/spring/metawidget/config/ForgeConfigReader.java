@@ -19,73 +19,64 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.forge.spring.metawidget.inspector.propertystyle;
+
+package org.jboss.forge.scaffold.spring.metawidget.config;
 
 import org.jboss.forge.project.Project;
-import org.metawidget.inspector.impl.propertystyle.javabean.JavaBeanPropertyStyleConfig;
-import org.metawidget.util.simple.ObjectUtils;
+import org.metawidget.config.impl.BaseConfigReader;
 
 /**
- * Configures a <tt>ForgePropertyStyle</tt>.
+ * ConfigReader with Forge-specific features.
  *
  * @author Richard Kennard
  */
 
-public class ForgePropertyStyleConfig
-   extends JavaBeanPropertyStyleConfig {
+public class ForgeConfigReader
+         extends BaseConfigReader
+{
+   //
+   // Private statics
+   //
 
+   private static final String PROJECT_ELEMENT_NAME = "forgeProject";
    //
    // Private members
    //
 
-   private Project         project;
+   private Project project;
 
    //
-   // Public methods
+   // Constructor
    //
 
-   public ForgePropertyStyleConfig setProject( Project project ) {
-
+   public ForgeConfigReader(Project project)
+   {
       this.project = project;
-
-      // Fluent interface
-
-      return this;
-   }
-
-   @Override
-   public boolean equals( Object that ) {
-
-      if ( this == that ) {
-         return true;
-      }
-
-      if ( !ObjectUtils.nullSafeClassEquals( this, that ) ) {
-         return false;
-      }
-
-      if ( this.project != ( (ForgePropertyStyleConfig) that ).project ) {
-         return false;
-      }
-
-      return super.equals( that );
-   }
-
-   @Override
-   public int hashCode() {
-
-      int hashCode = super.hashCode();
-      hashCode = 31 * hashCode + ObjectUtils.nullSafeHashCode( this.project );
-
-      return hashCode;
    }
 
    //
    // Protected methods
    //
 
-   protected Project getProject() {
+   @Override
+   protected boolean isNative(String name)
+   {
+      if (PROJECT_ELEMENT_NAME.equals(name))
+      {
+         return true;
+      }
 
-      return this.project;
+      return super.isNative(name);
+   }
+
+   @Override
+   protected Object createNative(String name, Class<?> namespace, String recordedText) throws Exception
+   {
+      if (PROJECT_ELEMENT_NAME.equals(name))
+      {
+         return this.project;
+      }
+
+      return super.createNative(name, namespace, recordedText);
    }
 }

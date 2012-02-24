@@ -20,14 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.forge.spring.metawidget.inspector;
+package org.jboss.forge.scaffold.spring.metawidget.inspector;
 
-import static org.jboss.forge.spring.metawidget.inspector.ForgeInspectionResultConstants.*;
+import static org.jboss.forge.scaffold.spring.metawidget.inspector.ForgeInspectionResultConstants.N_TO_MANY;
+import static org.jboss.forge.scaffold.spring.metawidget.inspector.ForgeInspectionResultConstants.ONE_TO_ONE;
 import static org.metawidget.inspector.InspectionResultConstants.*;
-import static org.metawidget.inspector.spring.SpringInspectionResultConstants.*;
+import static org.metawidget.inspector.spring.SpringInspectionResultConstants.SPRING_LOOKUP;
 
 import java.util.Map;
 
+import javax.persistence.Embedded;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -36,7 +38,7 @@ import javax.persistence.OneToOne;
 import org.metawidget.inspector.impl.BaseObjectInspector;
 import org.metawidget.inspector.impl.BaseObjectInspectorConfig;
 import org.metawidget.inspector.impl.propertystyle.Property;
-import org.metawidget.statically.jsp.StaticJspUtils;
+import org.metawidget.statically.faces.StaticFacesUtils;
 import org.metawidget.util.ClassUtils;
 import org.metawidget.util.CollectionUtils;
 import org.metawidget.util.simple.StringUtils;
@@ -44,7 +46,7 @@ import org.metawidget.util.simple.StringUtils;
 /**
  * Inspects Forge-specific metadata.
  *
- * @author Ryan Bradley
+ * @author Richard Kennard
  */
 
 public class ForgeInspector
@@ -76,16 +78,9 @@ public class ForgeInspector
 
       // OneToOne
 
-      OneToOne oneToOne = property.getAnnotation(OneToOne.class);
-
-      if (oneToOne != null ) {
+      if ( property.isAnnotationPresent(OneToOne.class) || property.isAnnotationPresent(Embedded.class)) {
 
          attributes.put(ONE_TO_ONE, TRUE);
-
-         if (!"".equals(oneToOne.mappedBy()))
-         {
-            attributes.put(INVERSE_RELATIONSHIP, TRUE);
-         }
       }
 
       // ManyToOne
@@ -96,7 +91,7 @@ public class ForgeInspector
 
          attributes
                   .put(SPRING_LOOKUP,
-                           StaticJspUtils.wrapExpression(StringUtils.decapitalize(ClassUtils.getSimpleName(property
+                           StaticFacesUtils.wrapExpression(StringUtils.decapitalize(ClassUtils.getSimpleName(property
                                     .getType())) + "Bean.all"));
 
          // Note: this will fail on POSTback until https://issues.jboss.org/browse/FORGE-386

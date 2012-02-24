@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.forge.spring.metawidget.inspector;
+package org.jboss.forge.scaffold.spring.metawidget.inspector;
 
 /**
  * Forge-specific element and attribute names appearing in DOMs conforming to inspection-result-1.0.xsd.

@@ -20,9 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.forge.spring.metawidget.widgetbuilder;
+package org.jboss.forge.scaffold.spring.metawidget.widgetbuilder;
 
-import static org.jboss.forge.spring.metawidget.inspector.ForgeInspectionResultConstants.*;
+import static org.jboss.forge.scaffold.spring.metawidget.inspector.ForgeInspectionResultConstants.*;
 import static org.metawidget.inspector.InspectionResultConstants.*;
 import static org.metawidget.inspector.jsp.JspInspectionResultConstants.*;
 import static org.jvnet.inflector.Noun.pluralOf;
@@ -35,10 +35,10 @@ import org.metawidget.statically.StaticWidget;
 import org.metawidget.statically.StaticXmlMetawidget;
 import org.metawidget.statically.StaticXmlStub;
 import org.metawidget.statically.StaticXmlWidget;
-import org.metawidget.statically.html.StaticHtmlMetawidget;
 import org.metawidget.statically.html.widgetbuilder.HtmlTable;
 import org.metawidget.statically.html.widgetbuilder.HtmlTableCell;
 import org.metawidget.statically.html.widgetbuilder.HtmlTableRow;
+import org.metawidget.statically.jsp.StaticJspMetawidget;
 import org.metawidget.statically.jsp.StaticJspUtils;
 import org.metawidget.statically.jsp.widgetprocessor.StandardBindingProcessor;
 import org.metawidget.statically.jsp.widgetbuilder.CoreForEach;
@@ -77,35 +77,58 @@ public class EntityWidgetBuilder
         {
             return new StaticXmlStub();
         }
-        
+
+        String type = WidgetBuilderUtils.getActualClassOrType(attributes);
+
         // Render read-only JSP_LOOKUP as a link.
         
         if (WidgetBuilderUtils.isReadOnly(attributes))
         {
+
+            // Render JSP Lookups
+
             if (attributes.containsKey(JSP_LOOKUP))
             {
+                String entity = ClassUtils.getSimpleName(WidgetBuilderUtils.getActualClassOrType(attributes));
+                entity = StringUtils.decapitalize(entity);
+
+                HtmlAnchor link = new HtmlAnchor();
+                String targetExpression = StaticJspUtils.unwrapExpression(metawidget.getAttribute("value"));
+
+                if (!ENTITY.equals(elementName))
                 {
-                    String entity = ClassUtils.getSimpleName(WidgetBuilderUtils.getActualClassOrType(attributes));
-                    entity = StringUtils.decapitalize(entity);
+                    targetExpression += StringUtils.SEPARATOR_DOT_CHAR;
+                    targetExpression += StringUtils.decapitalize(attributes.get(NAME));
+                }
+
+                link.setTextContent(StaticJspUtils.wrapExpression(targetExpression));
+                CoreOut cout = new CoreOut();
+                cout.putAttribute("value", "/" + pluralOf(entity) + "/"  + 
+                        StaticJspUtils.wrapExpression(targetExpression + ".id"));
+                link.putAttribute("href", cout.toString());
                     
-                    HtmlAnchor link = new HtmlAnchor();
-                    new StandardBindingProcessor().processWidget(link, elementName, attributes, (StaticHtmlMetawidget) metawidget);
-                    link.setTextContent(link.getAttribute("value"));
+                return link;
+            }
+
+            Class<?> clazz = ClassUtils.niceForName(type);
+
+            if (clazz != null)
+            {
+                // Render read-only booleans
+
+                if (boolean.class.equals(clazz))
+                {
                     CoreOut cout = new CoreOut();
-                    cout.putAttribute("value", "/" + pluralOf(entity) + "/"  + 
-                            StaticJspUtils.wrapExpression(StaticJspUtils.unwrapExpression(link.getAttribute("value")) + ".id"));
-                    link.putAttribute("value", null);
-                    link.putAttribute("href", cout.toString());
-                    
-                    return link;
+                    StandardBindingProcessor bindingProcessor = new StandardBindingProcessor();
+                    bindingProcessor.processWidget(cout, elementName, attributes, (StaticJspMetawidget) metawidget);
+
+                    return cout;
                 }
             }
         }
         
         // Render collection tables with links
-        
-        String type = WidgetBuilderUtils.getActualClassOrType(attributes);
-        
+              
         if(type != null)
         {
             // Render non-optional ONE_TO_ONE with a button
@@ -123,7 +146,7 @@ public class EntityWidgetBuilder
                 
                 StaticSpringMetawidget nestedMetawidget = new StaticSpringMetawidget();
                 metawidget.initNestedMetawidget(nestedMetawidget, attributes);
-                String unwrappedExpression = StaticJspUtils.unwrapExpression(nestedMetawidget.getValue());
+                String unwrappedExpression = StaticJspUtils.unwrapExpression(nestedMetawidget.getAttribute("value"));
                 nestedMetawidget.putAttribute("rendered", StaticJspUtils.wrapExpression("!empty" + unwrappedExpression));
                 
                 // If read-only, we're done
@@ -192,7 +215,7 @@ public class EntityWidgetBuilder
         
         if(bindingProcessor != null)
         {
-            bindingProcessor.processWidget(table, elementName, attributes, (StaticHtmlMetawidget) metawidget);
+            bindingProcessor.processWidget(table, elementName, attributes, (StaticJspMetawidget) metawidget);
         }
                
         // Add row creation/deletion for OneToMany and ManyToMany
@@ -234,7 +257,7 @@ public class EntityWidgetBuilder
     
     protected void addColumnComponents(HtmlTable table, CoreForEach forEach, Map<String, String> attributes, NodeList elements, StaticXmlMetawidget metawidget)
     {
-        // super.addColumnComponents(table, forEach, attributes, elements, metawidget);
+        super.addColumnComponents(table, forEach, attributes, elements, metawidget);
         
         if(forEach.getChildren().isEmpty())
         {
