@@ -51,7 +51,9 @@ import org.metawidget.statically.spring.widgetbuilder.FormSelectTag;
 import org.metawidget.util.ClassUtils;
 import org.metawidget.util.CollectionUtils;
 import org.metawidget.util.WidgetBuilderUtils;
+import org.metawidget.util.XmlUtils;
 import org.metawidget.util.simple.StringUtils;
+import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 /**
@@ -61,8 +63,14 @@ import org.w3c.dom.NodeList;
  */
 
 public class EntityWidgetBuilder
-        extends JspWidgetBuilder {
-    
+        extends JspWidgetBuilder
+{
+    //
+    // Private statics
+    //
+
+    private static final String TOP_LEVEL_PARAMETERIZED_TYPE = "top-level-parameterized-type";
+
     //
     // Public methods
     //
@@ -294,51 +302,80 @@ public class EntityWidgetBuilder
     protected void addColumnComponent(HtmlTableRow row, CoreForEach forEach, Map<String, String> tableAttributes, String elementName,
             Map<String, String> columnAttributes, StaticXmlMetawidget metawidget)
     {
-        // Suppress columns that show Collection values (their toString is never very nice)
-        
-        if(TRUE.equals(columnAttributes.get(N_TO_MANY)))
+        // Suppress columns that show Collection values.  Their toString is never very nice, and nested tables are awful.
+        //
+        // Note: we don't just do N_TO_MANY values, as Collections are sometimes not annotated.
+
+        String type = WidgetBuilderUtils.getActualClassOrType(columnAttributes);
+
+        if (type != null)
         {
-            return;
+            Class<?> clazz = ClassUtils.niceForName(type);
+
+            if (clazz != null && Collection.class.isAssignableFrom(clazz))
+            {
+                return;
+            }
         }
-        
-        // FORGE-448: Don't display "owner" when showing relationships
-        
-        String columnName = columnAttributes.get(NAME);
-        
-        if(columnName.equals(tableAttributes.get(INVERSE_RELATIONSHIP)))
-        {
-            return;
-        }
-        
-        // Create the column
-        
-        super.addColumnComponent(row, forEach, tableAttributes, elementName, columnAttributes, metawidget);
-        List<StaticWidget> columns = forEach.getChildren().get(0).getChildren();
-        HtmlTableCell column = (HtmlTableCell) columns.get(columns.size()-1);
-        
-        // If we can determine the component type, wrap it with a link
-        
+
+        // FORGE-446: Expand columns that show one-to-one values.
+
         String componentType = WidgetBuilderUtils.getComponentType(tableAttributes);
-        
-        if(componentType != null)
+
+        if (TRUE.equals(columnAttributes.get(ONE_TO_ONE)))
         {
-            String entity = StringUtils.decapitalize(ClassUtils.getSimpleName(componentType));
-            
-            // Get the original column text...
-            
-            StaticXmlWidget originalComponent = (StaticXmlWidget) column.getChildren().remove(0);
-            
-            // ...and create a link with the same value.
-            
+            String columnType = columnAttributes.get(TYPE);
+            String inspectedType = metawidget.inspect(null, columnType);
+
+            if (inspectedType == null)
+            {
+                Element root = XmlUtils.documentFromString(inspectedType).getDocumentElement();
+                NodeList elements = root.getFirstChild().getChildNodes();
+                Map<String, String> embeddedAttributes = CollectionUtils.newHashMap();
+                embeddedAttributes.put(TOP_LEVEL_PARAMETERIZED_TYPE, componentType);
+                embeddedAttributes.put(PARAMETERIZED_TYPE, columnType);
+
+                // TODO: Figure out a reference to an HtmlDataTable for the 'addColumnComponents' method invocation.
+                addColumnComponents(null, forEach, embeddedAttributes, elements, metawidget);
+            }
+        }
+
+        // FORGE-448: Don't display "owner" when showing relationships.
+
+        String columnName = columnAttributes.get(NAME);
+
+        if (columnName.equals(tableAttributes.get(INVERSE_RELATIONSHIP)))
+        {
+            return;
+        }
+
+        // Create the column.
+
+        super.addColumnComponent(row, forEach, tableAttributes, elementName, columnAttributes, metawidget);
+        List<StaticWidget> columns = row.getChildren();
+        HtmlTableCell column = (HtmlTableCell) columns.get(columns.size()-1);
+
+        // If we can determine the component type, wrap it with a link.
+
+        if (tableAttributes.get(TOP_LEVEL_PARAMETERIZED_TYPE) != null)
+        {
+            componentType = tableAttributes.get(TOP_LEVEL_PARAMETERIZED_TYPE);
+        }
+
+        if (componentType != null)
+        {
+            String controllerName = StringUtils.decapitalize(ClassUtils.getSimpleName(componentType));
+
+            // Create a link...
+
             HtmlAnchor link = new HtmlAnchor();
-            CoreOut cout = new CoreOut();
-            cout.putAttribute( "value", "/" + pluralOf(entity) + "/" + StaticJspUtils.wrapExpression(forEach.getAttribute("var") + ".id"));
-            link.putAttribute("href", cout.toString());
-            link.putAttribute("value", originalComponent.getAttribute("value"));
-            
+            String targetExpression = "/scaffold/" + controllerName + "/view";
+            targetExpression += StaticJspUtils.wrapExpression(forEach.getAttribute("var") + ".id");
+            link.putAttribute("href", targetExpression);
+            link.getChildren().add(column.getChildren().remove(0));
             column.getChildren().add(link);
-            
-            // Ignore bi-directional case
+
+            // Ignore bidirectional case.            
         }
     }
     

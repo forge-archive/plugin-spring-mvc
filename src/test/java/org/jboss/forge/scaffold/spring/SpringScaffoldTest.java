@@ -26,12 +26,14 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.parser.xml.Node;
 import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.project.Project;
+import org.jboss.forge.project.facets.JavaSourceFacet;
 import org.jboss.forge.project.facets.MetadataFacet;
 import org.jboss.forge.project.facets.ResourceFacet;
 import org.jboss.forge.project.facets.WebResourceFacet;
 import org.jboss.forge.resources.FileResource;
 import org.jboss.forge.scaffold.spring.AbstractSpringScaffoldTest;
 import org.jboss.forge.shell.exceptions.PluginExecutionException;
+import org.jboss.forge.shell.util.Streams;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -61,7 +63,7 @@ public class SpringScaffoldTest extends AbstractSpringScaffoldTest
         Assert.assertTrue(applicationContext.exists());
 
         Node beans = XMLParser.parse(applicationContext.getResourceInputStream());
-        Assert.assertTrue(beans.getChildren().size() == 3);
+        Assert.assertEquals(3, beans.getChildren().size());
         Assert.assertNotNull(beans.get("context:component-scan"));
         Assert.assertEquals(meta.getTopLevelPackage() + ".repo", beans.get("context:component-scan").get(0).getAttribute("base-package"));
 
@@ -103,15 +105,41 @@ public class SpringScaffoldTest extends AbstractSpringScaffoldTest
         getShell().execute("scaffold from-entity --scaffoldType spring");
     }
 
-    @Override
-    protected Project setupScaffoldProject() throws Exception
+    @Test
+    public void testGenerateFromEntity() throws Exception
     {
-        Project project = initializeJavaProject();
-        getShell().execute("spring setup");
-        queueInputLines("HIBERNATE", "JBOSS_AS7", "");
-        getShell().execute("persistence setup");
-        queueInputLines("", "", "2", "", "", "");
-        getShell().execute("scaffold setup --scaffoldType spring --overwrite true");
-        return project;
-    }    
+        Project project = setupScaffoldProject();
+
+        queueInputLines("");
+        getShell().execute("entity --named Customer");
+        getShell().execute("field string --named firstName");
+        getShell().execute("field string --named lastName");
+
+        queueInputLines("", "");
+        getShell().execute("scaffold from-entity --scaffoldType spring");
+
+        JavaSourceFacet java = project.getFacet(JavaSourceFacet.class);
+        WebResourceFacet web = project.getFacet(WebResourceFacet.class);
+
+        // View
+
+        FileResource<?> view = web.getWebResource("WEB-INF/views/viewCustomer.jsp");
+        Assert.assertTrue(view.exists());
+        String contents = Streams.toString(view.getResourceInputStream());
+
+        // Create
+
+        FileResource<?> create = web.getWebResource("WEB-INF/views/createCustomer.jsp");
+        Assert.assertTrue(create.exists());
+        contents = Streams.toString(create.getResourceInputStream());
+        Assert.assertEquals("<html>", contents);
+
+        // Search
+
+        FileResource<?> search = web.getWebResource("WEB-INF/views/searchCustomer.jsp");
+        Assert.assertTrue(search.exists());
+        contents = Streams.toString(search.getResourceInputStream());
+
+        
+    }
 }
