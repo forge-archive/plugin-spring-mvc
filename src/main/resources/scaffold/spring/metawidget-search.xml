@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <metawidget xmlns="http://metawidget.org"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:processor="java:org.metawidget.statically.faces.component.widgetprocessor"
+	xmlns:processor="java:org.metawidget.statically.spring.widgetprocessor"
 	xsi:schemaLocation="http://metawidget.org http://metawidget.org/xsd/metawidget-1.0.xsd
-						java:org.metawidget.statically.faces.component.html http://metawidget.org/xsd/org.metawidget.statically.faces.component.html-1.0.xsd
+						java:org.metawidget.statically.spring http://metawidget.org/xsd/org.metawidget.statically.spring-1.0.xsd
 						java:org.metawidget.inspector.composite http://metawidget.org/xsd/org.metawidget.inspector.composite-1.0.xsd"
 	version="1.0">
 
@@ -48,9 +48,9 @@
 			<compositeWidgetBuilder xmlns="java:org.metawidget.widgetbuilder.composite" config="CompositeWidgetBuilderConfig">
 				<widgetBuilders>
 					<array>
-						<entityWidgetBuilder xmlns="java:org.jboss.forge.spring.metawidget.widgetbuilder"/>
+						<entityWidgetBuilder xmlns="java:org.jboss.forge.scaffold.spring.metawidget.widgetbuilder"/>
 						<springWidgetBuilder xmlns="java:org.metawidget.statically.spring.widgetbuilder"/>
-						<htmlWidgetBuilder xmlns="java:org.metawidget.statically.faces.component.html.widgetbuilder"/>
+						<jspWidgetBuilder xmlns="java:org.metawidget.statically.jsp.widgetbuilder"/>
 					</array>
 				</widgetBuilders>
 			</compositeWidgetBuilder>
@@ -62,13 +62,13 @@
 				<cssStyleProcessor xmlns="java:org.metawidget.statically.spring.widgetprocessor"/>
 				<hiddenFieldProcessor xmlns="java:org.metawidget.statically.spring.widgetprocessor"/>
 				<pathProcessor xmlns="java:org.metawidget.statically.spring.widgetprocessor"/>
-				<unsearchableWidgetProcessor xmlns="java:org.jboss.forge.scaffold.faces.metawidget.widgetprocessor"/>
+				<unsearchableWidgetProcessor xmlns="java:org.jboss.forge.scaffold.spring.metawidget.widgetprocessor"/>
 			</array>
 		</widgetProcessors>
 
 		<layout>
-			<springTableLayout xmlns="java:org.metawidget.statically.spring.layout" config="HtmlTableLayoutConfig">
-				<columnStyleClasses>
+			<springTableLayout xmlns="java:org.metawidget.statically.spring.layout" config="org.metawidget.statically.html.layout.HtmlTableLayoutConfig">
+<!-- 				<columnStyleClasses>
 					<array>
 						<string>label</string>
 						<string>component</string>
@@ -77,7 +77,7 @@
 				</columnStyleClasses>
 				<messageStyleClass>
 					<string>error</string>
-				</messageStyleClass>
+				</messageStyleClass> -->
 			</springTableLayout>
 		</layout>
 		

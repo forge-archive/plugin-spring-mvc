@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <metawidget xmlns="http://metawidget.org"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xmlns:processor="java:org.metawidget.statically.faces.component.widgetprocessor"
+	xmlns:processor="java:org.metawidget.statically.spring.widgetprocessor"
 	xsi:schemaLocation="http://metawidget.org http://metawidget.org/xsd/metawidget-1.0.xsd
-						java:org.metawidget.statically.faces.component.html http://metawidget.org/xsd/org.metawidget.statically.faces.component.html-1.0.xsd
+						java:org.metawidget.statically.spring http://metawidget.org/xsd/org.metawidget.statically.spring-1.0.xsd
 						java:org.metawidget.inspector.composite http://metawidget.org/xsd/org.metawidget.inspector.composite-1.0.xsd"
 	version="1.0">
 
@@ -17,14 +17,14 @@
 					<array>
 						<propertyTypeInspector xmlns="java:org.metawidget.inspector.propertytype" config="org.metawidget.inspector.impl.BaseObjectInspectorConfig">
 							<propertyStyle>
-								<forgePropertyStyle id="forgePropertyStyle" xmlns="java:org.jboss.forge.spring.metawidget.inspector.propertystyle" config="ForgePropertyStyleConfig">
+								<forgePropertyStyle id="forgePropertyStyle" xmlns="java:org.jboss.forge.scaffold.spring.metawidget.inspector.propertystyle" config="ForgePropertyStyleConfig">
 									<project>
 										<forgeProject/>
 									</project>
 								</forgePropertyStyle>
 							</propertyStyle>
 						</propertyTypeInspector>
-						<forgeInspector xmlns="java:org.jboss.forge.spring.metawidget.inspector" config="org.metawidget.inspector.impl.BaseObjectInspectorConfig">
+						<forgeInspector xmlns="java:org.jboss.forge.scaffold.spring.metawidget.inspector" config="org.metawidget.inspector.impl.BaseObjectInspectorConfig">
 							<propertyStyle>
 								<forgePropertyStyle refId="forgePropertyStyle"/>
 							</propertyStyle>
@@ -45,12 +45,12 @@
 		</inspector>
 		
 		<widgetBuilder>
-			<queryByExampleWidgetBuilder xmlns="java:org.jboss.forge.spring.metawidget.widgetbuilder"/>
+			<queryByExampleWidgetBuilder xmlns="java:org.jboss.forge.scaffold.spring.metawidget.widgetbuilder"/>
 		</widgetBuilder>
 
 		<widgetProcessors>
 			<array>
-				<unsearchableWidgetProcessor xmlns="java:org.jboss.forge.spring.metawidget.widgetprocessor"/>
+				<unsearchableWidgetProcessor xmlns="java:org.jboss.forge.scaffold.spring.metawidget.widgetprocessor"/>
 			</array>
 		</widgetProcessors>
 		
