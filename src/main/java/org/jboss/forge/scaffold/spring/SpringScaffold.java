@@ -248,8 +248,10 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
             // Set context for view generation
 
             context = getTemplateContext(template);
-            context.put("ccEntity", ccEntity);
+            context.put("entity", entity);
             context.put("entityName", StringUtils.uncamelCase(entity.getName()));
+            context.put("ccEntity", ccEntity);
+            context.put("daoPackage", daoPackage);
 
             // Prepare entity metawidget
 
@@ -734,7 +736,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         context.put("metawidget", writer.toString().trim());
 
         Map<String, String> namespaces = this.entityMetawidget.getNamespaces();
-        namespaces.keySet().removeAll(existingNamespaces.keySet());
+
+        if (namespaces.keySet() != null && existingNamespaces != null)
+        {
+            namespaces.keySet().removeAll(existingNamespaces.keySet());
+        }
+
         context.put("metawidgetNamespaces", namespacesToString(namespaces));
     }
 

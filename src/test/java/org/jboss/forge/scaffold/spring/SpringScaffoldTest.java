@@ -26,7 +26,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.forge.parser.xml.Node;
 import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.project.Project;
-import org.jboss.forge.project.facets.JavaSourceFacet;
 import org.jboss.forge.project.facets.MetadataFacet;
 import org.jboss.forge.project.facets.ResourceFacet;
 import org.jboss.forge.project.facets.WebResourceFacet;
@@ -118,28 +117,44 @@ public class SpringScaffoldTest extends AbstractSpringScaffoldTest
         queueInputLines("", "");
         getShell().execute("scaffold from-entity --scaffoldType spring");
 
-        JavaSourceFacet java = project.getFacet(JavaSourceFacet.class);
         WebResourceFacet web = project.getFacet(WebResourceFacet.class);
 
         // View
 
-        FileResource<?> view = web.getWebResource("WEB-INF/views/viewCustomer.jsp");
+/*        FileResource<?> view = web.getWebResource("WEB-INF/views/viewCustomer.jsp");
         Assert.assertTrue(view.exists());
-        String contents = Streams.toString(view.getResourceInputStream());
+        String contents = Streams.toString(view.getResourceInputStream());*/
 
         // Create
 
         FileResource<?> create = web.getWebResource("WEB-INF/views/createCustomer.jsp");
         Assert.assertTrue(create.exists());
-        contents = Streams.toString(create.getResourceInputStream());
-        Assert.assertEquals("<html>", contents);
+        String contents = Streams.toString(create.getResourceInputStream());
+
+        StringBuilder metawidget = new StringBuilder();
+        metawidget.append("<%@ taglib prefix=\"c\" uri=\"http://java.sun.com/jsp/jstl/core\" %>\n");
+        metawidget.append("<%@ taglib prefix=\"form\" uri=\"http://www.springframework.org/tags/form\" %>\n\n");
+        metawidget.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n");
+        metawidget.append("<html>\n\n");
+        metawidget.append("\t<head>\n\t\t<title>Create a new Customer</title>\n\t</head>\n\t\n");
+        metawidget.append("\t<form:form commandName=\"customer\">\n\t\n");
+        metawidget.append("\t\t<table>\r\n\t\t\t<tbody>\r\n\t\t\t\t<tr>\r\n\t\t\t\t\t<th>\r\n\t\t\t\t\t\t<form:label path=\"id\">Id:</form:label>\r\n");
+        metawidget.append("\t\t\t\t\t</th>\r\n\t\t\t\t\t<td>\r\n\t\t\t\t\t\t<form:hidden path=\"id\"/>\r\n\t\t\t\t\t</td>\r\n\t\t\t\t\t<td>*</td>\r\n");
+        metawidget.append("\t\t\t\t</tr>\r\n\t\t\t\t<tr>\r\n\t\t\t\t\t<th>\r\n\t\t\t\t\t\t<form:label path=\"version\">Version:</form:label>\r\n");
+        metawidget.append("\t\t\t\t\t</th>\r\n\t\t\t\t\t<td>\r\n\t\t\t\t\t\t<form:hidden path=\"version\"/>\r\n\t\t\t\t\t</td>\r\n\t\t\t\t\t<td/>\r\n");
+        metawidget.append("\t\t\t\t</tr>\r\n\t\t\t\t<tr>\r\n\t\t\t\t\t<th>\r\n\t\t\t\t\t\t<form:label path=\"firstName\">First Name:</form:label>\r\n");
+        metawidget.append("\t\t\t\t\t</th>\r\n\t\t\t\t\t<td>\r\n\t\t\t\t\t\t<form:input path=\"firstName\"/>\r\n\t\t\t\t\t</td>\r\n\t\t\t\t\t<td/>\r\n");
+        metawidget.append("\t\t\t\t</tr>\r\n\t\t\t\t<tr>\r\n\t\t\t\t\t<th>\r\n\t\t\t\t\t\t<form:label path=\"lastName\">Last Name:</form:label>\r\n");
+        metawidget.append("\t\t\t\t\t</th>\r\n\t\t\t\t\t<td>\r\n\t\t\t\t\t\t<form:input path=\"lastName\"/>\r\n\t\t\t\t\t</td>\r\n\t\t\t\t\t<td/>\r\n");
+        metawidget.append("\t\t\t\t</tr>\r\n\t\t\t</tbody>\r\n\t\t</table>\n\n\t\t<input type=\"submit\" value=\"Create New Customer\"/>\t\t\n");
+        metawidget.append("\t</form:form>\n\t\n</html>");
+
+        Assert.assertEquals(metawidget.toString(), contents.toString());
 
         // Search
 
-        FileResource<?> search = web.getWebResource("WEB-INF/views/searchCustomer.jsp");
+/*        FileResource<?> search = web.getWebResource("WEB-INF/views/searchCustomer.jsp");
         Assert.assertTrue(search.exists());
-        contents = Streams.toString(search.getResourceInputStream());
-
-        
+        contents = Streams.toString(search.getResourceInputStream());*/        
     }
 }
