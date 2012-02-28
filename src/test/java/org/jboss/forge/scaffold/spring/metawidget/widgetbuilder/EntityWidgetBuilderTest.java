@@ -33,8 +33,18 @@ import java.util.Set;
 import javax.persistence.OneToOne;
 
 import org.junit.Assert;
+import org.metawidget.inspector.annotation.MetawidgetAnnotationInspector;
 import org.metawidget.inspector.annotation.UiComesAfter;
+import org.metawidget.inspector.composite.CompositeInspector;
+import org.metawidget.inspector.composite.CompositeInspectorConfig;
+import org.metawidget.inspector.iface.Inspector;
+import org.metawidget.inspector.impl.BaseObjectInspector;
+import org.metawidget.inspector.impl.BaseObjectInspectorConfig;
+import org.metawidget.inspector.impl.propertystyle.Property;
+import org.metawidget.inspector.impl.propertystyle.statically.StaticPropertyStyle;
+import org.metawidget.inspector.propertytype.PropertyTypeInspector;
 import org.metawidget.statically.StaticWidget;
+import org.metawidget.statically.jsp.StaticJspMetawidget;
 import org.metawidget.statically.spring.StaticSpringMetawidget;
 import org.metawidget.util.CollectionUtils;
 
@@ -123,9 +133,9 @@ public class EntityWidgetBuilderTest
         // This WidgetBuilder functionality needs to be further debugged.
 
         String result = "<tr><td><a href=\"<c:out value=\"/EntityWidgetBuilderTest$Bars/create\"/>\" ";
-        result += "rendered=\"${emptyfoo.bar}\">Create New Bar</a></td><table id=\"bar\"><tbody><tr><th><form:label path=\"bar.name\">";
+        result += "rendered=\"${emptyfoo.bar}\">Create New Bar</a></td><td><table id=\"bar\"><tbody><tr><th><form:label path=\"bar.name\">";
         result += "Name:</form:label></th><td><form:input path=\"bar.name\"/></td><td/></tr><tr><th><form:label path=\"bar.description\">";
-        result += "Description:</form:label></th><td><form:input path=\"bar.description\"/></td><td/></tr></tbody></table></tr>";
+        result += "Description:</form:label></th><td><form:input path=\"bar.description\"/></td><td/></tr></tbody></table></td></tr>";
 
         Assert.assertEquals(result, widget.toString());
     }
@@ -133,7 +143,7 @@ public class EntityWidgetBuilderTest
     public void testTopLevelList()
             throws Exception
     {
-        StaticSpringMetawidget metawidget = new StaticSpringMetawidget();
+        StaticJspMetawidget metawidget = new StaticJspMetawidget();
         metawidget.setValue("#{foo}");
         EntityWidgetBuilder widgetBuilder = new EntityWidgetBuilder();
         Map<String, String> attributes = CollectionUtils.newHashMap();
@@ -142,7 +152,118 @@ public class EntityWidgetBuilderTest
         attributes.put(PARAMETERIZED_TYPE, Bar.class.getName());
         StaticWidget widget = widgetBuilder.buildWidget(PROPERTY, attributes, metawidget);
 
-        String result = "<table><thead><tr/></thead><tbody><c:forEach items=\"${bars}\" var=\"item\"/></tbody></table>";
+        String result = "<table><thead><tr><th>Name</th><th>Description</th></tr></thead><tbody><c:forEach items=\"${bars}\" var=\"item\">";
+        result += "<tr><td><a href=\"/scaffold/entityWidgetBuilderTest$Bar/view/${item.id}\"><c:out value=\"${item.name}\"/></a>";
+        result += "</td><td><a href=\"/scaffold/entityWidgetBuilderTest$Bar/view/${item.id}\"><c:out value=\"${item.description}\"/></a>";
+        result += "</td></tr></c:forEach></tbody></table>";
+
+        Assert.assertEquals(result, widget.toString());
+    }
+
+    public void testEmbeddedSet()
+            throws Exception
+    {
+        StaticJspMetawidget metawidget = new StaticJspMetawidget();
+        metawidget.setValue("#{foo}");
+        EntityWidgetBuilder widgetBuilder = new EntityWidgetBuilder();
+        Map<String, String> attributes = CollectionUtils.newHashMap();
+        attributes.put(NAME, "bars");
+        attributes.put(TYPE, Set.class.getName());
+        attributes.put(PARAMETERIZED_TYPE, Bar.class.getName());
+        attributes.put(N_TO_MANY, TRUE);
+        StaticWidget widget = widgetBuilder.buildWidget(PROPERTY, attributes, metawidget);
+
+        String result = "<table><thead><tr><th>Name</th><th>Description</th></tr></thead><tbody><c:forEach items=\"${bars}\" var=\"item\">";
+        result += "<tr><td><a href=\"/scaffold/entityWidgetBuilderTest$Bar/view/${item.id}\"><c:out value=\"${item.name}\"/></a></td>";
+        result += "<td><a href=\"/scaffold/entityWidgetBuilderTest$Bar/view/${item.id}\"><c:out value=\"${item.description}\"/></a></td>";
+        result += "<td><a href=\"<c:out value=\"/entityWidgetBuilderTest$Bars/${entityWidgetBuilderTest$Bar.id}/remove\"/>\">Remove</a></td>";
+        result += "</tr></c:forEach><tr><td><form:select multiple=\"multiple\"><form:option/><form:options items=\"entityWidgetBuilderTest$Bar\"/>";
+        result += "</form:select></td></tr></tbody></table>";
+
+        Assert.assertEquals(result, widget.toString());
+
+        // With suppressed column
+
+        attributes.put(INVERSE_RELATIONSHIP, "name");
+        widget = widgetBuilder.buildWidget(PROPERTY, attributes, metawidget);
+
+        result = "<table><thead><tr><th>Name</th><th>Description</th></tr></thead><tbody><c:forEach items=\"${bars}\" var=\"item\">";
+        result += "<tr><td><a href=\"/scaffold/entityWidgetBuilderTest$Bar/view/${item.id}\"><c:out value=\"${item.description}\"/></a></td>";
+        result += "<td><a href=\"<c:out value=\"/entityWidgetBuilderTest$Bars/${entityWidgetBuilderTest$Bar.id}/remove\"/>\">Remove</a></td>";
+        result += "</tr></c:forEach></tbody></table>";
+
+        Assert.assertEquals(result, widget.toString());
+    }
+
+    public void testSuppressOneToMany()
+            throws Exception
+    {
+        StaticJspMetawidget metawidget = new StaticJspMetawidget();
+        metawidget.setValue("#{foo}");
+        EntityWidgetBuilder widgetBuilder = new EntityWidgetBuilder();
+        Map<String, String> attributes = CollectionUtils.newHashMap();
+        attributes.put(NAME, "bars");
+        attributes.put(TYPE, Set.class.getName());
+        attributes.put(PARAMETERIZED_TYPE, FooOneToMany.class.getName());
+        attributes.put(N_TO_MANY, TRUE);
+        StaticWidget widget = widgetBuilder.buildWidget(PROPERTY, attributes, metawidget);
+
+        String result = "<table><thead><tr><th>Field 1</th><th>Field 2</th><th>Field 3</th></tr></thead><tbody>";
+        result += "<c:forEach items=\"${bars}\" var=\"item\"><tr><td><a href=\"/scaffold/entityWidgetBuilderTest$FooOneToMany/view/${item.id}\">";
+        result += "<c:out value=\"${item.field1}\"/></a></td><td><a href=\"/scaffold/entityWidgetBuilderTest$FooOneToMany/view/${item.id}\">";
+        result += "<c:out value=\"${item.field3}\"/></a></td><td>";
+        result += "<a href=\"<c:out value=\"/entityWidgetBuilderTest$FooOneToManies/${entityWidgetBuilderTest$FooOneToMany.id}/remove\"/>\">";
+        result += "Remove</a></td></tr></c:forEach><tr><td><form:select multiple=\"multiple\"><form:option/><form:options items=\"entityWidgetBuilderTest$FooOneToMany\"/>";
+        result += "</form:select></td></tr></tbody></table>";
+
+        Assert.assertEquals(result, widget.toString());
+    }
+
+    public void testExpandOneToOne()
+            throws Exception
+    {
+        StaticJspMetawidget metawidget = new StaticJspMetawidget();
+        Inspector testInspector = new BaseObjectInspector()
+        {
+            @Override
+            protected Map<String, String> inspectProperty(Property property)
+            {
+                Map<String, String> attributes = CollectionUtils.newHashMap();
+
+                // OneToOne
+
+                if (property.isAnnotationPresent(OneToOne.class))
+                {
+                    attributes.put(ONE_TO_ONE, TRUE);
+                }
+
+                return attributes;
+            }
+        };
+        Inspector inspector = new CompositeInspector(new CompositeInspectorConfig()
+                    .setInspectors(
+                            new PropertyTypeInspector(new BaseObjectInspectorConfig()
+                                    .setPropertyStyle(new StaticPropertyStyle())),
+                            new MetawidgetAnnotationInspector(new BaseObjectInspectorConfig()
+                                    .setPropertyStyle(new StaticPropertyStyle())),
+                            testInspector));
+
+        metawidget.setInspector(inspector);
+        metawidget.setValue("#{foo}");
+        EntityWidgetBuilder widgetBuilder = new EntityWidgetBuilder();
+        Map<String, String> attributes = CollectionUtils.newHashMap();
+        attributes.put(NAME, "bars");
+        attributes.put(TYPE, Set.class.getName());
+        attributes.put(PARAMETERIZED_TYPE, FooOneToOne.class.getName());
+        attributes.put(N_TO_MANY, TRUE);
+        StaticWidget widget = widgetBuilder.buildWidget(PROPERTY, attributes, metawidget);
+
+        String result = "<table><thead><tr><th>Bar</th></tr></thead><tbody><c:forEach items=\"${bars}\" var=\"item\"><tr><td>";
+        result += "<a href=\"/scaffold/entityWidgetBuilderTest$FooOneToOne/view/${item.id}\"><c:out value=\"${item.bar.name}\"/>";
+        result += "<c:out value=\"${item.bar.description}\"/></a></td>";
+        result += "<td><a href=\"<c:out value=\"/entityWidgetBuilderTest$FooOneToOnes/${entityWidgetBuilderTest$FooOneToOne.id}/remove\"/>\">";
+        result += "Remove</a></td></tr></c:forEach><tr><td><form:select multiple=\"multiple\"><form:option/><form:options items=\"entityWidgetBuilderTest$FooOneToOne\"/>";
+        result += "</form:select></td></tr></tbody></table>";
 
         Assert.assertEquals(result, widget.toString());
     }

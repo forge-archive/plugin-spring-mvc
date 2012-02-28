@@ -184,7 +184,7 @@ public class EntityWidgetBuilder
                 createLinkCell.getChildren().add(createLink);
                 row.getChildren().add(createLinkCell);
                 nestedMetawidgetCell.getChildren().add(nestedMetawidget);
-                row.getChildren().add(nestedMetawidget);
+                row.getChildren().add(nestedMetawidgetCell);
                 return row;
             }
             
@@ -253,10 +253,13 @@ public class EntityWidgetBuilder
             Map<String, String> emptyAttributes = CollectionUtils.newHashMap();
             FormSelectTag select = createFormSelectTag(controllerName, emptyAttributes);
             select.putAttribute("multiple", "multiple");
-            row.getChildren().add(select);
+            HtmlTableCell selectCell = new HtmlTableCell();
+            selectCell.getChildren().add(select);
+            row.getChildren().add(selectCell);
+            table.getChildren().get(1).getChildren().add(row);
         }
         
-        return row;
+        return table;
     }
 
     /**
@@ -279,7 +282,7 @@ public class EntityWidgetBuilder
         
         HtmlAnchor removeLink = new HtmlAnchor();
         removeLink.setTextContent("Remove");
-        String entity = ClassUtils.getSimpleName(WidgetBuilderUtils.getActualClassOrType(attributes));
+        String entity = StringUtils.decapitalize(ClassUtils.getSimpleName(attributes.get(PARAMETERIZED_TYPE)));
         String removeExpression = entity + ".id";
         removeExpression = StaticJspUtils.wrapExpression(removeExpression);
         CoreOut cout = new CoreOut();
@@ -369,7 +372,7 @@ public class EntityWidgetBuilder
             // Create a link...
 
             HtmlAnchor link = new HtmlAnchor();
-            String targetExpression = "/scaffold/" + controllerName + "/view";
+            String targetExpression = "/scaffold/" + controllerName + "/view/";
             targetExpression += StaticJspUtils.wrapExpression(forEach.getAttribute("var") + ".id");
             link.putAttribute("href", targetExpression);
             link.getChildren().add(column.getChildren().remove(0));
@@ -401,6 +404,7 @@ public class EntityWidgetBuilder
         
         FormOptionsTag options = new FormOptionsTag();
         options.putAttribute("items", expression);
+        select.getChildren().add(options);
         
         return select;
     }
