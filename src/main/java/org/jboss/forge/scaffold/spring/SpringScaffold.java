@@ -58,9 +58,11 @@ import org.jboss.forge.scaffold.util.ScaffoldUtil;
 import org.jboss.forge.shell.ShellPrompt;
 import org.jboss.forge.shell.plugins.Alias;
 import org.jboss.forge.shell.plugins.RequiresFacet;
+import org.jboss.forge.shell.util.Streams;
 import org.jboss.forge.spec.javaee.PersistenceFacet;
 import org.jboss.seam.render.TemplateCompiler;
 import org.jboss.seam.render.spi.TemplateResolver;
+import org.jboss.seam.render.spi.TemplateResource;
 import org.jboss.seam.render.template.CompiledTemplateResource;
 import org.jboss.seam.render.template.resolver.ClassLoaderTemplateResolver;
 import org.metawidget.statically.StaticUtils.IndentedWriter;
@@ -593,21 +595,21 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         if (this.viewTemplate == null)
         {
             this.viewTemplate = compiler.compile(VIEW_TEMPLATE);
-            String template = String.valueOf(this.viewTemplate.getCompiledTemplate().getTemplate());
+            String template = Streams.toString(this.viewTemplate.getSourceTemplateResource().getInputStream());
             this.viewTemplateEntityMetawidgetIndent = parseIndent(template, "@{metawidget}");
         }
 
         if (this.createTemplate == null)
         {
             this.createTemplate = compiler.compile(CREATE_TEMPLATE);
-            String template = String.valueOf(this.createTemplate.getCompiledTemplate().getTemplate());
+            String template = Streams.toString(this.createTemplate.getSourceTemplateResource().getInputStream());
             this.createTemplateEntityMetawidgetIndent = parseIndent(template, "@{metawidget}");
         }
 
-        if (this.searchMetawidget == null)
+        if (this.searchTemplate == null)
         {
             this.searchTemplate = compiler.compile(SEARCH_TEMPLATE);
-            String template = String.valueOf(this.searchTemplate.getCompiledTemplate().getTemplate());
+            String template = Streams.toString(this.searchTemplate.getSourceTemplateResource().getInputStream());
             this.searchTemplateSearchMetawidgetIndent = parseIndent(template, "@{searchMetawidget}");
             this.searchTemplateBeanMetawidgetIndent = parseIndent(template, "@{beanMetawidget}");
         }
@@ -615,7 +617,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         if (this.navigationTemplate == null)
         {
             this.navigationTemplate = compiler.compile(NAVIGATION_TEMPLATE);
-            String template = String.valueOf(this.navigationTemplate.getCompiledTemplate().getTemplate());
+            String template = Streams.toString(this.navigationTemplate.getSourceTemplateResource().getInputStream());
             this.navigationTemplateIndent = parseIndent(template, "@{navigation}");
         }
 
