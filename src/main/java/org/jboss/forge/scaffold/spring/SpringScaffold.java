@@ -572,7 +572,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
             location.text("WEB-INF/views/error.jsp");            
         }
 
-        // Save the updated web.xml file to 'src/main/webapp/WEB-INF/web.xml'
+        // Save the updated web.xml file
 
         String file = XMLParser.toXMLString(webapp);
         web.createWebResource(file.toCharArray(), "WEB-INF/web.xml");
