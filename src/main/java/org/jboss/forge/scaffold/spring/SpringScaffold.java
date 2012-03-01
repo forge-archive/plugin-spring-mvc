@@ -62,7 +62,6 @@ import org.jboss.forge.shell.util.Streams;
 import org.jboss.forge.spec.javaee.PersistenceFacet;
 import org.jboss.seam.render.TemplateCompiler;
 import org.jboss.seam.render.spi.TemplateResolver;
-import org.jboss.seam.render.spi.TemplateResource;
 import org.jboss.seam.render.template.CompiledTemplateResource;
 import org.jboss.seam.render.template.resolver.ClassLoaderTemplateResolver;
 import org.metawidget.statically.StaticUtils.IndentedWriter;
@@ -220,94 +219,103 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     public List<Resource<?>> generateFromEntity(Resource<?> template, JavaClass entity, boolean overwrite)
     {
 
+        ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
+
         // Track the list of resources generated
 
         List<Resource<?>> result = new ArrayList<Resource<?>>();
 
-        try
-        {
-            JavaSourceFacet java = this.project.getFacet(JavaSourceFacet.class);
-            WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
-            MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
-            
-            loadTemplates();
-            Map<Object, Object> context = CollectionUtils.newHashMap();
-            context.put("entity", entity);
-            String ccEntity = StringUtils.decapitalize(entity.getName());
-            context.put("ccEntity", ccEntity);
-            String daoPackage = meta.getTopLevelPackage() + ".repo";
-            context.put("daoPackage", daoPackage);
+        try {
 
-            // Prepare qbeMetawidget
+            Thread.currentThread().setContextClassLoader(SpringScaffold.class.getClassLoader());
 
-            this.qbeMetawidget.setPath(entity.getQualifiedName());
-            StringWriter writer = new StringWriter();
-            this.qbeMetawidget.write(writer, backingBeanTemplateQbeMetawidgetIndent);
-            context.put("qbeMetawidget", writer.toString().trim());
-            context.put("qbeMetawidgetImports",
-                    CollectionUtils.toString(this.qbeMetawidget.getImports(), ";\r\n", true, false));
+            try
+            {
+                JavaSourceFacet java = this.project.getFacet(JavaSourceFacet.class);
+                WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
+                MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
 
-            // Set context for view generation
+                loadTemplates();
+                Map<Object, Object> context = CollectionUtils.newHashMap();
+                context.put("entity", entity);
+                String ccEntity = StringUtils.decapitalize(entity.getName());
+                context.put("ccEntity", ccEntity);
+                String daoPackage = meta.getTopLevelPackage() + ".repo";
+                context.put("daoPackage", daoPackage);
 
-            context = getTemplateContext(template);
-            context.put("entity", entity);
-            context.put("entityName", StringUtils.uncamelCase(entity.getName()));
-            context.put("ccEntity", ccEntity);
-            context.put("daoPackage", daoPackage);
+                // Prepare qbeMetawidget
 
-            // Prepare entity metawidget
+                this.qbeMetawidget.setPath(entity.getQualifiedName());
+                StringWriter writer = new StringWriter();
+                this.qbeMetawidget.write(writer, backingBeanTemplateQbeMetawidgetIndent);
 
-            this.entityMetawidget.putAttribute("value", ccEntity);
-            this.entityMetawidget.setPath(entity.getQualifiedName());
-            this.entityMetawidget.setReadOnly(false);
+                context.put("qbeMetawidget", writer.toString().trim());
+                context.put("qbeMetawidgetImports",
+                        CollectionUtils.toString(this.qbeMetawidget.getImports(), ";\r\n", true, false));
 
-            // Generate create
+                // Set context for view generation
 
-            writeEntityMetawidget(context, this.createTemplateEntityMetawidgetIndent, this.createTemplateNamespaces);
+                context = getTemplateContext(template);
+                context.put("entity", entity);
+                context.put("entityName", StringUtils.uncamelCase(entity.getName()));
+                context.put("ccEntity", ccEntity);
+                context.put("daoPackage", daoPackage);
 
-            result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/create" + entity.getName() + ".jsp"),
-                    this.createTemplate.render(context), overwrite));
+                // Prepare entity metawidget
 
-            // Generate view
-
-            this.entityMetawidget.setReadOnly(true);
-            writeEntityMetawidget(context, this.viewTemplateEntityMetawidgetIndent, this.viewTemplateNamespaces);
-
-            result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("scaffold/" + ccEntity + "/view.jsp"),
-                    this.viewTemplate.render(context), overwrite));
-
-            // Generate search - how does it differ between JSF and Spring?
-
-            // Generate navigation
-
-            result.add(generateNavigation(overwrite));
-
-            JavaInterface daoInterface = JavaParser.parse(JavaInterface.class, this.daoInterfaceTemplate.render(context));
-            JavaClass daoImplementation = JavaParser.parse(JavaClass.class, this.daoImplementationTemplate.render(context));
-
-            // Save the created interface and class implementation, so they can be referenced by the controller.
-
-            java.saveJavaSource(daoInterface);
-            result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(daoInterface), daoInterface.toString(), overwrite));
-
-            java.saveJavaSource(daoImplementation);
-            result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(daoImplementation), daoImplementation.toString(), overwrite));
-            
-            String mvcPackage = meta.getTopLevelPackage() + ".mvc";
-            context.put("mvcPackage",  mvcPackage);
-            context.put("entityPlural", pluralOf(entity.getName().toLowerCase()));
-
-            // Create a Spring MVC controller for the passed entity, using SpringControllerTemplate.jv
-
-            JavaClass entityController = JavaParser.parse(JavaClass.class, this.springControllerTemplate.render(context));
-            java.saveJavaSource(entityController);
-            result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(entityController), entityController.toString(), overwrite));
-            
-        } catch (Exception e)
-        {
-            throw new RuntimeException("Error generating Spring scaffolding: " + entity.getName(), e);
+                this.entityMetawidget.putAttribute("value", ccEntity);
+                this.entityMetawidget.setPath(entity.getQualifiedName());
+                this.entityMetawidget.setReadOnly(false);
+    
+                // Generate create
+    
+                writeEntityMetawidget(context, this.createTemplateEntityMetawidgetIndent, this.createTemplateNamespaces);
+    
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/create" + entity.getName() + ".jsp"),
+                        this.createTemplate.render(context), overwrite));
+    
+                // Generate view
+    
+                this.entityMetawidget.setReadOnly(true);
+                writeEntityMetawidget(context, this.viewTemplateEntityMetawidgetIndent, this.viewTemplateNamespaces);
+    
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/view" + entity.getName() + ".jsp"),
+                        this.viewTemplate.render(context), overwrite));
+    
+                // Generate search - how does it differ between JSF and Spring?
+    
+                // Generate navigation
+    
+                result.add(generateNavigation(overwrite));
+    
+                JavaInterface daoInterface = JavaParser.parse(JavaInterface.class, this.daoInterfaceTemplate.render(context));
+                JavaClass daoImplementation = JavaParser.parse(JavaClass.class, this.daoImplementationTemplate.render(context));
+    
+                // Save the created interface and class implementation, so they can be referenced by the controller.
+    
+                java.saveJavaSource(daoInterface);
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(daoInterface), daoInterface.toString(), overwrite));
+    
+                java.saveJavaSource(daoImplementation);
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(daoImplementation), daoImplementation.toString(), overwrite));
+                
+                String mvcPackage = meta.getTopLevelPackage() + ".mvc";
+                context.put("mvcPackage",  mvcPackage);
+                context.put("entityPlural", pluralOf(entity.getName().toLowerCase()));
+    
+                // Create a Spring MVC controller for the passed entity, using SpringControllerTemplate.jv
+    
+                JavaClass entityController = JavaParser.parse(JavaClass.class, this.springControllerTemplate.render(context));
+                java.saveJavaSource(entityController);
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(entityController), entityController.toString(), overwrite));
+                
+            } catch (Exception e)
+            {
+                throw new RuntimeException("Error generating Spring scaffolding: " + entity.getName(), e);
+            }
+        } finally {
+            Thread.currentThread().setContextClassLoader(oldClassLoader);
         }
-
         return result;
     }
 
@@ -412,23 +420,23 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         FileResource<?> applicationContext = resources.getResource("META-INF/spring/applicationContext.xml");
         Node beans = XMLParser.parse(applicationContext.getResourceInputStream());
         beans.attribute(XMLNS_PREFIX + "context", "http://www.springframework.org/schema/context");
-        
+
         // Use a <context:component-scan> to create beans for all DAO interface implementations, annotated as @Repository
-        
+
         if (beans.get("context:component-scan").isEmpty())
         {
             Node componentScan = new Node("context:component-scan", beans);
             componentScan.attribute("base-package", meta.getTopLevelPackage() + ".repo");            
         }
-        
+
         // Include the spring-context schema file, so that the <context> namespace can be used in web.xml.
-        
+
         String schemaLoc = beans.getAttribute("xsi:schemaLocation");
         schemaLoc += " http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd";
         beans.attribute("xsi:schemaLocation", schemaLoc);
-        
+
         // Save the updated applicationContext.xml file to 'src/main/resources/META-INF/applicationContext.xml'.
-        
+
         String file = XMLParser.toXMLString(beans);
         return resources.createResource(file.toCharArray(), "META-INF/spring/applicationContext.xml");
     }
