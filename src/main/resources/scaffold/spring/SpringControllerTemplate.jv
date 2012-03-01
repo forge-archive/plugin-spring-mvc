@@ -48,27 +48,27 @@ public class @{entity.getName()}Controller
 	{
 		@{entity.getName()} entity = @{ccEntity}Dao.getById(id);
 		model.addAttribute("entity", entity);
-		return "view" + @{entity.getName()};
+		return "viewSingle";
 	}
 
 	@RequestMapping(value="/{id}", method=RequestMethod.POST)
 	public String updateEntity(@{entity.getName()} entity)
 	{
 		@{ccEntity}Dao.update(entity);
-		return "view" + @{entity.getName()};
+		return "viewSingle";
 	}
 
 	@RequestMapping(value="/{id}", method=RequestMethod.DELETE)
 	public String removeEntity(@PathVariable("id") Long id)
 	{
 		@{ccEntity}Dao.deleteById(id);
-		return "view" + @{entityPlural};
+		return "viewAll";
 	}
 
 	@RequestMapping(value="/create", method=RequestMethod.POST)
 	public String create(@{entity.getName()} @{ccEntity})
 	{
 		@{ccEntity}Dao.update(@{ccEntity});
-		return "view" + @{entityPlural};
+		return "viewAll";
 	}
 }
