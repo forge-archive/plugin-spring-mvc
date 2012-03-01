@@ -157,19 +157,17 @@ public class SpringPlugin implements Plugin {
 
         // Add the project display name to web.xml
 
-        if (webapp.get("display").isEmpty())
+        if (webapp.get("display-name").isEmpty())
         {
-            Node display = webapp.createChild("display");
+            Node display = webapp.createChild("display-name");
             display.text(meta.getProjectName());            
         }
 
-        Node display = webapp.get("display").get(0);
-
         // Add applicationContext.xml to the web application's context
 
-        if (display.getChildren().isEmpty())
+        if (webapp.getChildren().isEmpty())
         {
-            Node contextParam = new Node("context-param", display);
+            Node contextParam = new Node("context-param", webapp);
             Node contextConfig = new Node("param-name", contextParam);
             contextConfig.text("contextConfigLocation");
             Node configLocation = new Node("param-value", contextConfig);
