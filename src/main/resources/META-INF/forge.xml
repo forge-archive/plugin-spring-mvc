@@ -1,1 +1,4 @@
-<forge/>
+<forge>
+  <dependencies-as-resource-root/>
+</forge>
+
