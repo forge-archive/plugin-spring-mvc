@@ -219,6 +219,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     public List<Resource<?>> generateFromEntity(Resource<?> template, JavaClass entity, boolean overwrite)
     {
 
+        // Save the current thread's ContextClassLoader, so that it can be restored later
+
         ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
 
         // Track the list of resources generated
@@ -226,6 +228,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         List<Resource<?>> result = new ArrayList<Resource<?>>();
 
         try {
+
+            // Force the current thread to use the ScaffoldProvider's ContextClassLoader
 
             Thread.currentThread().setContextClassLoader(SpringScaffold.class.getClassLoader());
 
@@ -314,6 +318,9 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 throw new RuntimeException("Error generating Spring scaffolding: " + entity.getName(), e);
             }
         } finally {
+
+            // Restore the original ContextClassLoader
+
             Thread.currentThread().setContextClassLoader(oldClassLoader);
         }
         return result;
@@ -522,7 +529,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
 
         String projectName = meta.getProjectName();
-        String filename = "WEB-INF" + projectName.toLowerCase().replace(' ', '-') + "-mvc-context.xml";
+        String filename = "/WEB-INF/" + projectName.toLowerCase().replace(' ', '-') + "-mvc-context.xml";
 
         // Retrieve the existing web.xml file
 
