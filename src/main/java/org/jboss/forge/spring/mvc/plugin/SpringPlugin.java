@@ -165,7 +165,7 @@ public class SpringPlugin implements Plugin {
 
         // Add applicationContext.xml to the web application's context
 
-        if (webapp.getChildren().isEmpty())
+        if (webapp.get("context-param").isEmpty())
         {
             Node contextParam = new Node("context-param", webapp);
             Node contextConfig = new Node("param-name", contextParam);
