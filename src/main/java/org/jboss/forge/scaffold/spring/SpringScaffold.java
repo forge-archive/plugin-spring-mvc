@@ -576,7 +576,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
             Node exceptionType = new Node("exception-type", errorPage);
             exceptionType.text("java.lang.Exception");
             Node location = new Node("location", errorPage);
-            location.text("WEB-INF/views/error.jsp");            
+            location.text("/WEB-INF/views/error.jsp");            
         }
 
         // Save the updated web.xml file

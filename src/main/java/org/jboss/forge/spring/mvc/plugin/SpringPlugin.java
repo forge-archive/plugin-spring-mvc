@@ -170,7 +170,7 @@ public class SpringPlugin implements Plugin {
             Node contextParam = new Node("context-param", webapp);
             Node contextConfig = new Node("param-name", contextParam);
             contextConfig.text("contextConfigLocation");
-            Node configLocation = new Node("param-value", contextConfig);
+            Node configLocation = new Node("param-value", contextParam);
             configLocation.text("classpath:/META-INF/spring/applicationContext.xml");            
         }
 
