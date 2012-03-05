@@ -73,12 +73,6 @@ import org.jboss.shrinkwrap.descriptor.api.spec.jpa.persistence.PersistenceUnitD
 public class SpringPlugin implements Plugin {
 
     //
-    // Public static final members
-    //
-
-    public static final String DEFAULT_UNIT_NAME = "forge-default";
-
-    //
     // Private members
     //
     
