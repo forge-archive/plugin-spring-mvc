@@ -125,6 +125,7 @@ public class SpringPlugin implements Plugin {
         deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-context-support:${spring.version}"));
         deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-core:${spring.version}"));
         deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-expression:${spring.version}"));
+        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-tx:${spring.version}"));
         deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-web:${spring.version}"));
         deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-webmvc:${spring.version}"));
  
