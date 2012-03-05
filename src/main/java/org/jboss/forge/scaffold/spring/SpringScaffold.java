@@ -491,7 +491,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         Node prefixProperty = new Node("property", viewResolver);
         prefixProperty.attribute("name", "prefix");
-        prefixProperty.attribute("value", "WEB-INF/views/");
+        prefixProperty.attribute("value", "/WEB-INF/views/");
 
         Node suffixProperty = new Node("property", viewResolver);
         suffixProperty.attribute("name", "suffix");
