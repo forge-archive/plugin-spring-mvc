@@ -257,9 +257,9 @@ public class SpringPlugin implements Plugin {
         {
             Node persistenceContextRef = new Node("persistence-context-ref", webapp);
             Node persistenceContextRefName = new Node("persistence-context-ref-name", persistenceContextRef);
-            persistenceContextRefName.text("persistence/" + DEFAULT_UNIT_NAME + "/entityManager");
+            persistenceContextRefName.text("persistence/" + defaultUnit.getName() + "/entityManager");
             Node persistenceUnitName = new Node("persistence-unit-name", persistenceContextRef);
-            persistenceUnitName.text(DEFAULT_UNIT_NAME);            
+            persistenceUnitName.text(defaultUnit.getName());            
         }
 
         // Save the updated web.xml file.
