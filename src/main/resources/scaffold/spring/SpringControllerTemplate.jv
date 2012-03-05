@@ -71,4 +71,10 @@ public class @{entity.getName()}Controller
 		@{ccEntity}Dao.update(@{ccEntity});
 		return "viewAll";
 	}
+	
+	@RequestMapping(value="/create", method=RequestMethod.GET)
+	public String createView()
+	{
+		return "createCustomer";
+	}
 }
