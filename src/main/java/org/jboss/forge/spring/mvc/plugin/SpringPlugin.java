@@ -115,7 +115,7 @@ public class SpringPlugin implements Plugin {
 
         // Use the Forge DependencyFacet to add Spring dependencies to the POM
 
-        String springVersion = "3.1.0.RC1";
+        String springVersion = "3.1.0.RELEASE";
 
         deps.setProperty("spring.version", springVersion);
 
@@ -138,7 +138,7 @@ public class SpringPlugin implements Plugin {
 
         beans.attribute("xmlns", "http://www.springframework.org/schema/beans");
         beans.attribute(XMLNS_PREFIX + "xsi", "http://www.w3.org/2001/XMLSchema-instance");
-        String schemaLoc = "http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd";
+        String schemaLoc = "http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd";
         beans.attribute("xsi:schemaLocation", schemaLoc);
 
         // Write applicationContext.xml
@@ -219,8 +219,8 @@ public class SpringPlugin implements Plugin {
         // Add the schema for the 'jee' namespace to the applicationContext.xml file
 
         String schemaLoc = beans.getAttribute("xsi:schemaLocation");
-        schemaLoc = " http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd";
-        schemaLoc += " http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd";
+        schemaLoc += " http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.0.xsd";
+        schemaLoc += " http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd";
         beans.attribute("xsi:schemaLocation", schemaLoc);
 
         // Indicate that Spring transactions will be annotation driven (potentially move to 'spring persistence' command?)
