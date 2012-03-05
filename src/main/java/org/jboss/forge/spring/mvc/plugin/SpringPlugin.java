@@ -49,6 +49,8 @@ import org.jboss.forge.project.facets.WebResourceFacet;
 import org.jboss.forge.project.facets.events.InstallFacets;
 import org.jboss.forge.project.packaging.PackagingType;
 import org.jboss.forge.project.Project;
+import org.jboss.shrinkwrap.descriptor.api.spec.jpa.persistence.PersistenceDescriptor;
+import org.jboss.shrinkwrap.descriptor.api.spec.jpa.persistence.PersistenceUnitDef;
 
 /**
  * Forge plugin to create a simple Spring MVC web application.
@@ -212,6 +214,7 @@ public class SpringPlugin implements Plugin {
 
         ResourceFacet resources = project.getFacet(ResourceFacet.class);
         WebResourceFacet web = project.getFacet(WebResourceFacet.class);
+        PersistenceFacet persistence = project.getFacet(PersistenceFacet.class);
 
         Node beans = XMLParser.parse(resources.getResource("META-INF/spring/applicationContext.xml").getResourceInputStream());
         beans.attribute(XMLNS_PREFIX + "jee", "http://www.springframework.org/schema/jee");
@@ -233,12 +236,15 @@ public class SpringPlugin implements Plugin {
         
         // Perform a JNDI lookup to retrieve an EntityManagerFactory, of type javax.persistence.EntityManagerFactory.
 
+        PersistenceDescriptor descriptor =  persistence.getConfig();
+        PersistenceUnitDef defaultUnit = descriptor.listUnits().get(0);
+
         if (beans.get("jee:jndi-lookup").isEmpty())
         {
             Node emf = new Node("jee:jndi-lookup", beans);
             emf.setComment(false);
             emf.attribute("id", "entityManager");
-            emf.attribute("jndi-name", "java:comp/env/persistence/" + DEFAULT_UNIT_NAME + "/entityManager");
+            emf.attribute("jndi-name", "java:comp/env/persistence/" + defaultUnit.getName() + "/entityManager");
             emf.attribute("expected-type", "javax.persistence.EntityManager");           
         }
 
