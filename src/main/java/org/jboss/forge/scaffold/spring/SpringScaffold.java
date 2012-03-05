@@ -428,6 +428,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         Node beans = XMLParser.parse(applicationContext.getResourceInputStream());
         beans.attribute(XMLNS_PREFIX + "context", "http://www.springframework.org/schema/context");
 
+        // Include the spring-context schema file, so that the <context> namespace can be used in web.xml.
+
+        String schemaLoc = beans.getAttribute("xsi:schemaLocation");
+        schemaLoc += " http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd";
+        beans.attribute("xsi:schemaLocation", schemaLoc);
+
         // Use a <context:component-scan> to create beans for all DAO interface implementations, annotated as @Repository
 
         if (beans.get("context:component-scan").isEmpty())
@@ -435,12 +441,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
             Node componentScan = new Node("context:component-scan", beans);
             componentScan.attribute("base-package", meta.getTopLevelPackage() + ".repo");            
         }
-
-        // Include the spring-context schema file, so that the <context> namespace can be used in web.xml.
-
-        String schemaLoc = beans.getAttribute("xsi:schemaLocation");
-        schemaLoc += " http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd";
-        beans.attribute("xsi:schemaLocation", schemaLoc);
 
         // Save the updated applicationContext.xml file to 'src/main/resources/META-INF/applicationContext.xml'.
 
