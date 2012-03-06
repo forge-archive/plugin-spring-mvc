@@ -306,6 +306,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 String mvcPackage = meta.getTopLevelPackage() + ".mvc";
                 context.put("mvcPackage",  mvcPackage);
                 context.put("entityPlural", pluralOf(entity.getName().toLowerCase()));
+                context.put("entityPluralCap", pluralOf(entity.getName()));
     
                 // Create a Spring MVC controller for the passed entity, using SpringControllerTemplate.jv
     
