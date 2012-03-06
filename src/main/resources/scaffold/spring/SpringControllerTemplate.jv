@@ -73,8 +73,10 @@ public class @{entity.getName()}Controller
 	}
 	
 	@RequestMapping(value="/create", method=RequestMethod.GET)
-	public String createView()
+	public String createView(Model model)
 	{
+		model.addAttribute("@{ccEntity}", new @{entity.getName()}());
+
 		return "createCustomer";
 	}
 }
