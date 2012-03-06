@@ -362,10 +362,10 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 /*        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("index.jsp"),
                 getClass().getResourceAsStream("/scaffold/spring/index.jsp"), overwrite));*/
 
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("index.jsp"),
+        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/index.jsp"),
                 this.indexTemplate.render(context), overwrite));
 
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("error.jsp"),
+        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/error.jsp"),
                 this.errorTemplate.render(context), overwrite));
 
         // Static resources
@@ -509,7 +509,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         Node props = new Node("props", exceptionProperty);
         Node prop = new Node("prop", props);
         prop.attribute("key", "java.lang.Exception");
-        prop.text("Error!");
+        prop.text("error");
 
         // Unnecessary if there is no static content, but harmless
 
