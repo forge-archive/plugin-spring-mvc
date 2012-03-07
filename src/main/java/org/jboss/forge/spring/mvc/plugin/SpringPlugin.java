@@ -221,6 +221,13 @@ public class SpringPlugin implements Plugin {
         schemaLoc += " http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd";
         beans.attribute("xsi:schemaLocation", schemaLoc);
 
+        // Add a JTA Transaction Manager to the web application
+
+        if (beans.get("tx:jta-transaction-manager").isEmpty())
+        {
+            beans.createChild("tx:jta-transaction-manager");
+        }
+
         // Indicate that Spring transactions will be annotation driven (potentially move to 'spring persistence' command?)
 
         if (beans.get("tx:annotation-driven").isEmpty())
