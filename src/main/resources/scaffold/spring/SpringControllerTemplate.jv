@@ -62,21 +62,21 @@ public class @{entity.getName()}Controller
 	public String removeEntity(@PathVariable("id") Long id)
 	{
 		@{ccEntity}Dao.deleteById(id);
-		return "view@{entityPluralCap}";
+		return "index";
 	}
 
-	@RequestMapping(value="/create", method=RequestMethod.POST)
-	public String create(@{entity.getName()} @{ccEntity})
-	{
-		@{ccEntity}Dao.update(@{ccEntity});
-		return "view@{entityPluralCap}";
-	}
-	
 	@RequestMapping(value="/create", method=RequestMethod.GET)
 	public String createView(Model model)
 	{
 		model.addAttribute("@{ccEntity}", new @{entity.getName()}());
 
 		return "create@{entity.getName()}";
+	}
+
+	@RequestMapping(value="/create", method=RequestMethod.POST)
+	public String create(@{entity.getName()} @{ccEntity})
+	{
+		@{ccEntity}Dao.create(@{ccEntity});
+		return "index";
 	}
 }
