@@ -9,8 +9,10 @@ import @{entity.getQualifiedName()};
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
+@Transactional
 public class @{entity.getName()}DaoImpl implements @{entity.getName()}Dao
 {
 
