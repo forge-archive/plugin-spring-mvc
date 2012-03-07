@@ -209,17 +209,26 @@ public class SpringPlugin implements Plugin {
         ResourceFacet resources = project.getFacet(ResourceFacet.class);
         WebResourceFacet web = project.getFacet(WebResourceFacet.class);
         PersistenceFacet persistence = project.getFacet(PersistenceFacet.class);
+        MetadataFacet meta = project.getFacet(MetadataFacet.class);
 
         Node beans = XMLParser.parse(resources.getResource("META-INF/spring/applicationContext.xml").getResourceInputStream());
         beans.attribute(XMLNS_PREFIX + "jee", "http://www.springframework.org/schema/jee");
         beans.attribute(XMLNS_PREFIX + "tx", "http://www.springframework.org/schema/tx");
-
-        // Add the schema for the 'jee' namespace to the applicationContext.xml file
+        beans.attribute(XMLNS_PREFIX + "context", "http://www.springframework.org/schema/context");
 
         String schemaLoc = beans.getAttribute("xsi:schemaLocation");
+        schemaLoc += " http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd";
         schemaLoc += " http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd";
         schemaLoc += " http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd";
         beans.attribute("xsi:schemaLocation", schemaLoc);
+
+        // Scan the application for any @Repository annotated classes in the repository package.
+
+        if (beans.get("context:component-scan").isEmpty())
+        {
+            Node componentScan = new Node("context:component-scan", beans);
+            componentScan.attribute("base-package", meta.getTopLevelPackage() + ".repo");
+        }
 
         // Add a JTA Transaction Manager to the web application
 

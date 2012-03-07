@@ -44,7 +44,6 @@ import org.jboss.forge.project.Project;
 import org.jboss.forge.project.facets.BaseFacet;
 import org.jboss.forge.project.facets.JavaSourceFacet;
 import org.jboss.forge.project.facets.MetadataFacet;
-import org.jboss.forge.project.facets.ResourceFacet;
 import org.jboss.forge.project.facets.WebResourceFacet;
 import org.jboss.forge.project.facets.events.InstallFacets;
 import org.jboss.forge.resources.FileResource;
@@ -176,7 +175,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     public List<Resource<?>> setup(Resource<?> template, boolean overwrite)
     {
         List<Resource<?>> resources = generateIndex(template, overwrite);
-        resources.add(updateApplicationContext());
+/*        resources.add(updateApplicationContext());*/
         resources.add(setupMVCContext());
         resources.add(updateWebXML());
 
@@ -420,7 +419,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     // Protected methods (nothing is private, to help sub-classing)
     //
 
-    protected Resource<?> updateApplicationContext()
+/*    protected Resource<?> updateApplicationContext()
     {
         ResourceFacet resources =  this.project.getFacet(ResourceFacet.class);
         MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
@@ -447,7 +446,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         String file = XMLParser.toXMLString(beans);
         return resources.createResource(file.toCharArray(), "META-INF/spring/applicationContext.xml");
-    }
+    }*/
 
     protected Resource<?> setupMVCContext()
     {
