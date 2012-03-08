@@ -101,6 +101,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     private static final String DAO_INTERFACE_TEMPLATE = "scaffold/spring/DaoInterfaceTemplate.jv";
     private static final String DAO_IMPLEMENTATION_TEMPLATE = "scaffold/spring/DaoImplementationTemplate.jv";
     private static final String VIEW_TEMPLATE = "scaffold/spring/view.jsp";
+    private static final String VIEW_ALL_TEMPLATE = "scaffold/spring/viewAll.jsp";
     private static final String CREATE_TEMPLATE = "scaffold/spring/create.jsp";
     private static final String SEARCH_TEMPLATE = "scaffold/spring/search.jsp";
     private static final String NAVIGATION_TEMPLATE = "scaffold/spring/page.jsp";
@@ -118,6 +119,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     protected CompiledTemplateResource springControllerTemplate;
     protected CompiledTemplateResource daoInterfaceTemplate;
     protected CompiledTemplateResource daoImplementationTemplate;
+    protected CompiledTemplateResource viewAllTemplate;
     protected CompiledTemplateResource viewTemplate;
     protected Map<String, String> viewTemplateNamespaces;
     protected int viewTemplateEntityMetawidgetIndent;
@@ -175,7 +177,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     public List<Resource<?>> setup(Resource<?> template, boolean overwrite)
     {
         List<Resource<?>> resources = generateIndex(template, overwrite);
-/*        resources.add(updateApplicationContext());*/
         resources.add(setupMVCContext());
         resources.add(updateWebXML());
 
@@ -284,7 +285,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/view" + entity.getName() + ".jsp"),
                         this.viewTemplate.render(context), overwrite));
-    
+
+                // Generate view all
+
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/viewAll" + pluralOf(entity.getName()) + ".jsp"),
+                        this.viewAllTemplate.render(context), overwrite));
+
                 // Generate search - how does it differ between JSF and Spring?
     
                 // Generate navigation
@@ -312,7 +318,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 JavaClass entityController = JavaParser.parse(JavaClass.class, this.springControllerTemplate.render(context));
                 java.saveJavaSource(entityController);
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(entityController), entityController.toString(), overwrite));
-                
             } catch (Exception e)
             {
                 throw new RuntimeException("Error generating Spring scaffolding: " + entity.getName(), e);
@@ -357,9 +362,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         HashMap<Object, Object> context = getTemplateContext(template);
 
         // Basic pages
-
-/*        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("index.jsp"),
-                getClass().getResourceAsStream("/scaffold/spring/index.jsp"), overwrite));*/
 
         result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/index.jsp"),
                 this.indexTemplate.render(context), overwrite));
@@ -412,41 +414,14 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     @Override
     public TemplateStrategy getTemplateStrategy()
     {
-        return new SpringTemplateStrategy(this.project);
+        // No TemplateStrategy required for Spring.
+
+        return null;
     }
 
     //
     // Protected methods (nothing is private, to help sub-classing)
     //
-
-/*    protected Resource<?> updateApplicationContext()
-    {
-        ResourceFacet resources =  this.project.getFacet(ResourceFacet.class);
-        MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
-
-        FileResource<?> applicationContext = resources.getResource("META-INF/spring/applicationContext.xml");
-        Node beans = XMLParser.parse(applicationContext.getResourceInputStream());
-        beans.attribute(XMLNS_PREFIX + "context", "http://www.springframework.org/schema/context");
-
-        // Include the spring-context schema file, so that the <context> namespace can be used in web.xml.
-
-        String schemaLoc = beans.getAttribute("xsi:schemaLocation");
-        schemaLoc += " http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd";
-        beans.attribute("xsi:schemaLocation", schemaLoc);
-
-        // Use a <context:component-scan> to create beans for all DAO interface implementations, annotated as @Repository
-
-        if (beans.get("context:component-scan").isEmpty())
-        {
-            Node componentScan = new Node("context:component-scan", beans);
-            componentScan.attribute("base-package", meta.getTopLevelPackage() + ".repo");            
-        }
-
-        // Save the updated applicationContext.xml file to 'src/main/resources/META-INF/applicationContext.xml'.
-
-        String file = XMLParser.toXMLString(beans);
-        return resources.createResource(file.toCharArray(), "META-INF/spring/applicationContext.xml");
-    }*/
 
     protected Resource<?> setupMVCContext()
     {
@@ -607,6 +582,11 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         
         if (this.springControllerTemplate == null) {
             this.springControllerTemplate = compiler.compile(SPRING_CONTROLLER_TEMPLATE);
+        }
+
+        if (this.viewAllTemplate == null)
+        {
+            this.viewAllTemplate = compiler.compile(VIEW_ALL_TEMPLATE);
         }
 
         if (this.viewTemplate == null)
