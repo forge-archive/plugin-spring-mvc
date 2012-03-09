@@ -265,6 +265,13 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 context.put("ccEntity", ccEntity);
                 context.put("daoPackage", daoPackage);
 
+                String mvcPackage = meta.getTopLevelPackage() + ".mvc";
+                context.put("mvcPackage",  mvcPackage);
+
+                String entityPlural = pluralOf(entity.getName().toLowerCase());
+                context.put("entityPlural", entityPlural);
+                context.put("entityPluralCap", pluralOf(entity.getName()));
+
                 // Prepare entity metawidget
 
                 this.entityMetawidget.putAttribute("value", ccEntity);
@@ -288,14 +295,14 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
                 // Generate view all
 
-                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/viewAll" + pluralOf(entity.getName()) + ".jsp"),
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/" + entityPlural + ".jsp"),
                         this.viewAllTemplate.render(context), overwrite));
 
                 // Generate search - how does it differ between JSF and Spring?
     
                 // Generate navigation
     
-                result.add(generateNavigation(overwrite));
+/*                result.add(generateNavigation(overwrite));*/
     
                 JavaInterface daoInterface = JavaParser.parse(JavaInterface.class, this.daoInterfaceTemplate.render(context));
                 JavaClass daoImplementation = JavaParser.parse(JavaClass.class, this.daoImplementationTemplate.render(context));
@@ -303,21 +310,19 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 // Save the created interface and class implementation, so they can be referenced by the controller.
     
                 java.saveJavaSource(daoInterface);
-                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(daoInterface), daoInterface.toString(), overwrite));
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(daoInterface),
+                        daoInterface.toString(), overwrite));
     
                 java.saveJavaSource(daoImplementation);
-                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(daoImplementation), daoImplementation.toString(), overwrite));
-                
-                String mvcPackage = meta.getTopLevelPackage() + ".mvc";
-                context.put("mvcPackage",  mvcPackage);
-                context.put("entityPlural", pluralOf(entity.getName().toLowerCase()));
-                context.put("entityPluralCap", pluralOf(entity.getName()));
-    
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(daoImplementation),
+                        daoImplementation.toString(), overwrite));
+
                 // Create a Spring MVC controller for the passed entity, using SpringControllerTemplate.jv
     
                 JavaClass entityController = JavaParser.parse(JavaClass.class, this.springControllerTemplate.render(context));
                 java.saveJavaSource(entityController);
-                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(entityController), entityController.toString(), overwrite));
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(entityController),
+                        entityController.toString(), overwrite));
             } catch (Exception e)
             {
                 throw new RuntimeException("Error generating Spring scaffolding: " + entity.getName(), e);
