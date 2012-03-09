@@ -68,8 +68,7 @@ public class QueryByExampleWidgetBuilder
                     new JavaStatement("String " + name + " = this.search.get" + StringUtils.capitalize(name) + "()"));
             JavaStatement ifNotEmpty = new JavaStatement("if (" + name + " != null && !\"\".equals(" + name + "))");
             ifNotEmpty.getChildren().add(
-                    new JavaStatement("predicatesList.add(builder.like(root.<String>get(\"" + name + "\"), '%' + " + name
-                            + " + '%'))"));
+                    new JavaStatement("predicatesList.add(builder.equal(root.get(\"" + name + "\"), " + name + "))"));
             toReturn.getChildren().add(ifNotEmpty);
             return toReturn;
         }
@@ -88,8 +87,24 @@ public class QueryByExampleWidgetBuilder
             return toReturn;
         }
         
-        // Lookup
-        
+        // LOOKUP
+
+        if (attributes.containsKey(LOOKUP))
+        {
+           StaticJavaStub toReturn = new StaticJavaStub();
+           JavaStatement getValue = new JavaStatement(ClassUtils.getSimpleName(type) + " " + name + " = this.search.get"
+                    + StringUtils.capitalize(name) + "()");
+           getValue.putImport(type);
+           toReturn.getChildren().add(getValue);
+           JavaStatement ifNotEmpty = new JavaStatement("if (" + name + " != null)");
+           ifNotEmpty.getChildren().add(
+                    new JavaStatement("predicatesList.add(builder.equal(root.get(\"" + name + "\"), " + name + "))"));
+           toReturn.getChildren().add(ifNotEmpty);
+           return toReturn;
+        }
+
+        // SPRING_LOOKUP
+
         if (attributes.containsKey(SPRING_LOOKUP))
         {
            StaticJavaStub toReturn = new StaticJavaStub();

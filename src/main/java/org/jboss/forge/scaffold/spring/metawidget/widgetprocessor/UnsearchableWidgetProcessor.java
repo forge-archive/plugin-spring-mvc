@@ -16,6 +16,7 @@
 
 package org.jboss.forge.scaffold.spring.metawidget.widgetprocessor;
 
+import static org.metawidget.inspector.InspectionResultConstants.*;
 import static org.metawidget.inspector.jsp.JspInspectionResultConstants.*;
 import static org.metawidget.inspector.spring.SpringInspectionResultConstants.*;
 
@@ -114,7 +115,7 @@ public class UnsearchableWidgetProcessor
             }
          }
 
-         if (attributes.containsKey(JSP_LOOKUP) || attributes.containsKey(SPRING_LOOKUP))
+         if (attributes.containsKey(LOOKUP) || attributes.containsKey(JSP_LOOKUP) || attributes.containsKey(SPRING_LOOKUP))
          {
             return true;
          }
