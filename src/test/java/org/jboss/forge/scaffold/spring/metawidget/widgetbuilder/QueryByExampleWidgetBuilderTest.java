@@ -36,47 +36,61 @@ import org.metawidget.util.CollectionUtils;
 public class QueryByExampleWidgetBuilderTest
          extends TestCase
 {
-   //
-   // Public methods
-   //
+    //
+    // Public methods
+    //
 
-   public void testSuppress()
-   {
-      QueryByExampleWidgetBuilder widgetBuilder = new QueryByExampleWidgetBuilder();
-      Map<String, String> attributes = CollectionUtils.newHashMap();
-      attributes.put(NAME, "abc");
-      attributes.put(TYPE, String.class.getName());
-      attributes.put(HIDDEN, TRUE);
-      assertEquals("", widgetBuilder.buildWidget(PROPERTY, attributes, new StaticJavaMetawidget()).toString());
-   }
+    public void testSuppress()
+    {
+       QueryByExampleWidgetBuilder widgetBuilder = new QueryByExampleWidgetBuilder();
+       Map<String, String> attributes = CollectionUtils.newHashMap();
+       attributes.put(NAME, "abc");
+       attributes.put(TYPE, String.class.getName());
+       attributes.put(HIDDEN, TRUE);
+       assertEquals("", widgetBuilder.buildWidget(PROPERTY, attributes, new StaticJavaMetawidget()).toString());
+    }
 
-   public void testString()
-   {
-      QueryByExampleWidgetBuilder widgetBuilder = new QueryByExampleWidgetBuilder();
-      Map<String, String> attributes = CollectionUtils.newHashMap();
-      attributes.put(NAME, "abc");
-      attributes.put(TYPE, String.class.getName());
-      StaticWidget widget = widgetBuilder.buildWidget(PROPERTY, attributes, new StaticJavaMetawidget());
+    public void testString()
+    {
+       QueryByExampleWidgetBuilder widgetBuilder = new QueryByExampleWidgetBuilder();
+       Map<String, String> attributes = CollectionUtils.newHashMap();
+       attributes.put(NAME, "abc");
+       attributes.put(TYPE, String.class.getName());
+       StaticWidget widget = widgetBuilder.buildWidget(PROPERTY, attributes, new StaticJavaMetawidget());
 
-      assertEquals(
-               "String abc = this.search.getAbc();if (abc != null && !\"\".equals(abc)) { predicatesList.add(builder.like(root.<String>get(\"abc\"), '%' + abc + '%')); }",
-               widget.toString());
-   }
+       assertEquals(
+                "String abc = this.search.getAbc();if (abc != null && !\"\".equals(abc)) { predicatesList.add(builder.like(root.<String>get(\"abc\"), '%' + abc + '%')); }",
+                widget.toString());
+    }
 
-   public void testInt()
-   {
-      QueryByExampleWidgetBuilder widgetBuilder = new QueryByExampleWidgetBuilder();
-      Map<String, String> attributes = CollectionUtils.newHashMap();
-      attributes.put(NAME, "abc");
-      attributes.put(TYPE, int.class.getName());
-      StaticWidget widget = widgetBuilder.buildWidget(PROPERTY, attributes, new StaticJavaMetawidget());
+    public void testInt()
+    {
+       QueryByExampleWidgetBuilder widgetBuilder = new QueryByExampleWidgetBuilder();
+       Map<String, String> attributes = CollectionUtils.newHashMap();
+       attributes.put(NAME, "abc");
+       attributes.put(TYPE, int.class.getName());
+       StaticWidget widget = widgetBuilder.buildWidget(PROPERTY, attributes, new StaticJavaMetawidget());
 
-      assertEquals(
-               "int abc = this.search.getAbc();if (abc != 0) { predicatesList.add(builder.equal(root.get(\"abc\"),abc)); }",
-               widget.toString());
-   }
+       assertEquals(
+                "int abc = this.search.getAbc();if (abc != 0) { predicatesList.add(builder.equal(root.get(\"abc\"), abc)); }",
+                widget.toString());
+    }
 
-   public void testLookup()
+    public void testLookup()
+    {
+       QueryByExampleWidgetBuilder widgetBuilder = new QueryByExampleWidgetBuilder();
+       Map<String, String> attributes = CollectionUtils.newHashMap();
+       attributes.put(NAME, "abc");
+       attributes.put(TYPE, "com.test.domain.Foo");
+       attributes.put(LOOKUP, "ONE,TWO,THREE");
+       StaticWidget widget = widgetBuilder.buildWidget(PROPERTY, attributes, new StaticJavaMetawidget());
+
+       assertEquals(
+                "Foo abc = this.search.getAbc();if (abc != null) { predicatesList.add(builder.equal(root.get(\"abc\"), abc)); }",
+                widget.toString());
+    }
+
+   public void testSpringLookup()
    {
       QueryByExampleWidgetBuilder widgetBuilder = new QueryByExampleWidgetBuilder();
       Map<String, String> attributes = CollectionUtils.newHashMap();

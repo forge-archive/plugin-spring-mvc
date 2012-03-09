@@ -61,16 +61,17 @@ public class QueryByExampleWidgetBuilder
         
         // String
         
-        if(String.class.equals(clazz))
+        if (String.class.equals(clazz))
         {
-            StaticJavaStub toReturn = new StaticJavaStub();
-            toReturn.getChildren().add(
+           StaticJavaStub toReturn = new StaticJavaStub();
+           toReturn.getChildren().add(
                     new JavaStatement("String " + name + " = this.search.get" + StringUtils.capitalize(name) + "()"));
-            JavaStatement ifNotEmpty = new JavaStatement("if (" + name + " != null && !\"\".equals(" + name + "))");
-            ifNotEmpty.getChildren().add(
-                    new JavaStatement("predicatesList.add(builder.equal(root.get(\"" + name + "\"), " + name + "))"));
-            toReturn.getChildren().add(ifNotEmpty);
-            return toReturn;
+           JavaStatement ifNotEmpty = new JavaStatement("if (" + name + " != null && !\"\".equals(" + name + "))");
+           ifNotEmpty.getChildren().add(
+                    new JavaStatement("predicatesList.add(builder.like(root.<String>get(\"" + name + "\"), '%' + " + name
+                             + " + '%'))"));
+           toReturn.getChildren().add(ifNotEmpty);
+           return toReturn;
         }
         
         // int Primitive
@@ -82,7 +83,7 @@ public class QueryByExampleWidgetBuilder
                      new JavaStatement("int " + name + " = this.search.get" + StringUtils.capitalize(name) + "()"));
             JavaStatement ifNotEmpty = new JavaStatement("if (" + name + " != 0)");
             ifNotEmpty.getChildren().add(
-                     new JavaStatement("predicatesList.add(builder.equal(root.get(\"" + name + "\")," + name + "))"));
+                     new JavaStatement("predicatesList.add(builder.equal(root.get(\"" + name + "\"), " + name + "))"));
             toReturn.getChildren().add(ifNotEmpty);
             return toReturn;
         }
