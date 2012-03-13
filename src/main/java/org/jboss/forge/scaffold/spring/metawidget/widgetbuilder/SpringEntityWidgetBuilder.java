@@ -55,6 +55,11 @@ public class SpringEntityWidgetBuilder
 
         String type = WidgetBuilderUtils.getActualClassOrType(attributes);
         Class<?> clazz = ClassUtils.niceForName(type);
+        
+        if (clazz == null)
+        {
+            return null;
+        }
 
         if (Collection.class.isAssignableFrom(clazz))
         {
