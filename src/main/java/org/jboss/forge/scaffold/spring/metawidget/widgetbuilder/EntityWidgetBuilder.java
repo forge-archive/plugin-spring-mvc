@@ -25,6 +25,7 @@ package org.jboss.forge.scaffold.spring.metawidget.widgetbuilder;
 import static org.jboss.forge.scaffold.spring.metawidget.inspector.ForgeInspectionResultConstants.*;
 import static org.metawidget.inspector.InspectionResultConstants.*;
 import static org.metawidget.inspector.jsp.JspInspectionResultConstants.*;
+import static org.metawidget.inspector.spring.SpringInspectionResultConstants.*;
 import static org.jvnet.inflector.Noun.pluralOf;
 
 import java.util.Collection;
@@ -74,7 +75,7 @@ public class EntityWidgetBuilder
     //
     // Public methods
     //
-    
+
     @Override
     public StaticXmlWidget buildWidget(String elementName, Map<String, String> attributes, StaticXmlMetawidget metawidget) {
         
@@ -93,10 +94,17 @@ public class EntityWidgetBuilder
         if (WidgetBuilderUtils.isReadOnly(attributes))
         {
 
-            // Render JSP Lookups
+            // Render JSP_LOOKUP and SPRING_LOOKUP as a link
 
-            if (attributes.containsKey(JSP_LOOKUP))
+            if (attributes.containsKey(JSP_LOOKUP) || attributes.containsKey(SPRING_LOOKUP))
             {
+                // (unless the parent is already a link).
+
+                if (metawidget.getParent() instanceof HtmlAnchor)
+                {
+                    return null;
+                }
+
                 String entity = ClassUtils.getSimpleName(WidgetBuilderUtils.getActualClassOrType(attributes));
                 entity = StringUtils.decapitalize(entity);
 
