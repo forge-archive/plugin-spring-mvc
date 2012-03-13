@@ -45,7 +45,6 @@ import org.metawidget.inspector.impl.propertystyle.statically.StaticPropertyStyl
 import org.metawidget.inspector.propertytype.PropertyTypeInspector;
 import org.metawidget.statically.StaticWidget;
 import org.metawidget.statically.jsp.StaticJspMetawidget;
-import org.metawidget.statically.spring.StaticSpringMetawidget;
 import org.metawidget.util.CollectionUtils;
 
 import junit.framework.TestCase;
@@ -60,7 +59,7 @@ public class EntityWidgetBuilderTest
     public void testManyToOne()
             throws Exception
     {
-        StaticSpringMetawidget metawidget = new StaticSpringMetawidget();
+        StaticJspMetawidget metawidget = new StaticJspMetawidget();
         metawidget.setValue("#{foo}");
         EntityWidgetBuilder widgetBuilder = new EntityWidgetBuilder();
         Map<String, String> attributes = CollectionUtils.newHashMap();
@@ -78,7 +77,7 @@ public class EntityWidgetBuilderTest
     public void testReadOnlyOneToOne()
             throws Exception
     {
-        StaticSpringMetawidget metawidget = new StaticSpringMetawidget();
+        StaticJspMetawidget metawidget = new StaticJspMetawidget();
         metawidget.setValue("#{foo}");
         metawidget.setPath(FooOneToOne.class.getName());
         EntityWidgetBuilder widgetBuilder = new EntityWidgetBuilder();
@@ -91,9 +90,9 @@ public class EntityWidgetBuilderTest
 
         StaticWidget widget = widgetBuilder.buildWidget(PROPERTY, attributes, metawidget);
 
-        String result = "<table id=\"bar\"><tbody><tr><th><form:label path=\"bar.name\">Name:</form:label>";
-        result += "</th><td><c:out value=\"${foo.bar.name}\"/></td><td/></tr><tr><th><form:label path=\"bar.description\">Description:";
-        result += "</form:label></th><td><c:out value=\"${foo.bar.description}\"/></td><td/></tr></tbody></table>";
+        String result = "<table id=\"bar\"><tbody><tr><th><label>Name:</label>";
+        result += "</th><td><c:out value=\"${foo.bar.name}\"/></td><td/></tr><tr><th><label>Description:";
+        result += "</label></th><td><c:out value=\"${foo.bar.description}\"/></td><td/></tr></tbody></table>";
 
         Assert.assertEquals(result, widget.toString());
     }
@@ -101,7 +100,7 @@ public class EntityWidgetBuilderTest
     public void testOneToOne()
             throws Exception
     {
-        StaticSpringMetawidget metawidget = new StaticSpringMetawidget();
+        StaticJspMetawidget metawidget = new StaticJspMetawidget();
         metawidget.setValue("#{foo}");
         metawidget.setPath(FooOneToOne.class.getName());
         EntityWidgetBuilder widgetBuilder = new EntityWidgetBuilder();
@@ -119,7 +118,7 @@ public class EntityWidgetBuilderTest
     public void testOptionalOneToOne()
             throws Exception
     {
-        StaticSpringMetawidget metawidget = new StaticSpringMetawidget();
+        StaticJspMetawidget metawidget = new StaticJspMetawidget();
         metawidget.setValue("#{foo}");
         metawidget.setPath(FooOneToOne.class.getName());
         EntityWidgetBuilder widgetBuilder = new EntityWidgetBuilder();
@@ -133,9 +132,10 @@ public class EntityWidgetBuilderTest
         // This WidgetBuilder functionality needs to be further debugged.
 
         String result = "<tr><td><a href=\"<c:out value=\"/EntityWidgetBuilderTest$Bars/create\"/>\" ";
-        result += "rendered=\"${emptyfoo.bar}\">Create New Bar</a></td><td><table id=\"bar\"><tbody><tr><th><form:label path=\"bar.name\">";
-        result += "Name:</form:label></th><td><form:input path=\"bar.name\"/></td><td/></tr><tr><th><form:label path=\"bar.description\">";
-        result += "Description:</form:label></th><td><form:input path=\"bar.description\"/></td><td/></tr></tbody></table></td></tr>";
+        result += "rendered=\"${emptyfoo.bar}\">Create New Bar</a></td><td><table id=\"bar\"><tbody><tr><th><label for=\"bar-name\">";
+        result += "Name:</label></th><td><input id=\"bar-name\" name=\"barName\" type=\"text\" value=\"${foo.bar.name}\"/></td><td/></tr><tr>";
+        result += "<th><label for=\"bar-description\">Description:</label></th><td><input id=\"bar-description\" name=\"barDescription\"";
+        result += " type=\"text\" value=\"${foo.bar.description}\"/></td><td/></tr></tbody></table></td></tr>";
 
         Assert.assertEquals(result, widget.toString());
     }
@@ -164,8 +164,7 @@ public class EntityWidgetBuilderTest
             throws Exception
     {
         StaticJspMetawidget metawidget = new StaticJspMetawidget();
-        metawidget.setValue("#{foo}");
-        EntityWidgetBuilder widgetBuilder = new EntityWidgetBuilder();
+        metawidget.setValue("#{foo}");        EntityWidgetBuilder widgetBuilder = new EntityWidgetBuilder();
         Map<String, String> attributes = CollectionUtils.newHashMap();
         attributes.put(NAME, "bars");
         attributes.put(TYPE, Set.class.getName());
@@ -274,7 +273,7 @@ public class EntityWidgetBuilderTest
 
         // Normal boolean
 
-        StaticSpringMetawidget metawidget = new StaticSpringMetawidget();
+        StaticJspMetawidget metawidget = new StaticJspMetawidget();
         metawidget.setValue("#{foo}");
         EntityWidgetBuilder widgetBuilder = new EntityWidgetBuilder();
         Map<String, String> attributes = CollectionUtils.newHashMap();
