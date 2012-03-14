@@ -47,7 +47,7 @@ public class @{entity.getName()}Controller
 	public String viewEntity(@PathVariable("id") Long id, Model model)
 	{
 		@{entity.getName()} entity = @{ccEntity}Dao.getById(id);
-		model.addAttribute("entity", entity);
+		model.addAttribute("@{ccEntity}", entity);
 		return "view@{entity.getName()}";
 	}
 
