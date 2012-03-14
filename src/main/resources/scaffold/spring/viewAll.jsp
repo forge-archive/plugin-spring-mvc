@@ -12,7 +12,7 @@
 		<table>
 			<c:forEach items="#{entities}" var="entity">
 				<tr>
-					<td><a href="<c:out value="@{entityPlural}/view/$${entity.id}"/>">@{entity.getName()} $${entity.id}</a></td>
+					<td><a href="<c:out value="@{entityPlural}/$${entity.id}"/>">@{entity.getName()} $${entity.id}</a></td>
 				</tr>
 			</c:forEach>
 		</table>
