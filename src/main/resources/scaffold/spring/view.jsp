@@ -9,7 +9,9 @@
 		<title>View @{entityName}</title>
 	</head>
 
-	@{metawidget}
+	<form:form commandName="@{ccEntity}">
+		@{metawidget}
+	</form:form>
 	
 	<div class="links">
 	
