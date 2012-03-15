@@ -10,11 +10,12 @@
 	</head>
 
 	<form:form commandName="@{ccEntity}">
-		@{metawidget}
-	</form:form>
-	
-	<div class="links">
-	
-	</div>
+
+    @{metawidget}
+
+  </form:form>
+<div class="links">
+
+</div>
 
 </html>

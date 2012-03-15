@@ -124,17 +124,37 @@ public class SpringScaffoldTest extends AbstractSpringScaffoldTest
 
         // View
 
-/*        FileResource<?> view = web.getWebResource("WEB-INF/views/viewCustomer.jsp");
+        FileResource<?> view = web.getWebResource("WEB-INF/views/viewCustomer.jsp");
         Assert.assertTrue(view.exists());
-        String contents = Streams.toString(view.getResourceInputStream());*/
+        String contents = Streams.toString(view.getResourceInputStream());
+
+        StringBuilder metawidget = new StringBuilder();
+        metawidget.append("<%@ taglib prefix=\"c\" uri=\"http://java.sun.com/jsp/jstl/core\" %>\n");
+        metawidget.append("<%@ taglib prefix=\"form\" uri=\"http://www.springframework.org/tags/form\" %>\n\n");
+        metawidget.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n");
+        metawidget.append("<html>\n\n");
+        metawidget.append("\t<head>\n\t\t<title>View Customer</title>\n\t</head>\n\n");
+        metawidget.append("\t<form:form commandName=\"customer\">\n");
+        metawidget.append("\t\t<table>\r\n\t\t\t<tbody>\r\n\t\t\t\t<tr>\r\n\t\t\t\t\t<th/>\r\n\t\t\t\t\t");
+        metawidget.append("<td>\r\n\t\t\t\t\t\t<form:hidden path=\"id\"/>\r\n\t\t\t\t\t</td>\r\n\t\t\t\t\t<td>*</td>\r\n");
+        metawidget.append("\t\t\t\t</tr>\r\n\t\t\t\t<tr>\r\n\t\t\t\t\t<th/>\r\n\t\t\t\t\t");
+        metawidget.append("<td>\r\n\t\t\t\t\t\t<form:hidden path=\"version\"/>\r\n\t\t\t\t\t</td>\r\n\t\t\t\t\t<td/>\r\n");
+        metawidget.append("\t\t\t\t</tr>\r\n\t\t\t\t<tr>\r\n\t\t\t\t\t<th>\r\n\t\t\t\t\t\t<form:label path=\"firstName\">First Name:</form:label>\r\n");
+        metawidget.append("\t\t\t\t\t</th>\r\n\t\t\t\t\t<td>\r\n\t\t\t\t\t\t<c:out value=\"${customer.firstName}\"/>\r\n\t\t\t\t\t</td>\r\n\t\t\t\t\t<td/>\r\n");
+        metawidget.append("\t\t\t\t</tr>\r\n\t\t\t\t<tr>\r\n\t\t\t\t\t<th>\r\n\t\t\t\t\t\t<form:label path=\"lastName\">Last Name:</form:label>\r\n");
+        metawidget.append("\t\t\t\t\t</th>\r\n\t\t\t\t\t<td>\r\n\t\t\t\t\t\t<c:out value=\"${customer.lastName}\"/>\r\n\t\t\t\t\t</td>\r\n\t\t\t\t\t<td/>\r\n");
+        metawidget.append("\t\t\t\t</tr>\r\n\t\t\t</tbody>\r\n\t\t</table>\n");
+        metawidget.append("\t</form:form>\n\t\n\t<div class=\"links\">\n\t\n\t</div>\n\n</html>");
+        
+        Assert.assertEquals(metawidget.toString(), contents.toString());
 
         // Create
 
         FileResource<?> create = web.getWebResource("WEB-INF/views/createCustomer.jsp");
         Assert.assertTrue(create.exists());
-        String contents = Streams.toString(create.getResourceInputStream());
+        contents = Streams.toString(create.getResourceInputStream());
 
-        StringBuilder metawidget = new StringBuilder();
+        metawidget = new StringBuilder();
         metawidget.append("<%@ taglib prefix=\"c\" uri=\"http://java.sun.com/jsp/jstl/core\" %>\n");
         metawidget.append("<%@ taglib prefix=\"form\" uri=\"http://www.springframework.org/tags/form\" %>\n\n");
         metawidget.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n");
