@@ -49,12 +49,21 @@
 			<compositeWidgetBuilder xmlns="java:org.metawidget.widgetbuilder.composite" config="CompositeWidgetBuilderConfig">
 				<widgetBuilders>
 					<array>
-						<readOnlyWidgetBuilder xmlns="java:org.metawidget.statically.html.widgetbuilder"/>
+						<readOnlyWidgetBuilder xmlns="java:org.metawidget.statically.jsp.widgetbuilder"/>
 						<springWidgetBuilder xmlns="java:org.metawidget.statically.spring.widgetbuilder"/>
 					</array>
 				</widgetBuilders>
 			</compositeWidgetBuilder>
 		</widgetBuilder>
+
+		<widgetProcessors>
+			<array>
+				<pathProcessor xmlns="java:org.metawidget.statically.spring.widgetprocessor"/>
+				<hiddenFieldProcessor xmlns="java:org.metawidget.statically.spring.widgetprocessor"/>
+				<cssStyleProcessor xmlns="java:org.metawidget.statically.spring.widgetprocessor"/>
+				<standardBindingProcessor xmlns="java:org.metawidget.statically.jsp.widgetprocessor"/>
+			</array>
+		</widgetProcessors>
 
 		<layout>
 			<springTableLayout xmlns="java:org.metawidget.statically.spring.layout" config="org.metawidget.statically.html.layout.HtmlTableLayoutConfig"/>
@@ -101,7 +110,7 @@
 			<compositeWidgetBuilder xmlns="java:org.metawidget.widgetbuilder.composite" config="CompositeWidgetBuilderConfig">
 				<widgetBuilders>
 					<array>
-						<readOnlyWidgetBuilder xmlns="java:org.metawidget.statically.html.widgetbuilder"/>
+						<readOnlyWidgetBuilder xmlns="java:org.metawidget.statically.jsp.widgetbuilder"/>
 						<entityWidgetBuilder xmlns="java:org.jboss.forge.scaffold.spring.metawidget.widgetbuilder"/>
 						<jspWidgetBuilder xmlns="java:org.metawidget.statically.jsp.widgetbuilder"/>
 					</array>
