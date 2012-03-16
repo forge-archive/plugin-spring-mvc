@@ -13,9 +13,6 @@
 
     @{metawidget}
 
-  </form:form>
-<div class="links">
-
-</div>
+    </form:form>
 
 </html>
