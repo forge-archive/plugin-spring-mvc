@@ -174,9 +174,10 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     //
 
     @Override
-    public List<Resource<?>> setup(Resource<?> template, boolean overwrite)
+    public List<Resource<?>> setup(String targetDir, Resource<?> template, boolean overwrite)
     {
-        List<Resource<?>> resources = generateIndex(template, overwrite);
+        List<Resource<?>> resources = generateIndex(targetDir, template, overwrite);
+
         resources.add(setupMVCContext());
         resources.add(updateWebXML());
 
@@ -216,7 +217,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     }
 
     @Override
-    public List<Resource<?>> generateFromEntity(Resource<?> template, JavaClass entity, boolean overwrite)
+    public List<Resource<?>> generateFromEntity(String targetDir, Resource<?> template, JavaClass entity, boolean overwrite)
     {
 
         // Save the current thread's ContextClassLoader, so that it can be restored later
@@ -282,7 +283,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     
                 writeEntityMetawidget(context, this.createTemplateEntityMetawidgetIndent, this.createTemplateNamespaces);
     
-                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/create" + entity.getName() + ".jsp"),
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/create" + entity.getName() + ".jsp"),
                         this.createTemplate.render(context), overwrite));
     
                 // Generate view
@@ -290,12 +291,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 this.entityMetawidget.setReadOnly(true);
                 writeEntityMetawidget(context, this.viewTemplateEntityMetawidgetIndent, this.viewTemplateNamespaces);
     
-                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/view" + entity.getName() + ".jsp"),
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/view" + entity.getName() + ".jsp"),
                         this.viewTemplate.render(context), overwrite));
 
                 // Generate view all
 
-                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/" + entityPlural + ".jsp"),
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/" + entityPlural + ".jsp"),
                         this.viewAllTemplate.render(context), overwrite));
 
                 // Generate search - how does it differ between JSF and Spring?
@@ -356,7 +357,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     }
 
     @Override
-    public List<Resource<?>> generateIndex(Resource<?> template, boolean overwrite)
+    public List<Resource<?>> generateIndex(String targetDir, Resource<?> template, boolean overwrite)
     {
         List<Resource<?>> result = new ArrayList<Resource<?>>();
         WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
@@ -368,7 +369,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         // Basic pages
 
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/index.jsp"),
+        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/index.jsp"),
                 this.indexTemplate.render(context), overwrite));
 
         result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/error.jsp"),
@@ -380,7 +381,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     }
 
     @Override
-    public List<Resource<?>> generateTemplates(final boolean overwrite)
+    public List<Resource<?>> generateTemplates(String targetDir, final boolean overwrite)
     {
         List<Resource<?>> result = new ArrayList<Resource<?>>();
 
@@ -393,7 +394,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                     getClass().getResourceAsStream("/resources/scaffold/paginator.xhtml"),
                     overwrite));
 
-            result.add(generateNavigation(overwrite));
+            result.add(generateNavigation(targetDir, overwrite));
         } catch (Exception e)
         {
             throw new RuntimeException("Error generating default templates.", e);
@@ -403,9 +404,9 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     }
 
     @Override
-    public List<Resource<?>> getGeneratedResources()
+    public List<Resource<?>> getGeneratedResources(String targetDir)
     {
-        throw new RuntimeException("Not yet implemented.");
+        throw new RuntimeException("Not implemented yet.");
     }
 
     @Override
@@ -646,16 +647,16 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
      * Generates the navigation menu based on scaffolded entities.
      */
 
-    protected Resource<?> generateNavigation(final boolean overwrite)
+    protected Resource<?> generateNavigation(String targetDir, final boolean overwrite)
             throws IOException
     {
         WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
         HtmlTag unorderedList = new HtmlTag("ul");
 
-        for (Resource<?> resource : web.getWebResource("scaffold").listResources())
+        for (Resource<?> resource : web.getWebResource(targetDir).listResources())
         {
             HtmlAnchor link = new HtmlAnchor();
-            link.putAttribute("href", "/scaffold/" + resource.getName() + "/search");
+            link.putAttribute("href", "/" + targetDir+ "/" + resource.getName() + "/search");
             link.setTextContent(StringUtils.uncamelCase(resource.getName()));
 
             HtmlTag listItem = new HtmlTag("li");
@@ -765,5 +766,4 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         return builder.toString();
     }
-
 }
