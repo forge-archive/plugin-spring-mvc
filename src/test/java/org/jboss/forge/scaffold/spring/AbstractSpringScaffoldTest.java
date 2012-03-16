@@ -44,7 +44,19 @@ public abstract class AbstractSpringScaffoldTest extends AbstractShellTest
         getShell().execute("persistence setup");
         getShell().execute("spring persistence");
         queueInputLines("", "", "2", "", "", "");
-        getShell().execute("scaffold setup --scaffoldType spring --overwrite true");
+        getShell().execute("scaffold setup --scaffoldType spring");
+        return project;
+    }
+
+    protected Project setupScaffoldProject(String targetDir) throws Exception
+    {
+        Project project = initializeJavaProject();
+        getShell().execute("spring setup");
+        queueInputLines("HIBERNATE", "JBOSS_AS7", "");
+        getShell().execute("persistence setup");
+        getShell().execute("spring persistence");
+        queueInputLines("", "", "2", "", "", "");
+        getShell().execute("scaffold setup --scaffoldType spring --targetDir " + targetDir);
         return project;
     }
 }

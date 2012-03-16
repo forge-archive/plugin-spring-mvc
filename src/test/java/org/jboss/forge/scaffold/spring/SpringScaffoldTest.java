@@ -70,8 +70,8 @@ public class SpringScaffoldTest extends AbstractSpringScaffoldTest
 
         Node webapp = XMLParser.parse(webXML.getResourceInputStream());
         Assert.assertTrue(webapp.getChildren().size() == 6);
-//  Comment out as error page location has been commented out for debugging.
-//        Assert.assertEquals("WEB-INF/views/error.jsp", webapp.get("error-page").get(0).get("location").get(0).getText());
+        // Comment out as error page location has been commented out for debugging.
+        // Assert.assertEquals("WEB-INF/views/error.jsp", webapp.get("error-page").get(0).get("location").get(0).getText());
         Assert.assertEquals("contextConfigLocation", webapp.get("context-param").get(0)
                 .get("param-name").get(0).getText());
         Assert.assertEquals("classpath:/META-INF/spring/applicationContext.xml", webapp.get("context-param").get(0)
@@ -84,8 +84,17 @@ public class SpringScaffoldTest extends AbstractSpringScaffoldTest
         Assert.assertEquals(meta.getTopLevelPackage() + ".mvc", beans.get("context:component-scan").get(0).getAttribute("base-package"));
         Assert.assertFalse(beans.get("mvc:annotation-driven").isEmpty());
         Assert.assertFalse(beans.get("mvc:default-servlet-handler").isEmpty());
-// Adjust for commenting out of error page view resolver, should be 2.
+        // Adjust for commenting out of error page view resolver, should be 2.
         Assert.assertEquals(1, beans.get("bean").size());
+    }
+
+    @Test
+    public void testScaffoldSetupWithScaffoldTypeandTargetDir() throws Exception
+    {
+        Project project = setupScaffoldProject();
+        queueInputLines("", "", "2", "", "", "");
+        getShell().execute("scaffold setup --scaffoldType spring --targetDir WEB-INF/views");
+        Assert.assertTrue(project.hasFacet(SpringScaffold.class));
     }
 
     @Test(expected = PluginExecutionException.class)
@@ -118,7 +127,7 @@ public class SpringScaffoldTest extends AbstractSpringScaffoldTest
         getShell().execute("field string --named lastName");
 
         queueInputLines("", "");
-        getShell().execute("scaffold from-entity --scaffoldType spring");
+        getShell().execute("scaffold from-entity --targetDir WEB-INF/views --scaffoldType spring");
 
         WebResourceFacet web = project.getFacet(WebResourceFacet.class);
 
@@ -134,16 +143,16 @@ public class SpringScaffoldTest extends AbstractSpringScaffoldTest
         metawidget.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n");
         metawidget.append("<html>\n\n");
         metawidget.append("\t<head>\n\t\t<title>View Customer</title>\n\t</head>\n\n");
-        metawidget.append("\t<form:form commandName=\"customer\">\n");
-        metawidget.append("\t\t<table>\r\n\t\t\t<tbody>\r\n\t\t\t\t<tr>\r\n\t\t\t\t\t<th/>\r\n\t\t\t\t\t");
-        metawidget.append("<td>\r\n\t\t\t\t\t\t<form:hidden path=\"id\"/>\r\n\t\t\t\t\t</td>\r\n\t\t\t\t\t<td>*</td>\r\n");
-        metawidget.append("\t\t\t\t</tr>\r\n\t\t\t\t<tr>\r\n\t\t\t\t\t<th/>\r\n\t\t\t\t\t");
-        metawidget.append("<td>\r\n\t\t\t\t\t\t<form:hidden path=\"version\"/>\r\n\t\t\t\t\t</td>\r\n\t\t\t\t\t<td/>\r\n");
-        metawidget.append("\t\t\t\t</tr>\r\n\t\t\t\t<tr>\r\n\t\t\t\t\t<th>\r\n\t\t\t\t\t\t<form:label path=\"firstName\">First Name:</form:label>\r\n");
-        metawidget.append("\t\t\t\t\t</th>\r\n\t\t\t\t\t<td>\r\n\t\t\t\t\t\t<c:out value=\"${customer.firstName}\"/>\r\n\t\t\t\t\t</td>\r\n\t\t\t\t\t<td/>\r\n");
-        metawidget.append("\t\t\t\t</tr>\r\n\t\t\t\t<tr>\r\n\t\t\t\t\t<th>\r\n\t\t\t\t\t\t<form:label path=\"lastName\">Last Name:</form:label>\r\n");
-        metawidget.append("\t\t\t\t\t</th>\r\n\t\t\t\t\t<td>\r\n\t\t\t\t\t\t<c:out value=\"${customer.lastName}\"/>\r\n\t\t\t\t\t</td>\r\n\t\t\t\t\t<td/>\r\n");
-        metawidget.append("\t\t\t\t</tr>\r\n\t\t\t</tbody>\r\n\t\t</table>\n");
+        metawidget.append("\t<form:form commandName=\"customer\">\n\r\n");
+        metawidget.append("\t<table>\r\n\t<tbody>\r\n\t\t<tr>\r\n\t\t\t<th/>\r\n\t\t\t");
+        metawidget.append("<td>\r\n\t\t\t\t<form:hidden path=\"id\"/>\r\n\t\t\t</td>\r\n\t\t\t<td>*</td>\r\n");
+        metawidget.append("\t\t</tr>\r\n\t\t<tr>\r\n\t\t\t<th/>\r\n\t\t\t");
+        metawidget.append("<td>\r\n\t\t\t\t<form:hidden path=\"version\"/>\r\n\t\t\t</td>\r\n\t\t\t<td/>\r\n");
+        metawidget.append("\t\t</tr>\r\n\t\t<tr>\r\n\t\t\t<th>\r\n\t\t\t\t<form:label path=\"firstName\">First Name:</form:label>\r\n");
+        metawidget.append("\t\t\t</th>\r\n\t\t\t<td>\r\n\t\t\t\t<c:out value=\"${customer.firstName}\"/>\r\n\t\t\t</td>\r\n\t\t\t<td/>\r\n");
+        metawidget.append("\t\t</tr>\r\n\t\t<tr>\r\n\t\t\t<th>\r\n\t\t\t\t<form:label path=\"lastName\">Last Name:</form:label>\r\n");
+        metawidget.append("\t\t\t</th>\r\n\t\t\t<td>\r\n\t\t\t\t<c:out value=\"${customer.lastName}\"/>\r\n\t\t\t</td>\r\n\t\t\t<td/>\r\n");
+        metawidget.append("\t\t</tr>\r\n\t</tbody>\r\n\t</table>\n");
         metawidget.append("\t</form:form>\n\t\n\t<div class=\"links\">\n\t\n\t</div>\n\n</html>");
         
         Assert.assertEquals(metawidget.toString(), contents.toString());
