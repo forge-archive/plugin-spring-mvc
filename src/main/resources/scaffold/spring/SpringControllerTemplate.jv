@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 public class @{entity.getName()}Controller
 {
 
-	// Inject the appropriate data-a87ccess object for the given entity.
+	// Inject the appropriate data-access object for the given entity.
 	
     @Autowired
 	private @{entity.getName()}Dao @{ccEntity}Dao;
@@ -34,8 +34,8 @@ public class @{entity.getName()}Controller
 	public @ModelAttribute("entities")
 	List<@{entity.getName()}> view@{entityPluralCap}()
 	{
-		List<@{entity.getName()}> entities = @{ccEntity}Dao.getAllEntities();
-		return entities;
+		List<@{entity.getName()}> @{entityPlural} = @{ccEntity}Dao.getAllEntities();
+		return @{entityPlural};
 	}
 
     /*
@@ -45,24 +45,41 @@ public class @{entity.getName()}Controller
     */
 
 	@RequestMapping(value="/{id}", method=RequestMethod.GET)
-	public String view@{entity.getName()}(@PathVariable("id") Long id, Model model)
+	public String view@{entity.getName()}(@PathVariable("id") Long id, Model model, HttpServletRequest request)
 	{
-		@{entity.getName()} entity = @{ccEntity}Dao.getById(id);
-		model.addAttribute("@{ccEntity}", entity);
-		return "view@{entity.getName()}";
-	}
+		String edit = request.getParameter("edit");
 
-	@RequestMapping(value="/{id}", method=RequestMethod.POST)
-	public String update@{entity.getName()}(@PathVariable("id") Long id, @{entity.getName()} entity, HttpServletRequest request)
-	{
-		String method = request.getParameter("method");
+		@{entity.getName()} @{ccEntity} = @{ccEntity}Dao.getById(id);
+		model.addAttribute("@{ccEntity}", @{ccEntity});
 
-		if (method.equals("_delete"))
+		if (edit == null || !edit.equals("true"))
 		{
-			@{ccEntity}Dao.delete(id);
-			return "redirect:/@{entityPlural}";
+			return "view@{entity.getName()}";
 		}
 
+		else
+		{
+			return "update@{entity.getName()}";
+		}
+	}
+
+	@RequestMapping(value="/{id}/delete", method=RequestMethod.POST)
+	public String update@{entity.getName()}(@PathVariable("id") Long id, @{entity.getName()} @{ccEntity})
+	{
+		@{ccEntity}Dao.delete(id);
+		return "redirect:/@{entityPlural}";
+	}
+
+	@RequestMapping(value="/{id}/update", method=RequestMethod.GET)
+	public String update(@PathVariable("id") Long id, @{entity.getName()} @{ccEntity})
+	{
+		return "update@{entity.getName()}";
+	}
+	
+	@RequestMapping(value="/{id}/update", method=RequestMethod.POST)
+	public String updatePost(@PathVariable("id") Long id, @{entity.getName()} @{ccEntity})
+	{
+		@{ccEntity}Dao.update(@{ccEntity});
 		return "view@{entity.getName()}";
 	}
 

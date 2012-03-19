@@ -16,7 +16,6 @@
 	</form:form>
 
 	<form:form commandName="@{ccEntity}" method="POST">
-		<input type="hidden" name="method" value="_delete"/>
 		<input type="submit" value="Delete"/>
 	</form:form>
 
