@@ -15,8 +15,5 @@ public interface @{entity.getName()}Dao
 
 	public void create(@{entity.getName()} entity);
 	
-	public void delete(@{entity.getName()} entity);
-	
-	public void deleteById(Long id);
-
+	public void delete(Long id);
 }

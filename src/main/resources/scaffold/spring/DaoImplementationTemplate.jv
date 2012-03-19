@@ -48,13 +48,7 @@ public class @{entity.getName()}DaoImpl implements @{entity.getName()}Dao
 		return;
 	}
 	
-	public void delete(@{entity.getName()} entity)
-	{
-		entityManager.remove(entity);
-		return;
-	}
-	
-	public void deleteById(Long id)
+	public void delete(Long id)
 	{
 		entityManager.remove(entityManager.find(@{entity.getName()}.class, id));
 		return;
