@@ -41,7 +41,9 @@ import org.jboss.forge.parser.java.JavaInterface;
 import org.jboss.forge.parser.xml.Node;
 import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.project.Project;
+import org.jboss.forge.project.dependencies.DependencyBuilder;
 import org.jboss.forge.project.facets.BaseFacet;
+import org.jboss.forge.project.facets.DependencyFacet;
 import org.jboss.forge.project.facets.JavaSourceFacet;
 import org.jboss.forge.project.facets.MetadataFacet;
 import org.jboss.forge.project.facets.WebResourceFacet;
@@ -87,7 +89,8 @@ import org.w3c.dom.NamedNodeMap;
  */
 
 @Alias("spring")
-@RequiresFacet({ WebResourceFacet.class,
+@RequiresFacet({ DependencyFacet.class,
+            WebResourceFacet.class,
             PersistenceFacet.class})
 public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     
@@ -176,10 +179,14 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     @Override
     public List<Resource<?>> setup(String targetDir, Resource<?> template, boolean overwrite)
     {
+        DependencyFacet deps = this.project.getFacet(DependencyFacet.class);
+
         List<Resource<?>> resources = generateIndex(targetDir, template, overwrite);
 
         resources.add(setupMVCContext());
         resources.add(updateWebXML());
+
+        deps.addDirectDependency(DependencyBuilder.create("org.jboss.spec.javax.servlet:jboss-servlet-api_3.0_spec"));
 
         return resources;
     }
