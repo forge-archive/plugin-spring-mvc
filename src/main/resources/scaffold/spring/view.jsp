@@ -11,8 +11,8 @@
 
 	<form:form commandName="@{ccEntity}">
 
-    @{metawidget}
+		@{metawidget}
 
-    </form:form>
+	</form:form>
 
 </html>
