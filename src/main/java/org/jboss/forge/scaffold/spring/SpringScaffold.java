@@ -105,6 +105,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     private static final String DAO_IMPLEMENTATION_TEMPLATE = "scaffold/spring/DaoImplementationTemplate.jv";
     private static final String VIEW_TEMPLATE = "scaffold/spring/view.jsp";
     private static final String VIEW_ALL_TEMPLATE = "scaffold/spring/viewAll.jsp";
+    private static final String UPDATE_TEMPLATE = "scaffold/spring/update.jsp";
     private static final String CREATE_TEMPLATE = "scaffold/spring/create.jsp";
     private static final String SEARCH_TEMPLATE = "scaffold/spring/search.jsp";
     private static final String NAVIGATION_TEMPLATE = "scaffold/spring/page.jsp";
@@ -122,10 +123,15 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     protected CompiledTemplateResource springControllerTemplate;
     protected CompiledTemplateResource daoInterfaceTemplate;
     protected CompiledTemplateResource daoImplementationTemplate;
+
     protected CompiledTemplateResource viewAllTemplate;
     protected CompiledTemplateResource viewTemplate;
     protected Map<String, String> viewTemplateNamespaces;
     protected int viewTemplateEntityMetawidgetIndent;
+
+    protected CompiledTemplateResource updateTemplate;
+    protected Map<String, String> updateTemplateNamespaces;
+    protected int updateTemplateEntityMetawidgetIndent;
 
     protected CompiledTemplateResource createTemplate;
     protected Map<String, String> createTemplateNamespaces;
@@ -273,6 +279,10 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 context.put("ccEntity", ccEntity);
                 context.put("daoPackage", daoPackage);
 
+                Node webapp = XMLParser.parse(web.getWebResource("WEB-INF/web.xml").getResourceInputStream());
+                String servletName = webapp.get("servlet-mapping").get(0).get("servlet-name").get(0).getText();
+                context.put("servletName", servletName);
+
                 String mvcPackage = meta.getTopLevelPackage() + ".mvc";
                 context.put("mvcPackage",  mvcPackage);
 
@@ -292,7 +302,14 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/create" + entity.getName() + ".jsp"),
                         this.createTemplate.render(context), overwrite));
-    
+
+                // Generate update
+
+                writeEntityMetawidget(context, this.updateTemplateEntityMetawidgetIndent, this.updateTemplateNamespaces);
+
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/update" + entity.getName() + ".jsp"),
+                        this.updateTemplate.render(context), overwrite));
+
                 // Generate view
     
                 this.entityMetawidget.setReadOnly(true);
@@ -607,6 +624,13 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
             this.viewTemplate = compiler.compile(VIEW_TEMPLATE);
             String template = Streams.toString(this.viewTemplate.getSourceTemplateResource().getInputStream());
             this.viewTemplateEntityMetawidgetIndent = parseIndent(template, "@{metawidget}");
+        }
+
+        if (this.updateTemplate == null)
+        {
+            this.updateTemplate = compiler.compile(UPDATE_TEMPLATE);
+            String template = Streams.toString(this.updateTemplate.getSourceTemplateResource().getInputStream());
+            this.updateTemplateEntityMetawidgetIndent = parseIndent(template, "@{metawidget}");
         }
 
         if (this.createTemplate == null)
