@@ -5,6 +5,7 @@ import java.util.List;
 import @{entity.getQualifiedName()};
 import @{daoPackage}.@{entity.getName()}Dao;
 
+import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -52,17 +53,17 @@ public class @{entity.getName()}Controller
 	}
 
 	@RequestMapping(value="/{id}", method=RequestMethod.POST)
-	public String update@{entity.getName()}(@{entity.getName()} entity)
+	public String update@{entity.getName()}(@PathVariable("id") Long id, @{entity.getName()} entity, HttpServletRequest request)
 	{
-		@{ccEntity}Dao.update(entity);
-		return "view@{entity.getName()}";
-	}
+		String method = request.getParameter("method");
 
-	@RequestMapping(value="/{id}", method=RequestMethod.DELETE)
-	public String remove@{entity.getName()}(@PathVariable("id") Long id)
-	{
-		@{ccEntity}Dao.deleteById(id);
-		return "redirect:/@{entityPlural}";
+		if (method.equals("_delete"))
+		{
+			@{ccEntity}Dao.delete(id);
+			return "redirect:/@{entityPlural}";
+		}
+
+		return "view@{entity.getName()}";
 	}
 
 	@RequestMapping(value="/create", method=RequestMethod.GET)
