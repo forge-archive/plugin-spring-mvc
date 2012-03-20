@@ -10,12 +10,16 @@
 	<body>
 	
 		<table>
-			<c:forEach items="#{entities}" var="entity">
+			<c:forEach items="$${entities}" var="entity">
 				<tr>
-					<td><a href="<c:out value="@{entityPlural}/$${entity.id}"/>">@{entity.getName()} $${entity.id}</a></td>
+					<td><a href="<c:out value="@{entityPlural}/$${entity.id}"/>">@{entityName} $${entity.id}</a></td>
 				</tr>
 			</c:forEach>
 		</table>
+
+		<br/>
+
+		<input type="submit" value="Create New @{entityName}" onclick="window.location='<c:url value="/@{entityPlural}/create"/>'"/>
 
 	</body>
 
