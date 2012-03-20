@@ -9,7 +9,7 @@
 		<title>Update @{entityName}</title>
 	</head>
 
-	<form:form commandName="@{ccEntity}" action="/@{servletName}/@{entityPlural}/$${@{ccEntity}.id}">
+	<form:form commandName="@{ccEntity}" action="$${@{ccEntity}.id}">
 
 		@{metawidget}
 
