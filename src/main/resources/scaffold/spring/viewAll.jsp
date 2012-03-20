@@ -12,7 +12,9 @@
 		<table>
 			<c:forEach items="$${entities}" var="entity">
 				<tr>
-					<td><a href="<c:out value="@{entityPlural}/$${entity.id}"/>">@{entityName} $${entity.id}</a></td>
+					<td>@{entityName} $${entity.id}</td>
+					<td><input type="submit" value="View" onclick="window.location='<c:url value="/@{entityPlural}/$${entity.id}"/>'"/></td>
+					<td><input type="submit" value="Edit" onclick="window.location='<c:url value="/@{entityPlural}/$${entity.id}?edit=true"/>'"/></td>
 				</tr>
 			</c:forEach>
 		</table>
