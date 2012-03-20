@@ -390,13 +390,43 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         // Basic pages
 
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/index.jsp"),
+        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("index.jsp"),
                 this.indexTemplate.render(context), overwrite));
 
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/error.jsp"),
+        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("error.jsp"),
                 this.errorTemplate.render(context), overwrite));
 
         // Static resources
+
+        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/add.png"),
+                getClass().getResourceAsStream("/scaffold/spring/add.png"), overwrite));
+
+       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/background.gif"),
+                getClass().getResourceAsStream("/scaffold/spring/background.gif"), overwrite));
+
+       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/false.png"),
+                getClass().getResourceAsStream("/scaffold/spring/false.png"), overwrite));
+
+       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/favicon.ico"),
+                getClass().getResourceAsStream("/scaffold/spring/favicon.ico"), overwrite));
+
+       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/forge-logo.png"),
+                getClass().getResourceAsStream("/scaffold/spring/forge-logo.png"), overwrite));
+
+       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/forge-style.css"),
+                getClass().getResourceAsStream("/scaffold/spring/forge-style.css"), overwrite));
+
+       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/jboss-community.png"),
+                getClass().getResourceAsStream("/scaffold/spring/jboss-community.png"), overwrite));
+
+       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/remove.png"),
+                getClass().getResourceAsStream("/scaffold/spring/remove.png"), overwrite));
+
+       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/search.png"),
+                getClass().getResourceAsStream("/scaffold/spring/search.png"), overwrite));
+
+       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/true.png"),
+                getClass().getResourceAsStream("/scaffold/spring/true.png"), overwrite));
 
         return result;
     }
