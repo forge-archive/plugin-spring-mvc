@@ -34,6 +34,7 @@ import java.util.Map;
 
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
+import javax.persistence.EntityNotFoundException;
 
 import org.jboss.forge.parser.JavaParser;
 import org.jboss.forge.parser.java.JavaClass;
@@ -279,16 +280,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 context.put("ccEntity", ccEntity);
                 context.put("daoPackage", daoPackage);
 
-                Node webapp = XMLParser.parse(web.getWebResource("WEB-INF/web.xml").getResourceInputStream());
-                String servletName = webapp.get("servlet-mapping").get(0).get("servlet-name").get(0).getText();
-                context.put("servletName", servletName);
-
                 String mvcPackage = meta.getTopLevelPackage() + ".mvc";
                 context.put("mvcPackage",  mvcPackage);
 
                 String entityPlural = pluralOf(entity.getName().toLowerCase());
                 context.put("entityPlural", entityPlural);
-                context.put("entityPluralCap", pluralOf(entity.getName()));
+                context.put("entityPluralCap", pluralOf(StringUtils.uncamelCase(entity.getName())));
 
                 // Prepare entity metawidget
 
