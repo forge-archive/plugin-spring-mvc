@@ -34,8 +34,6 @@ import java.util.Map;
 
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
-import javax.persistence.EntityNotFoundException;
-
 import org.jboss.forge.parser.JavaParser;
 import org.jboss.forge.parser.java.JavaClass;
 import org.jboss.forge.parser.java.JavaInterface;
@@ -255,12 +253,20 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
 
                 loadTemplates();
+
+                // Set context for Java and JSP generation
+
                 Map<Object, Object> context = CollectionUtils.newHashMap();
+                context = getTemplateContext(template);
                 context.put("entity", entity);
                 String ccEntity = StringUtils.decapitalize(entity.getName());
                 context.put("ccEntity", ccEntity);
-                String daoPackage = meta.getTopLevelPackage() + ".repo";
-                context.put("daoPackage", daoPackage);
+                context.put("daoPackage", meta.getTopLevelPackage() + ".repo");
+                context.put("entityName", StringUtils.uncamelCase(entity.getName()));
+                context.put("mvcPackage",  meta.getTopLevelPackage() + ".mvc");
+                String entityPlural = pluralOf(entity.getName());
+                context.put("entityPlural", entityPlural);
+                context.put("entityPluralName", pluralOf(StringUtils.uncamelCase(entity.getName())));
 
                 // Prepare qbeMetawidget
 
@@ -271,21 +277,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 context.put("qbeMetawidget", writer.toString().trim());
                 context.put("qbeMetawidgetImports",
                         CollectionUtils.toString(this.qbeMetawidget.getImports(), ";\r\n", true, false));
-
-                // Set context for view generation
-
-                context = getTemplateContext(template);
-                context.put("entity", entity);
-                context.put("entityName", StringUtils.uncamelCase(entity.getName()));
-                context.put("ccEntity", ccEntity);
-                context.put("daoPackage", daoPackage);
-
-                String mvcPackage = meta.getTopLevelPackage() + ".mvc";
-                context.put("mvcPackage",  mvcPackage);
-
-                String entityPlural = pluralOf(entity.getName().toLowerCase());
-                context.put("entityPlural", entityPlural);
-                context.put("entityPluralCap", pluralOf(StringUtils.uncamelCase(entity.getName())));
 
                 // Prepare entity metawidget
 
@@ -307,6 +298,13 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/update" + entity.getName() + ".jsp"),
                         this.updateTemplate.render(context), overwrite));
 
+                // Generate search and viewAll
+
+                writeEntityMetawidget(context, this.viewTemplateEntityMetawidgetIndent, this.viewTemplateNamespaces);
+
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/" + entityPlural.toLowerCase() + ".jsp"),
+                        this.viewAllTemplate.render(context), overwrite));
+
                 // Generate view
     
                 this.entityMetawidget.setReadOnly(true);
@@ -315,17 +313,10 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/view" + entity.getName() + ".jsp"),
                         this.viewTemplate.render(context), overwrite));
 
-                // Generate view all
-
-                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/" + entityPlural + ".jsp"),
-                        this.viewAllTemplate.render(context), overwrite));
-
-                // Generate search - how does it differ between JSF and Spring?
-    
                 // Generate navigation
     
 /*                result.add(generateNavigation(overwrite));*/
-    
+
                 JavaInterface daoInterface = JavaParser.parse(JavaInterface.class, this.daoInterfaceTemplate.render(context));
                 JavaClass daoImplementation = JavaParser.parse(JavaClass.class, this.daoImplementationTemplate.render(context));
     
@@ -338,13 +329,14 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 java.saveJavaSource(daoImplementation);
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(daoImplementation),
                         daoImplementation.toString(), overwrite));
-
+    
                 // Create a Spring MVC controller for the passed entity, using SpringControllerTemplate.jv
     
                 JavaClass entityController = JavaParser.parse(JavaClass.class, this.springControllerTemplate.render(context));
                 java.saveJavaSource(entityController);
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(entityController),
                         entityController.toString(), overwrite));
+
             } catch (Exception e)
             {
                 throw new RuntimeException("Error generating Spring scaffolding: " + entity.getName(), e);
@@ -398,34 +390,34 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         // Static resources
 
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/add.png"),
+        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/add.png"),
                 getClass().getResourceAsStream("/scaffold/spring/add.png"), overwrite));
 
-       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/background.gif"),
+       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/background.gif"),
                 getClass().getResourceAsStream("/scaffold/spring/background.gif"), overwrite));
 
-       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/false.png"),
+       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/false.png"),
                 getClass().getResourceAsStream("/scaffold/spring/false.png"), overwrite));
 
-       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/favicon.ico"),
+       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/favicon.ico"),
                 getClass().getResourceAsStream("/scaffold/spring/favicon.ico"), overwrite));
 
-       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/forge-logo.png"),
+       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/forge-logo.png"),
                 getClass().getResourceAsStream("/scaffold/spring/forge-logo.png"), overwrite));
 
-       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/forge-style.css"),
+       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/forge-style.css"),
                 getClass().getResourceAsStream("/scaffold/spring/forge-style.css"), overwrite));
 
-       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/jboss-community.png"),
+       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/jboss-community.png"),
                 getClass().getResourceAsStream("/scaffold/spring/jboss-community.png"), overwrite));
 
-       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/remove.png"),
+       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/remove.png"),
                 getClass().getResourceAsStream("/scaffold/spring/remove.png"), overwrite));
 
-       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/search.png"),
+       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/search.png"),
                 getClass().getResourceAsStream("/scaffold/spring/search.png"), overwrite));
 
-       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/true.png"),
+       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/true.png"),
                 getClass().getResourceAsStream("/scaffold/spring/true.png"), overwrite));
 
         return result;
@@ -438,12 +430,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         try
         {
-            WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
+/*            WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
 
             result.add(ScaffoldUtil.createOrOverwrite(this.prompt,
                     web.getWebResource("/resources/scaffold/paginator.xhtml"),
                     getClass().getResourceAsStream("/resources/scaffold/paginator.xhtml"),
-                    overwrite));
+                    overwrite));*/
 
             result.add(generateNavigation(targetDir, overwrite));
         } catch (Exception e)
@@ -714,7 +706,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         for (Resource<?> resource : web.getWebResource(targetDir).listResources())
         {
             HtmlAnchor link = new HtmlAnchor();
-            link.putAttribute("href", "/" + targetDir+ "/" + resource.getName() + "/search");
+            link.putAttribute("href", "/" + targetDir+ "/search" + resource.getName());
             link.setTextContent(StringUtils.uncamelCase(resource.getName()));
 
             HtmlTag listItem = new HtmlTag("li");
