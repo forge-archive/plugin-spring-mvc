@@ -4,11 +4,11 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jboss.forge.plugins.spring</groupId>
   <artifactId>plugin-spring-mvc</artifactId>
-  <version>1.0.1-SNAPSHOT</version>
+  <version>1.0.2-SNAPSHOT</version>
   <properties>
-    <metawidget.version>2.2-SNAPSHOT</metawidget.version>
-    <forge.api.version>1.0.1-SNAPSHOT</forge.api.version>
-    <forge.test.version>1.0.1-SNAPSHOT</forge.test.version>
+    <metawidget.version>2.2.Beta1</metawidget.version>
+    <forge.api.version>1.0.2-SNAPSHOT</forge.api.version>
+    <forge.test.version>1.0.2-SNAPSHOT</forge.test.version>
     <mvel.version>2.1.Beta7</mvel.version>
   </properties>
   <dependencyManagement>
