@@ -29,7 +29,7 @@
 		</p>
 
 		<p style="text-align: right; padding-top: 50px">
-			<a target="_blank" href="http://jboss.org"><img src="src/main/webapp/resources/jboss-community.png" alt="JBoss and JBoss Community" width="254" height="31" border="0" />
+			<a target="_blank" href="http://jboss.org"><img src="jboss-community.png" alt="JBoss and JBoss Community" width="254" height="31" border="0" />
 		</a><br />
 		To replace this page edit 'src/main/webapp/index.jsp', or keep Forging!
 		</p>
