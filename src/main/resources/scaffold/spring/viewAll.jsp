@@ -18,8 +18,8 @@
 			<c:forEach items="$${entities}" var="entity">
 				<tr>
 					<td>@{entityName} $${entity.id}</td>
-					<td><input type="submit" value="View" onclick="window.location='<c:url value="/@{entityPlural}/$${entity.id}"/>'"/></td>
-					<td><input type="submit" value="Edit" onclick="window.location='<c:url value="/@{entityPlural}/$${entity.id}?edit=true"/>'"/></td>
+					<td><input type="submit" value="View" onclick="window.location='<c:url value="/@{entityPlural.toLowerCase()}/$${entity.id}"/>'"/></td>
+					<td><input type="submit" value="Edit" onclick="window.location='<c:url value="/@{entityPlural.toLowerCase()}/$${entity.id}?edit=true"/>'"/></td>
 				</tr>
 			</c:forEach>
 		</table>
