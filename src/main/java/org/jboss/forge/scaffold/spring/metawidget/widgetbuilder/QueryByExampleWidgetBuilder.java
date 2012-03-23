@@ -65,7 +65,7 @@ public class QueryByExampleWidgetBuilder
         {
            StaticJavaStub toReturn = new StaticJavaStub();
            toReturn.getChildren().add(
-                    new JavaStatement("String " + name + " = this.search.get" + StringUtils.capitalize(name) + "()"));
+                    new JavaStatement("String " + name + " = search.get" + StringUtils.capitalize(name) + "()"));
            JavaStatement ifNotEmpty = new JavaStatement("if (" + name + " != null && !\"\".equals(" + name + "))");
            ifNotEmpty.getChildren().add(
                     new JavaStatement("predicatesList.add(builder.like(root.<String>get(\"" + name + "\"), '%' + " + name
