@@ -1,9 +1,15 @@
 package @{daoPackage};
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
 import @{entity.getQualifiedName()};
 
@@ -48,5 +54,28 @@ public class @{entity.getName()}DaoImpl implements @{entity.getName()}Dao
 	{
 		entityManager.remove(entityManager.find(@{entity.getName()}.class, id));
 		return;
+	}
+	
+	public List<@{entity.getName()}> search(@{entity.getName()} search)
+	{
+		CriteriaBuilder builder = this.entityManager.getCriteriaBuilder();
+
+		// Create and populate a query for the search
+
+		CriteriaQuery<@{entity.getName()}> criteria = builder.createQuery(@{entity.getName()}.class);
+		Root<@{entity.getName()}> root = criteria.from(@{entity.getName()}.class);
+		TypedQuery<@{entity.getName()}> query = this.entityManager.createQuery(criteria.select(root).where(getSearchPredicates(root, search)));
+
+		return query.getResultList();
+	}
+
+	private Predicate[] getSearchPredicates(Root<@{entity.getName()}> root, @{entity.getName()} search)
+	{
+		CriteriaBuilder builder = this.entityManager.getCriteriaBuilder();
+		List<Predicate> predicatesList = new ArrayList<Predicate>();
+
+		@{qbeMetawidget}
+
+		return predicatesList.toArray(new Predicate[predicatesList.size()]);
 	}
 }
