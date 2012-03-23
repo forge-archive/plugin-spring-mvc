@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 @Controller
-@RequestMapping("/@{entityPlural}")
+@RequestMapping("/@{entityPlural.toLowerCase()}")
 public class @{entity.getName()}Controller
 {
 
@@ -26,10 +26,16 @@ public class @{entity.getName()}Controller
 
 	@RequestMapping(method=RequestMethod.GET)
 	public @ModelAttribute("entities")
-	List<@{entity.getName()}> view@{entityPluralCap}()
+	List<@{entity.getName()}> view@{entityPlural}(@{entity.getName()} search)
 	{
-		List<@{entity.getName()}> @{entityPlural} = @{ccEntity}Dao.getAllEntities();
-		return @{entityPlural};
+		List<@{entity.getName()}> @{entityPlural.toLowerCase()} = @{ccEntity}Dao.search(search);
+		return @{entityPlural.toLowerCase()};
+	}
+	
+	@ModelAttribute("search")
+	public @{entity.getName()} search@{entity.getName()}()
+	{
+		return new @{entity.getName()}();
 	}
 
 	@RequestMapping(value="/{id}", method=RequestMethod.GET)
@@ -62,7 +68,7 @@ public class @{entity.getName()}Controller
 	public String update@{entity.getName()}(@PathVariable("id") Long id, @{entity.getName()} @{ccEntity})
 	{
 		@{ccEntity}Dao.delete(id);
-		return "redirect:/@{entityPlural}";
+		return "redirect:/@{entityPlural.toLowerCase()}";
 	}
 
 	@RequestMapping(value="/create", method=RequestMethod.GET)
@@ -76,6 +82,6 @@ public class @{entity.getName()}Controller
 	public String create@{entity.getName()}(@{entity.getName()} @{ccEntity})
 	{
 		@{ccEntity}Dao.create(@{ccEntity});
-		return "redirect:/@{entityPlural}";
+		return "redirect:/@{entityPlural.toLowerCase()}";
 	}
 }
