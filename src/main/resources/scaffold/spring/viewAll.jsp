@@ -4,10 +4,15 @@
 <html>
 
 	<head>
-		<title>View All @{entityPluralCap}</title>
+		<title>View All @{entityPluralName}</title>
 	</head>
 
 	<body>
+
+		<form:form commandName="search" method="GET">
+			@{metawidget}
+			<input type="submit" value="Search"/>
+		</form:form>
 	
 		<table>
 			<c:forEach items="$${entities}" var="entity">
@@ -21,7 +26,7 @@
 
 		<br/>
 
-		<input type="submit" value="Create New @{entityName}" onclick="window.location='<c:url value="/@{entityPlural}/create"/>'"/>
+		<input type="submit" value="Create New @{entityName}" onclick="window.location='<c:url value="/@{entityPlural.toLowerCase()}/create"/>'"/>
 
 	</body>
 
