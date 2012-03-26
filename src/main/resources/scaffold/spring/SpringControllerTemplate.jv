@@ -26,16 +26,10 @@ public class @{entity.getName()}Controller
 
 	@RequestMapping(method=RequestMethod.GET)
 	public @ModelAttribute("entities")
-	List<@{entity.getName()}> view@{entityPlural}(@{entity.getName()} search)
+	List<@{entity.getName()}> view@{entityPlural}(@ModelAttribute("search") @{entity.getName()} search)
 	{
 		List<@{entity.getName()}> @{entityPlural.toLowerCase()} = @{ccEntity}Dao.search(search);
 		return @{entityPlural.toLowerCase()};
-	}
-	
-	@ModelAttribute("search")
-	public @{entity.getName()} search@{entity.getName()}()
-	{
-		return new @{entity.getName()}();
 	}
 
 	@RequestMapping(value="/{id}", method=RequestMethod.GET)
