@@ -146,7 +146,9 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     private Event<InstallFacets> install;
     private StaticSpringMetawidget entityMetawidget;
     private StaticJavaMetawidget qbeMetawidget;
-    
+
+    private List<Resource<?>> generatedResources;
+
     //
     // Constructor
     //
@@ -166,6 +168,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         {
             this.compiler.getTemplateResolverFactory().addResolver(this. resolver);
         }
+
+        this.generatedResources = new ArrayList<Resource<?>>();
     }
     
     //
@@ -177,14 +181,16 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     {
         DependencyFacet deps = this.project.getFacet(DependencyFacet.class);
 
-        List<Resource<?>> resources = generateIndex(targetDir, template, overwrite);
+        List<Resource<?>> result = generateIndex(targetDir, template, overwrite);
 
-        resources.add(setupMVCContext(targetDir));
-        resources.add(updateWebXML());
+        result.add(setupMVCContext(targetDir));
+        result.add(updateWebXML());
+
+        generatedResources.addAll(result);
 
         deps.addDirectDependency(DependencyBuilder.create("org.jboss.spec.javax.servlet:jboss-servlet-api_3.0_spec"));
 
-        return resources;
+        return result;
     }
 
     /**
@@ -332,6 +338,9 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
             Thread.currentThread().setContextClassLoader(oldClassLoader);
         }
+
+        generatedResources.addAll(result);
+
         return result;
     }
 
@@ -405,7 +414,11 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/true.png"),
                 getClass().getResourceAsStream("/scaffold/spring/true.png"), overwrite));
 
-        return result;
+       // TODO: Perhaps should be modified to only add index.jsp and error.jsp, and not all static resources.
+
+       generatedResources.addAll(result);
+
+       return result;
     }
 
     @Override
@@ -431,10 +444,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         return result;
     }
 
+    // TODO: Perhaps this method should retrieve all generated resources in targetDir, but instead retrieves any generated resource.
+
     @Override
     public List<Resource<?>> getGeneratedResources(String targetDir)
     {
-        throw new RuntimeException("Not implemented yet.");
+        return this.generatedResources;
     }
 
     @Override
