@@ -153,7 +153,8 @@ public class SpringScaffoldTest extends AbstractSpringScaffoldTest
         metawidget.append("\t\t\t\t</tr>\r\n\t\t\t\t<tr>\r\n\t\t\t\t\t<th>\r\n\t\t\t\t\t\t<form:label path=\"lastName\">Last Name:</form:label>\r\n");
         metawidget.append("\t\t\t\t\t</th>\r\n\t\t\t\t\t<td>\r\n\t\t\t\t\t\t<c:out value=\"${customer.lastName}\"/>\r\n\t\t\t\t\t</td>\r\n\t\t\t\t\t<td/>\r\n");
         metawidget.append("\t\t\t\t</tr>\r\n\t\t\t</tbody>\r\n\t\t</table>\n\n");
-        metawidget.append("\t</form:form>\n\n</html>\n");
+        metawidget.append("\t</form:form>\n\n\t<form:form commandName=\"customer\" action=\"${customer.id}/delete\" method=\"POST\">\n");
+        metawidget.append("\t\t<input type=\"submit\" value=\"Delete\"/>\n\t</form:form>\n\n</html>\n");
         
         Assert.assertEquals(metawidget.toString(), contents.toString());
 
@@ -178,15 +179,9 @@ public class SpringScaffoldTest extends AbstractSpringScaffoldTest
         metawidget.append("\t\t\t\t\t</th>\r\n\t\t\t\t\t<td>\r\n\t\t\t\t\t\t<form:input path=\"firstName\"/>\r\n\t\t\t\t\t</td>\r\n\t\t\t\t\t<td/>\r\n");
         metawidget.append("\t\t\t\t</tr>\r\n\t\t\t\t<tr>\r\n\t\t\t\t\t<th>\r\n\t\t\t\t\t\t<form:label path=\"lastName\">Last Name:</form:label>\r\n");
         metawidget.append("\t\t\t\t\t</th>\r\n\t\t\t\t\t<td>\r\n\t\t\t\t\t\t<form:input path=\"lastName\"/>\r\n\t\t\t\t\t</td>\r\n\t\t\t\t\t<td/>\r\n");
-        metawidget.append("\t\t\t\t</tr>\r\n\t\t\t</tbody>\r\n\t\t</table>\n\n\t\t<input type=\"submit\" value=\"Create New Customer\"/>\t\t\n");
-        metawidget.append("\t</form:form>\n\t\n</html>");
+        metawidget.append("\t\t\t\t</tr>\r\n\t\t\t</tbody>\r\n\t\t</table>\n\n\t\t<br/>\n\n\t\t<input type=\"submit\" value=\"Create New Customer\"/>\n");
+        metawidget.append("\t</form:form>\n\t\n</html>\n");
 
         Assert.assertEquals(metawidget.toString(), contents.toString());
-
-        // Search
-
-/*        FileResource<?> search = web.getWebResource("WEB-INF/views/searchCustomer.jsp");
-        Assert.assertTrue(search.exists());
-        contents = Streams.toString(search.getResourceInputStream());*/        
     }
 }
