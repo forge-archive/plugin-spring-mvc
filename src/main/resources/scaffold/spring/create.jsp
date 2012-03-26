@@ -13,7 +13,7 @@
 	
 		@{metawidget}
 
-    <br/>
+		<br/>
 
 		<input type="submit" value="Create New @{entity.getName()}"/>
 	</form:form>
