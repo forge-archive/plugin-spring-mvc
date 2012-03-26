@@ -106,7 +106,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     private static final String VIEW_ALL_TEMPLATE = "scaffold/spring/viewAll.jsp";
     private static final String UPDATE_TEMPLATE = "scaffold/spring/update.jsp";
     private static final String CREATE_TEMPLATE = "scaffold/spring/create.jsp";
-    private static final String SEARCH_TEMPLATE = "scaffold/spring/search.jsp";
     private static final String NAVIGATION_TEMPLATE = "scaffold/spring/page.jsp";
     
     private static final String ERROR_TEMPLATE = "scaffold/spring/error.jsp";
@@ -116,7 +115,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     // Protected members (nothing is private, to help sub-classing)
     //
 
-    protected CompiledTemplateResource backingBeanTemplate;
     protected int backingBeanTemplateQbeMetawidgetIndent;
 
     protected CompiledTemplateResource springControllerTemplate;
@@ -136,11 +134,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     protected Map<String, String> createTemplateNamespaces;
     protected int createTemplateEntityMetawidgetIndent;
 
-    protected CompiledTemplateResource searchTemplate;
-    protected Map<String, String> searchTemplateNamespaces;
-    protected int searchTemplateSearchMetawidgetIndent;
-    protected int searchTemplateBeanMetawidgetIndent;
-
     protected CompiledTemplateResource navigationTemplate;
     protected int navigationTemplateIndent;
 
@@ -152,8 +145,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     private TemplateCompiler compiler;
     private Event<InstallFacets> install;
     private StaticSpringMetawidget entityMetawidget;
-    private StaticSpringMetawidget searchMetawidget;
-    private StaticSpringMetawidget beanMetawidget;
     private StaticJavaMetawidget qbeMetawidget;
     
     //
@@ -188,7 +179,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         List<Resource<?>> resources = generateIndex(targetDir, template, overwrite);
 
-        resources.add(setupMVCContext());
+        resources.add(setupMVCContext(targetDir));
         resources.add(updateWebXML());
 
         deps.addDirectDependency(DependencyBuilder.create("org.jboss.spec.javax.servlet:jboss-servlet-api_3.0_spec"));
@@ -214,14 +205,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         this.entityMetawidget = new StaticSpringMetawidget();
         this.entityMetawidget.setConfigReader(configReader);
         this.entityMetawidget.setConfig("scaffold/spring/metawidget-entity.xml");
-        
-        this.searchMetawidget = new StaticSpringMetawidget();
-        this.searchMetawidget.setConfigReader(configReader);
-        this.searchMetawidget.setConfig("scaffold/spring/metawidget-search.xml");
-        
-        this.beanMetawidget = new StaticSpringMetawidget();
-        this.beanMetawidget.setConfigReader(configReader);
-        this.beanMetawidget.setConfig("scaffold/spring/metawidget-bean.xml");
         
         this.qbeMetawidget = new StaticJavaMetawidget();
         this.qbeMetawidget.setConfigReader(configReader);
@@ -337,11 +320,13 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(entityController),
                         entityController.toString(), overwrite));
 
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 throw new RuntimeException("Error generating Spring scaffolding: " + entity.getName(), e);
             }
-        } finally {
+        }
+        finally {
 
             // Restore the original ContextClassLoader
 
@@ -472,7 +457,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     // Protected methods (nothing is private, to help sub-classing)
     //
 
-    protected Resource<?> setupMVCContext()
+    protected Resource<?> setupMVCContext(String targetDir)
     {
         WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
         MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
@@ -515,7 +500,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         Node prefixProperty = new Node("property", viewResolver);
         prefixProperty.attribute("name", "prefix");
-        prefixProperty.attribute("value", "/WEB-INF/views/");
+        prefixProperty.attribute("value", "/" + targetDir);
 
         Node suffixProperty = new Node("property", viewResolver);
         suffixProperty.attribute("name", "suffix");
@@ -657,14 +642,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
             this.createTemplate = compiler.compile(CREATE_TEMPLATE);
             String template = Streams.toString(this.createTemplate.getSourceTemplateResource().getInputStream());
             this.createTemplateEntityMetawidgetIndent = parseIndent(template, "@{metawidget}");
-        }
-
-        if (this.searchTemplate == null)
-        {
-            this.searchTemplate = compiler.compile(SEARCH_TEMPLATE);
-            String template = Streams.toString(this.searchTemplate.getSourceTemplateResource().getInputStream());
-            this.searchTemplateSearchMetawidgetIndent = parseIndent(template, "@{searchMetawidget}");
-            this.searchTemplateBeanMetawidgetIndent = parseIndent(template, "@{beanMetawidget}");
         }
 
         if (this.navigationTemplate == null)
