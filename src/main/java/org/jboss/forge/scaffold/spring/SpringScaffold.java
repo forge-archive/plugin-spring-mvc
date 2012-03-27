@@ -49,6 +49,7 @@ import org.jboss.forge.project.facets.WebResourceFacet;
 import org.jboss.forge.project.facets.events.InstallFacets;
 import org.jboss.forge.resources.FileResource;
 import org.jboss.forge.resources.Resource;
+import org.jboss.forge.resources.ResourceFilter;
 import org.jboss.forge.scaffold.AccessStrategy;
 import org.jboss.forge.scaffold.ScaffoldProvider;
 import org.jboss.forge.scaffold.TemplateStrategy;
@@ -106,7 +107,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     private static final String VIEW_ALL_TEMPLATE = "scaffold/spring/viewAll.jsp";
     private static final String UPDATE_TEMPLATE = "scaffold/spring/update.jsp";
     private static final String CREATE_TEMPLATE = "scaffold/spring/create.jsp";
-    private static final String NAVIGATION_TEMPLATE = "scaffold/spring/page.jsp";
+    private static final String NAVIGATION_TEMPLATE = "scaffold/spring/pageTemplate.jsp";
     
     private static final String ERROR_TEMPLATE = "scaffold/spring/error.jsp";
     private static final String INDEX_TEMPLATE = "scaffold/spring/index.jsp";
@@ -184,6 +185,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         List<Resource<?>> result = generateIndex(targetDir, template, overwrite);
 
         result.add(setupMVCContext(targetDir));
+        result.add(setupTilesLayout(targetDir));
         result.add(updateWebXML());
 
         generatedResources.addAll(result);
@@ -272,39 +274,106 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 this.entityMetawidget.putAttribute("value", ccEntity);
                 this.entityMetawidget.setPath(entity.getQualifiedName());
                 this.entityMetawidget.setReadOnly(false);
-    
+
+                // Create a views.xml file containing all tiles definitions.
+
+                Node tilesDefinitions = new Node("tiles-definitions");
+
                 // Generate create
     
                 writeEntityMetawidget(context, this.createTemplateEntityMetawidgetIndent, this.createTemplateNamespaces);
     
-                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/create" + entity.getName() + ".jsp"),
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/views/create" + entity.getName() + ".jsp"),
                         this.createTemplate.render(context), overwrite));
+
+                Node createDefinition = new Node("definition", tilesDefinitions);
+                createDefinition.attribute("name", "create" + entity.getName());
+                createDefinition.attribute("extends", "standard");
+
+                Node createTitleAttribute = new Node("put-attribute", createDefinition);
+                createTitleAttribute.attribute("name", "title");
+                createTitleAttribute.attribute("value", "Create New " + StringUtils.uncamelCase(entity.getName()));
+
+                Node createBodyAttribute = new Node("put-attribute", createDefinition);
+                createBodyAttribute.attribute("name", "body");
+                createBodyAttribute.attribute("value", "/" + targetDir + "/views/create" + entity.getName() + ".jsp");
 
                 // Generate update
 
                 writeEntityMetawidget(context, this.updateTemplateEntityMetawidgetIndent, this.updateTemplateNamespaces);
 
-                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/update" + entity.getName() + ".jsp"),
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/views/update" + entity.getName() + ".jsp"),
                         this.updateTemplate.render(context), overwrite));
+
+                Node updateDefinition = new Node("definition", tilesDefinitions);
+                updateDefinition.attribute("name", "update" + entity.getName());
+                updateDefinition.attribute("extends", "standard");
+
+                Node updateTitleAttribute = new Node("put-attribute", createDefinition);
+                updateTitleAttribute.attribute("name", "title");
+                updateTitleAttribute.attribute("value", "update " + StringUtils.uncamelCase(entity.getName()));
+
+                Node updateBodyAttribute = new Node("put-attribute", createDefinition);
+                updateBodyAttribute.attribute("name", "body");
+                updateBodyAttribute.attribute("value", "/" + targetDir + "/views/update" + entity.getName() + ".jsp");
 
                 // Generate search and viewAll
 
                 writeEntityMetawidget(context, this.viewTemplateEntityMetawidgetIndent, this.viewTemplateNamespaces);
 
-                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/" + entityPlural.toLowerCase() + ".jsp"),
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/views" + entityPlural.toLowerCase() + ".jsp"),
                         this.viewAllTemplate.render(context), overwrite));
+
+                Node viewAllDefinition = new Node("definition", tilesDefinitions);
+                viewAllDefinition.attribute("name", entityPlural.toLowerCase());
+                viewAllDefinition.attribute("extends", "standard");
+
+                Node viewAllTitleAttribute = new Node("put-attribute", createDefinition);
+                viewAllTitleAttribute.attribute("name", "title");
+                viewAllTitleAttribute.attribute("value", "View All " + pluralOf(StringUtils.uncamelCase(entity.getName())));
+
+                Node viewAllBodyAttribute = new Node("put-attribute", createDefinition);
+                viewAllBodyAttribute.attribute("name", "body");
+                viewAllBodyAttribute.attribute("value", "/" + targetDir + "/views/" + entityPlural.toLowerCase() + ".jsp");
 
                 // Generate view
     
                 this.entityMetawidget.setReadOnly(true);
                 writeEntityMetawidget(context, this.viewTemplateEntityMetawidgetIndent, this.viewTemplateNamespaces);
     
-                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/view" + entity.getName() + ".jsp"),
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/views/view" + entity.getName() + ".jsp"),
                         this.viewTemplate.render(context), overwrite));
+
+                Node viewDefinition = new Node("definition", tilesDefinitions);
+                viewDefinition.attribute("name", "view" + entity.getName());
+                viewDefinition.attribute("extends", "standard");
+
+                Node viewTitleAttribute = new Node("put-attribute", createDefinition);
+                viewTitleAttribute.attribute("name", "title");
+                viewTitleAttribute.attribute("value", "View " + StringUtils.uncamelCase(entity.getName()));
+
+                Node viewBodyAttribute = new Node("put-attribute", createDefinition);
+                viewBodyAttribute.attribute("name", "body");
+                viewBodyAttribute.attribute("value", "/" + targetDir + "/views/view" + entity.getName() + ".jsp");
 
                 // Generate navigation
     
-/*                result.add(generateNavigation(overwrite));*/
+                result.add(generateNavigation(targetDir, overwrite));
+
+                Node indexDefinition = new Node("definition", tilesDefinitions);
+                indexDefinition.attribute("name", "index");
+                indexDefinition.attribute("extends", "standard");
+
+                Node indexTitleAttribute = new Node("put-attribute", createDefinition);
+                indexTitleAttribute.attribute("name", "title");
+                indexTitleAttribute.attribute("value", "Welcome to Forge");
+
+                Node indexBodyAttribute = new Node("put-attribute", createDefinition);
+                indexBodyAttribute.attribute("name", "body");
+                indexBodyAttribute.attribute("value", "/" + targetDir + "/views/index.jsp");
+
+                String viewsFile = XMLParser.toXMLString(tilesDefinitions);
+                result.add(web.createWebResource(viewsFile.toCharArray(), targetDir + "/views/views.xml"));
 
                 JavaInterface daoInterface = JavaParser.parse(JavaInterface.class, this.daoInterfaceTemplate.render(context));
                 JavaClass daoImplementation = JavaParser.parse(JavaClass.class, this.daoImplementationTemplate.render(context));
@@ -376,10 +445,10 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         // Basic pages
 
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("index.jsp"),
+        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/views/index.jsp"),
                 this.indexTemplate.render(context), overwrite));
 
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("error.jsp"),
+        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/views/error.jsp"),
                 this.errorTemplate.render(context), overwrite));
 
         // Static resources
@@ -500,26 +569,33 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         contextScan.attribute("base-package", mvcPackage);
 
         // Indicate the use of annotations for Spring MVC, such as @Controller or @RequestMapping
-        
+
+        // Map view names to Tiles Definitions with support for partial re-rendering
+
+        Node viewResolver = new Node("bean", beans);
+        viewResolver.attribute("class", "org.springframework.web.servlet.view.tiles2.TilesViewResolver");
+        viewResolver.attribute("id", "viewResolver");
+
+        Node viewClass = new Node("property", viewResolver);
+        viewClass.attribute("name", "viewClass");
+        viewClass.attribute("class", "org.springframework.web.servlet.view.tiles2.TilesView");
+
+        // Initialize the Apache Tiles CompositeView system
+
+        Node tilesConfigurer = new Node("bean", beans);
+        tilesConfigurer.attribute("class", "org.springframework.web.servlet.view.tiles2.TilesConfigurer");
+        tilesConfigurer.attribute("id", "tilesConfigurer");
+
+        Node definitions = new Node("definitions", tilesConfigurer);
+        Node list = new Node("list", definitions);
+        list.createChild("value").text("/" + targetDir + "/**/layouts.xml");
+        list.createChild("value").text("/" + targetDir + "/**/views.xml");;
+
         beans.createChild("mvc:annotation-driven");
 
         // Use the Spring MVC default servlet handler
         
         beans.createChild("mvc:default-servlet-handler");
-
-        // Add an InternalViewResolver, mapping all .jsp pages
-
-        Node viewResolver = new Node("bean", beans);
-        viewResolver.attribute("class", "org.springframework.web.servlet.view.InternalResourceViewResolver");
-        viewResolver.attribute("id", "viewResolver");
-
-        Node prefixProperty = new Node("property", viewResolver);
-        prefixProperty.attribute("name", "prefix");
-        prefixProperty.attribute("value", "/" + targetDir);
-
-        Node suffixProperty = new Node("property", viewResolver);
-        suffixProperty.attribute("name", "suffix");
-        suffixProperty.attribute("value", ".jsp");
 
         // Add a ViewResolver for any view generated by an error
 
@@ -547,6 +623,20 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         web.createWebResource(mvcContextFile.toCharArray(), filename);
         
         return web.getWebResource(filename);
+    }
+
+    private Resource<?> setupTilesLayout(String targetDir)
+    {
+        WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
+
+        Node tilesDefinitions = new Node("tiles-definitions");
+        Node standardDefinition = new Node("definition", tilesDefinitions);
+        standardDefinition.attribute("name", "standard");
+        standardDefinition.attribute("template", "/" + targetDir + "/layouts/pageTemplate.jsp");
+
+        String tilesDefinitionFile = XMLParser.toXMLString(tilesDefinitions);
+
+        return web.createWebResource(tilesDefinitionFile.toCharArray(), targetDir + "/layouts/layouts.xml"); 
     }
 
     protected Resource<?> updateWebXML()
@@ -695,10 +785,28 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
         HtmlTag unorderedList = new HtmlTag("ul");
 
-        for (Resource<?> resource : web.getWebResource(targetDir).listResources())
+        ResourceFilter filter = new ResourceFilter()
+        {
+            @Override
+            public boolean accept(Resource<?> resource)
+            {
+                FileResource<?> file = (FileResource<?>) resource;
+
+                if ( file.isDirectory() || file.getName().equals("META-INF")
+                        || file.getName().equals("WEB-INF")
+                        || file.getName().equals("resources"))
+                {
+                    return false;
+                }
+
+                return true;
+            }
+        };
+        
+        for (Resource<?> resource : web.getWebResource(targetDir + "/views/").listResources(filter))
         {
             HtmlAnchor link = new HtmlAnchor();
-            link.putAttribute("href", "/" + targetDir+ "/search" + resource.getName());
+            link.putAttribute("href", "/" + targetDir+ "/views/" + pluralOf(resource.getName()).toLowerCase());
             link.setTextContent(StringUtils.uncamelCase(resource.getName()));
 
             HtmlTag listItem = new HtmlTag("li");
@@ -708,15 +816,17 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         Writer writer = new IndentedWriter(new StringWriter(), this.navigationTemplateIndent);
         unorderedList.write(writer);
+
         Map<Object, Object> context = CollectionUtils.newHashMap();
         context.put("navigation", writer.toString().trim());
+        context.put("targetDir", targetDir);
 
         if (this.navigationTemplate == null)
         {
             loadTemplates();
         }
 
-        return ScaffoldUtil.createOrOverwrite(this.prompt, (FileResource<?>) getTemplateStrategy().getDefaultTemplate(),
+        return ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/layouts/pageTemplate.jsp"),
                 this.navigationTemplate.render(context), overwrite);
     }
 
