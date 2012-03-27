@@ -1,15 +1,4 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-
-<?xml version="1.0" encoding="UTF-8"?>
-
-<html>
-	
-	<div class="title">
-		<head>
-			<title>Welcome to Forge</title>
-		</head>
-	</div>
-
+<div id="content">
 	<div class="header">
 		<h1>Welcome to Forge</h3>
 	</div>
@@ -34,4 +23,4 @@
 		To replace this page edit 'src/main/webapp/index.jsp', or keep Forging!
 		</p>
 	</div>
-</html>
+</div>
