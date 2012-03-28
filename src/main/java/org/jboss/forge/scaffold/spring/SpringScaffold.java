@@ -258,6 +258,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 String entityPlural = pluralOf(entity.getName());
                 context.put("entityPlural", entityPlural);
                 context.put("entityPluralName", pluralOf(StringUtils.uncamelCase(entity.getName())));
+                context.put("targetDir", targetDir);
 
                 // Prepare qbeMetawidget
 
@@ -447,6 +448,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
 //        generateTemplates(overwrite);
         HashMap<Object, Object> context = getTemplateContext(template);
+        context.put("targetDir", targetDir);
 
         // Basic pages
 
@@ -458,34 +460,34 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         // Static resources
 
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/add.png"),
+        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/add.png"),
                 getClass().getResourceAsStream("/scaffold/spring/add.png"), overwrite));
 
-       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/background.gif"),
+       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/background.gif"),
                 getClass().getResourceAsStream("/scaffold/spring/background.gif"), overwrite));
 
-       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/false.png"),
+       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/false.png"),
                 getClass().getResourceAsStream("/scaffold/spring/false.png"), overwrite));
 
-       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/favicon.ico"),
+       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/favicon.ico"),
                 getClass().getResourceAsStream("/scaffold/spring/favicon.ico"), overwrite));
 
-       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/forge-logo.png"),
+       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/forge-logo.png"),
                 getClass().getResourceAsStream("/scaffold/spring/forge-logo.png"), overwrite));
 
-       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/forge-style.css"),
+       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/forge-style.css"),
                 getClass().getResourceAsStream("/scaffold/spring/forge-style.css"), overwrite));
 
-       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/jboss-community.png"),
+       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/jboss-community.png"),
                 getClass().getResourceAsStream("/scaffold/spring/jboss-community.png"), overwrite));
 
-       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/remove.png"),
+       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/remove.png"),
                 getClass().getResourceAsStream("/scaffold/spring/remove.png"), overwrite));
 
-       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/search.png"),
+       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/search.png"),
                 getClass().getResourceAsStream("/scaffold/spring/search.png"), overwrite));
 
-       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/true.png"),
+       result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/true.png"),
                 getClass().getResourceAsStream("/scaffold/spring/true.png"), overwrite));
 
        // TODO: Perhaps should be modified to only add index.jsp and error.jsp, and not all static resources.
