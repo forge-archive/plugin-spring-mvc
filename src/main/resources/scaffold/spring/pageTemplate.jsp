@@ -7,8 +7,8 @@
 	<head>
 		<title><tiles:insertAttribute name="title"/></title>
 
-		<link rel="icon" href="src/main/webapp/resources/favicon.ico"/>
-		<link rel="stylesheet" type="text/css" href="src/main/webappresources/forge-style.css"/>
+		<link rel="icon" href="/static/resources/favicon.ico"/>
+		<link rel="stylesheet" type="text/css" href="/static/resources/forge-style.css"/>
 	</head>
 
 	<body>
@@ -17,7 +17,7 @@
 
 			<div id="navigation">
 				<a id="homeLink" href="index.jsp">
-					<img src="src/main/webapp/resources/forge-logo.png" alt="Forge... get hammered" border="0"/>
+					<img src="/static/resources/forge-logo.png" alt="Forge... get hammered" border="0"/>
 				</a>
 				@{navigation}
 			</div>
