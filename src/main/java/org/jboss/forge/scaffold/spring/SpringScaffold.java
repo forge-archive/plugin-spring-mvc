@@ -370,9 +370,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
                 Node indexBodyAttribute = new Node("put-attribute", indexDefinition);
                 indexBodyAttribute.attribute("name", "body");
-                indexBodyAttribute.attribute("value", targetDir + "/views/index.jsp");
+                indexBodyAttribute.attribute("value", "index.jsp");
 
                 String viewsFile = XMLParser.toXMLString(tilesDefinitions);
+
+                // TODO: Find a cleaner way to add Tiles DTD than this.
+
                 viewsFile = viewsFile.substring(0, 55) + "\n<!DOCTYPE tiles-definitions PUBLIC\n\"-//Apache Software Foundation"
                 + "//DTD Tiles Configuration 2.0//EN\"\n\"http://tiles.apache.org/dtds/tiles-config_2_0.dtd\">\n\n" + viewsFile.substring(55);
                 result.add(web.createWebResource(viewsFile.toCharArray(), targetDir + "/views/views.xml"));
@@ -447,10 +450,10 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         // Basic pages
 
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/views/index.jsp"),
+        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("index.jsp"),
                 this.indexTemplate.render(context), overwrite));
 
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(targetDir + "/views/error.jsp"),
+        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("error.jsp"),
                 this.errorTemplate.render(context), overwrite));
 
         // Static resources
@@ -638,6 +641,9 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         standardDefinition.attribute("template", targetDir + "/layouts/pageTemplate.jsp");
 
         String tilesDefinitionFile = XMLParser.toXMLString(tilesDefinitions);
+
+        // TODO: Find a cleaner way to add Tiles DTD than this.
+
         tilesDefinitionFile = tilesDefinitionFile.substring(0, 55) + "\n<!DOCTYPE tiles-definitions PUBLIC\n\"-//Apache Software Foundation"
         + "//DTD Tiles Configuration 2.0//EN\"\n\"http://tiles.apache.org/dtds/tiles-config_2_0.dtd\">\n\n" + tilesDefinitionFile.substring(55);
 
@@ -689,7 +695,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         // Add a unique mapping for the error page
 
-        // TODO: This may need to be refactored later, to allow multiple error page locations.
+        // TODO: This may need to be modified later, to allow multiple error page locations.
 
 /*        if (webapp.get("error-page").isEmpty())
         {
