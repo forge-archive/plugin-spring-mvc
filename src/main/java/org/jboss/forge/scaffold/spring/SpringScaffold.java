@@ -54,7 +54,6 @@ import org.jboss.forge.scaffold.AccessStrategy;
 import org.jboss.forge.scaffold.ScaffoldProvider;
 import org.jboss.forge.scaffold.TemplateStrategy;
 import org.jboss.forge.scaffold.spring.metawidget.config.ForgeConfigReader;
-import org.jboss.forge.scaffold.spring.metawidget.widgetbuilder.HtmlAnchor;
 import org.jboss.forge.scaffold.util.ScaffoldUtil;
 import org.jboss.forge.shell.ShellPrompt;
 import org.jboss.forge.shell.plugins.Alias;
@@ -191,6 +190,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         generatedResources.addAll(result);
 
         deps.addDirectDependency(DependencyBuilder.create("org.jboss.spec.javax.servlet:jboss-servlet-api_3.0_spec"));
+        deps.addDirectDependency(DependencyBuilder.create("org.apache.tiles:tiles-jsp:2.1.3"));
 
         return result;
     }
@@ -373,6 +373,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 indexBodyAttribute.attribute("value", targetDir + "/views/index.jsp");
 
                 String viewsFile = XMLParser.toXMLString(tilesDefinitions);
+                viewsFile = viewsFile.substring(0, 55) + "\n<!DOCTYPE tiles-definitions PUBLIC\n\"-//Apache Software Foundation"
+                + "//DTD Tiles Configuration 2.0//EN\"\n\"http://tiles.apache.org/dtds/tiles-config_2_0.dtd\">\n\n" + viewsFile.substring(55);
                 result.add(web.createWebResource(viewsFile.toCharArray(), targetDir + "/views/views.xml"));
 
                 JavaInterface daoInterface = JavaParser.parse(JavaInterface.class, this.daoInterfaceTemplate.render(context));
@@ -578,7 +580,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         Node viewClass = new Node("property", viewResolver);
         viewClass.attribute("name", "viewClass");
-        viewClass.attribute("class", "org.springframework.web.servlet.view.tiles2.TilesView");
+        viewClass.attribute("value", "org.springframework.web.servlet.view.tiles2.TilesView");
 
         // Initialize the Apache Tiles CompositeView system
 
@@ -586,7 +588,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         tilesConfigurer.attribute("class", "org.springframework.web.servlet.view.tiles2.TilesConfigurer");
         tilesConfigurer.attribute("id", "tilesConfigurer");
 
-        Node definitions = new Node("definitions", tilesConfigurer);
+        Node definitions = new Node("property", tilesConfigurer);
+        definitions.attribute("name", "definitions");
         Node list = new Node("list", definitions);
         list.createChild("value").text(targetDir + "/**/layouts.xml");
         list.createChild("value").text(targetDir + "/**/views.xml");;
@@ -635,6 +638,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         standardDefinition.attribute("template", targetDir + "/layouts/pageTemplate.jsp");
 
         String tilesDefinitionFile = XMLParser.toXMLString(tilesDefinitions);
+        tilesDefinitionFile = tilesDefinitionFile.substring(0, 55) + "\n<!DOCTYPE tiles-definitions PUBLIC\n\"-//Apache Software Foundation"
+        + "//DTD Tiles Configuration 2.0//EN\"\n\"http://tiles.apache.org/dtds/tiles-config_2_0.dtd\">\n\n" + tilesDefinitionFile.substring(55);
 
         return web.createWebResource(tilesDefinitionFile.toCharArray(), targetDir + "/layouts/layouts.xml"); 
     }
