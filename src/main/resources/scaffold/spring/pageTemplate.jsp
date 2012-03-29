@@ -16,7 +16,7 @@
 		<div id="wrapper">
 
 			<div id="navigation">
-				<a id="homeLink" href="index.jsp">
+				<a id="homeLink" href="<c:url value="/"/>">
 					<img src="<c:url value="/static/resources/forge-logo.png"/>" alt="Forge... get hammered" border="0"/>
 				</a>
 				@{navigation}
