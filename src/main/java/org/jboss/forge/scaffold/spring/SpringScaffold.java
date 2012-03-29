@@ -312,7 +312,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
                 Node updateTitleAttribute = new Node("put-attribute", updateDefinition);
                 updateTitleAttribute.attribute("name", "title");
-                updateTitleAttribute.attribute("value", "update " + StringUtils.uncamelCase(entity.getName()));
+                updateTitleAttribute.attribute("value", "Update " + StringUtils.uncamelCase(entity.getName()));
 
                 Node updateBodyAttribute = new Node("put-attribute", updateDefinition);
                 updateBodyAttribute.attribute("name", "body");
