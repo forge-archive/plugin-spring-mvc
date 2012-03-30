@@ -22,6 +22,10 @@
 
 package org.jboss.forge.spring.mvc.plugin;
 
+import java.util.List;
+
+import org.hibernate.ejb.criteria.predicate.ExistsPredicate;
+import org.jboss.forge.resources.Resource;
 import org.jboss.forge.shell.plugins.Plugin;
 import org.jboss.forge.shell.plugins.Alias;
 
@@ -127,9 +131,15 @@ public class SpringPlugin implements Plugin {
  
         out.println("Added Spring " + springVersion + " dependencies to pom.xml.");
 
-        // Create the applicationContext.xml file
+        // Create or update the applicationContext.xml file
 
+        Resource<?> applicationContext = resources.getResource("META-INF/spring/applicationContext.xml");
         Node beans = new Node("beans");
+        
+        if (applicationContext.exists())
+        {
+            beans = XMLParser.parse(applicationContext.getResourceInputStream());
+        }
 
         // Add the necessary schema files to the application context
 
@@ -143,9 +153,16 @@ public class SpringPlugin implements Plugin {
         String file = XMLParser.toXMLString(beans);
         resources.createResource(file.toCharArray(), "META-INF/spring/applicationContext.xml");
 
-        // Create a web.xml file for the application
+        // Create or update a web.xml file for the application
 
+        Resource<?> webXML = web.getWebResource("WEB-INF/web.xml");
         Node webapp = new Node("web-app");
+
+        if (webXML.exists())
+        {
+            webapp = XMLParser.parse(webXML.getResourceInputStream());
+        }
+        
         webapp.attribute("version", "3.0");
         webapp.attribute("xmlns", "http://java.sun.com/xml/ns/javaee");
         webapp.attribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
@@ -229,17 +246,37 @@ public class SpringPlugin implements Plugin {
             Node componentScan = new Node("context:component-scan", beans);
             componentScan.attribute("base-package", meta.getTopLevelPackage() + ".repo");
         }
+        else
+        {
+            boolean exists = false;
+
+            for(Node node : beans.get("context:component-scan"))
+            {
+                if (node.getAttribute("base-package").equals(meta.getTopLevelPackage() + ".repo"))
+                {
+                    continue;
+                }
+
+                exists = true;
+            }
+
+            if (exists == false)
+            {
+                Node componentScan = new Node("context:component-scan", beans);
+                componentScan.attribute("base-package", meta.getTopLevelPackage() + ".repo");
+            }
+        }
 
         // Add a JTA Transaction Manager to the web application
 
-        if (beans.get("tx:jta-transaction-manager").isEmpty())
+        if (beans.getSingle("tx:jta-transaction-manager") == null)
         {
             beans.createChild("tx:jta-transaction-manager");
         }
 
         // Indicate that Spring transactions will be annotation driven (potentially move to 'spring persistence' command?)
 
-        if (beans.get("tx:annotation-driven").isEmpty())
+        if (beans.getSingle("tx:annotation-driven") == null)
         {
             beans.createChild("tx:annotation-driven");
         }
@@ -251,11 +288,30 @@ public class SpringPlugin implements Plugin {
 
         if (beans.get("jee:jndi-lookup").isEmpty())
         {
-            Node emf = new Node("jee:jndi-lookup", beans);
-            emf.setComment(false);
-            emf.attribute("id", "entityManager");
-            emf.attribute("jndi-name", "java:comp/env/persistence/" + defaultUnit.getName() + "/entityManager");
-            emf.attribute("expected-type", "javax.persistence.EntityManager");           
+            Node entityManager = new Node("jee:jndi-lookup", beans);
+            entityManager.attribute("id", "entityManager");
+            entityManager.attribute("jndi-name", "java:comp/env/persistence/" + defaultUnit.getName() + "/entityManager");
+            entityManager.attribute("expected-type", "javax.persistence.EntityManager");           
+        }
+        else
+        {
+            boolean exists = false;
+
+            for (Node node : beans.get("jee:jndi-lookup"))
+            {
+                if (node.getAttribute("expected-type").equals("javax.persistence.EntityManager"))
+                {
+                    exists = true;
+                }
+            }
+
+            if (exists == false)
+            {
+                Node entityManager = new Node("jee:jndi-lookup", beans);
+                entityManager.attribute("id", entityManager);
+                entityManager.attribute("jndi-name", "java:comp/env/persistence/" + defaultUnit.getName() + "/entityManager");
+                entityManager.attribute("expected-type", "javax.persistence.EntityManager");
+            }
         }
 
         // Write the XML tree to a file, using the <beans> root node.
@@ -269,7 +325,7 @@ public class SpringPlugin implements Plugin {
 
         // Define a persistence unit to be referenced in the application context.
 
-        if (webapp.get("persistence-context-ref").isEmpty())
+        if (webapp.getSingle("persistence-context-ref") == null)
         {
             Node persistenceContextRef = new Node("persistence-context-ref", webapp);
             Node persistenceContextRefName = new Node("persistence-context-ref-name", persistenceContextRef);
@@ -288,6 +344,6 @@ public class SpringPlugin implements Plugin {
     @Command("help")
     public void help(PipeOut out)
     {
-        out.println("Welcome to the Spring plugin for Forge!  To set up the project for Spring MVC use, execute the command 'spring setup'.");
+        out.println("Welcome to the Spring plugin for Forge!  To add dependencies for Spring MVC, execute the command 'spring setup'.");
     }
 }
