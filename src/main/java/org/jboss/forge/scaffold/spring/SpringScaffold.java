@@ -258,7 +258,11 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 String entityPlural = pluralOf(entity.getName());
                 context.put("entityPlural", entityPlural);
                 context.put("entityPluralName", pluralOf(StringUtils.uncamelCase(entity.getName())));
-                context.put("targetDir", targetDir);
+
+                if (targetDir.equals("/"))
+                    context.put("targetDir", targetDir);
+                else
+                    context.put("targetDir", targetDir + "/");
 
                 // Prepare qbeMetawidget
 
@@ -454,7 +458,11 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
 //        generateTemplates(overwrite);
         HashMap<Object, Object> context = getTemplateContext(template);
-        context.put("targetDir", targetDir);
+
+        if (targetDir.equals("/"))
+            context.put("targetDir", targetDir);
+        else
+            context.put("targetDir", targetDir +"/");
 
         // Basic pages
 
@@ -752,7 +760,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         for (Node servlet : webapp.get("servlet-mapping"))
         {
-            if (servlet.getSingle("url-pattern").getText().equals(targetDir))
+            if (servlet.getSingle("servlet-name").getText().equals(servletName))
             {
                 servletExists = true;
             }
