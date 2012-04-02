@@ -571,7 +571,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         if (targetDir == "")
         {
-            filename = "WEB-INF/" + meta.getProjectName().replace(' ', '-') + "-mvc-context.xml";
+            filename = "WEB-INF/" + meta.getProjectName().replace(' ', '-').toLowerCase() + "-mvc-context.xml";
         }
         else
         {
@@ -696,7 +696,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         prop.attribute("key", "java.lang.Exception");
         prop.text("error");*/
 
-        if (beans.getSingle("mvc:resources") == null)
+        if (beans.getSingle("mvc:resources") == null && filename.equals("WEB-INF/" + meta.getProjectName().replace(' ', '-').toLowerCase() + "-mvc-context.xml"))
         {
             Node mvcStaticContent = new Node("mvc:resources", beans);
             mvcStaticContent.attribute("mapping", "/static/**");
@@ -740,8 +740,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         if (targetDir == "/")
         {
-            filename = "WEB-INF/" + meta.getProjectName().replace(' ', '-') + "-mvc-context.xml";
-            servletName = meta.getProjectName().replace(' ', '-');
+            filename = "WEB-INF/" + meta.getProjectName().replace(' ', '-').toLowerCase() + "-mvc-context.xml";
+            servletName = meta.getProjectName().replace(' ', '-').toLowerCase();
         }
         else
         {
@@ -755,18 +755,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         Node webapp = XMLParser.parse(webXML.getResourceInputStream());
 
         // Define a dispatcher servlet, named after the project.
-        
-        boolean servletExists = false;
-
-        for (Node servlet : webapp.get("servlet-mapping"))
-        {
-            if (servlet.getSingle("servlet-name").getText().equals(servletName))
-            {
-                servletExists = true;
-            }
-        }
-
-        if (servletExists == false)
+       
+        if (!servletExists(servletName))
         {
             Node servlet = new Node("servlet", webapp);
 
@@ -808,7 +798,9 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         String file = XMLParser.toXMLString(webapp);
         web.createWebResource(file.toCharArray(), "WEB-INF/web.xml");
-        
+
+        updateRootServlet();
+
         return web.getWebResource("WEB-INF/web.xml");
     }
 
@@ -1026,5 +1018,82 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         }
 
         return builder.toString();
+    }
+
+    protected boolean servletExists(String name)
+    {
+        WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
+        Node webapp = XMLParser.parse(web.getWebResource("WEB-INF/web.xml").getResourceInputStream());
+
+        for (Node servlet : webapp.get("servlet"))
+        {
+            if (servlet.getSingle("servlet-name").getText().equals(name))
+                return true;
+        }
+
+        return false;
+    }
+
+    protected void updateRootServlet()
+    {
+        WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
+        MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
+        Node webapp = XMLParser.parse(web.getWebResource("WEB-INF/web.xml").getResourceInputStream());
+        boolean hasRootServlet = false;
+        String filename = meta.getProjectName().replace(' ', '-').toLowerCase() + "-mvc-context.xml";
+
+        for (Node servletMapping : webapp.get("servlet-mapping"))
+        {
+            if (servletMapping.getSingle("url-pattern").getText().equals("/"))
+                hasRootServlet = true;
+        }
+
+        if (hasRootServlet == true)
+        {
+            updateMVCContext(filename);
+        }
+        else
+        {
+            setupMVCContext("/");
+
+            Node servlet = new Node("servlet", webapp);
+
+            Node servName = new Node("servlet-name", servlet);
+            servName.text("root");
+
+            Node servletClass = new Node("servlet-class", servlet);
+            servletClass.text("org.springframework.web.servlet.DispatcherServlet");
+
+            Node initParam = new Node("init-param", servlet);
+            Node paramName = new Node("param-name", initParam);
+            paramName.text("contextConfigLocation");
+            Node paramValue = new Node("param-value", initParam);
+            paramValue.text(filename);
+            Node loadOnStartup = new Node("load-on-startup", servlet);
+            loadOnStartup.text(1);
+
+            Node servletMapping = new Node("servlet-mapping", webapp);
+            Node servletNameRepeat = new Node("servlet-name", servletMapping);
+            servletNameRepeat.text("root");
+            Node url = new Node("url-pattern", servletMapping);
+            url.text("/");
+
+            web.createWebResource("WEB-INF/" + filename, XMLParser.toXMLString(webapp));
+        }
+    }
+
+    protected void updateMVCContext(String filename)
+    {
+        WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
+        Node beans = XMLParser.parse(web.getWebResource("WEB-INF/" + filename).getResourceInputStream());
+
+        if (beans.getSingle("mvc:resources") == null)
+        {
+            Node resources = new Node("mvc:resources");
+            resources.attribute("location", "/");
+            resources.attribute("mapping", "/static/**");
+        }
+
+        web.createWebResource("WEB-INF/" + filename, XMLParser.toXMLString(beans));
     }
 }
