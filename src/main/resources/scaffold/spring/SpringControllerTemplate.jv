@@ -62,7 +62,7 @@ public class @{entity.getName()}Controller
 	public String update@{entity.getName()}(@PathVariable("id") Long id, @{entity.getName()} @{ccEntity})
 	{
 		@{ccEntity}Dao.delete(id);
-		return "redirect:/@{entityPlural.toLowerCase()}";
+		return "redirect:@{targetDir}@{entityPlural.toLowerCase()}";
 	}
 
 	@RequestMapping(value="/create", method=RequestMethod.GET)
@@ -76,6 +76,6 @@ public class @{entity.getName()}Controller
 	public String create@{entity.getName()}(@{entity.getName()} @{ccEntity})
 	{
 		@{ccEntity}Dao.create(@{ccEntity});
-		return "redirect:/@{entityPlural.toLowerCase()}";
+		return "redirect:@{targetDir}@{entityPlural.toLowerCase()}";
 	}
 }

@@ -8,7 +8,16 @@
 
 	</form:form>
 
-	<form:form commandName="@{ccEntity}" action="$${@{ccEntity}.id}/delete" method="POST">
-		<input type="submit" value="Delete"/>
-	</form:form>
+	<table>
+		<tr>
+			<td>
+				<input type="submit" value="Edit" onclick="window.location='<c:url value="@{targetDir}@{entityPlural.toLowerCase()}/$${@{ccEntity}.id}?edit=true"/>'"/>
+			</td>
+			<td>
+				<form:form commandName="@{ccEntity}" action="$${@{ccEntity}.id}/delete" method="POST">
+					<input type="submit" value="Delete"/>
+				</form:form>
+			</td>
+		</tr>
+	</table>
 </div>
