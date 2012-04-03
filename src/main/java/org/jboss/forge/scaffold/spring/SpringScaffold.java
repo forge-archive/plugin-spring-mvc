@@ -389,7 +389,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
                 viewsFile = viewsFile.substring(0, 55) + "\n<!DOCTYPE tiles-definitions PUBLIC\n\"-//Apache Software Foundation"
                 + "//DTD Tiles Configuration 2.0//EN\"\n\"http://tiles.apache.org/dtds/tiles-config_2_0.dtd\">\n\n" + viewsFile.substring(55);
-                result.add(web.createWebResource(viewsFile.toCharArray(), "WEB-INF/views/views.xml"));
+                result.add(web.createWebResource(viewsFile, "WEB-INF/views/views.xml"));
 
                 JavaInterface daoInterface = JavaParser.parse(JavaInterface.class, this.daoInterfaceTemplate.render(context));
                 JavaClass daoImplementation = JavaParser.parse(JavaClass.class, this.daoImplementationTemplate.render(context));
@@ -459,10 +459,10 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 //        generateTemplates(overwrite);
         HashMap<Object, Object> context = getTemplateContext(template);
 
-        if (targetDir.equals("/"))
-            context.put("targetDir", targetDir);
-        else
-            context.put("targetDir", targetDir +"/");
+        if (!targetDir.equals("/"))
+            targetDir += "/";
+
+        context.put("targetDir", targetDir);
 
         // Basic pages
 
@@ -705,8 +705,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         // Write the mvc-context file to 'src/main/webapp/WEB-INF/{lowercase-project-name}-mvc-context.xml'.
 
-        String mvcContextFile = XMLParser.toXMLString(beans);
-        web.createWebResource(mvcContextFile.toCharArray(), filename);
+        web.createWebResource(XMLParser.toXMLString(beans), filename);
         
         return web.getWebResource(filename);
     }
@@ -727,7 +726,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         tilesDefinitionFile = tilesDefinitionFile.substring(0, 55) + "\n<!DOCTYPE tiles-definitions PUBLIC\n\"-//Apache Software Foundation"
         + "//DTD Tiles Configuration 2.0//EN\"\n\"http://tiles.apache.org/dtds/tiles-config_2_0.dtd\">\n\n" + tilesDefinitionFile.substring(55);
 
-        return web.createWebResource(tilesDefinitionFile.toCharArray(), "/WEB-INF/layouts/layouts.xml"); 
+        return web.createWebResource(tilesDefinitionFile, "/WEB-INF/layouts/layouts.xml"); 
     }
 
     protected Resource<?> updateWebXML(String targetDir)
@@ -796,8 +795,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         // Save the updated web.xml file
 
-        String file = XMLParser.toXMLString(webapp);
-        web.createWebResource(file.toCharArray(), "WEB-INF/web.xml");
+        web.createWebResource(XMLParser.toXMLString(webapp), "WEB-INF/web.xml");
 
         updateRootServlet();
 
@@ -1078,7 +1076,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
             Node url = new Node("url-pattern", servletMapping);
             url.text("/");
 
-            web.createWebResource("WEB-INF/" + filename, XMLParser.toXMLString(webapp));
+            web.createWebResource(XMLParser.toXMLString(webapp), "WEB-INF/" + filename);
         }
     }
 
@@ -1094,6 +1092,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
             resources.attribute("mapping", "/static/**");
         }
 
-        web.createWebResource("WEB-INF/" + filename, XMLParser.toXMLString(beans));
+        web.createWebResource(XMLParser.toXMLString(beans), "WEB-INF/" + filename);
     }
 }
