@@ -427,6 +427,14 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 java.saveJavaSource(indexController);
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(indexController),
                         indexController.toString(), overwrite));
+
+                // If we have not just generated an IndexController for the '/' directory, create one.
+
+                context.put("mvcPackage", meta.getTopLevelPackage() + ".mvc.root");
+                JavaClass rootIndexController = JavaParser.parse(JavaClass.class, this.indexControllerTemplate.render(context));
+                java.saveJavaSource(rootIndexController);
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(rootIndexController),
+                        rootIndexController.toString(), overwrite));
             }
             catch (Exception e)
             {
