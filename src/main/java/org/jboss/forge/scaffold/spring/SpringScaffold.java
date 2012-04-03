@@ -99,6 +99,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
     private static String XMLNS_PREFIX = "xmlns:";
 
+    private static final String INDEX_CONTROLLER_TEMPLATE = "scaffold/spring/IndexControllerTemplate.jv";
     private static final String SPRING_CONTROLLER_TEMPLATE = "scaffold/spring/SpringControllerTemplate.jv";
     private static final String DAO_INTERFACE_TEMPLATE = "scaffold/spring/DaoInterfaceTemplate.jv";
     private static final String DAO_IMPLEMENTATION_TEMPLATE = "scaffold/spring/DaoImplementationTemplate.jv";
@@ -117,6 +118,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
     protected int backingBeanTemplateQbeMetawidgetIndent;
 
+    protected CompiledTemplateResource indexControllerTemplate;
     protected CompiledTemplateResource springControllerTemplate;
     protected CompiledTemplateResource daoInterfaceTemplate;
     protected CompiledTemplateResource daoImplementationTemplate;
@@ -252,17 +254,25 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 context.put("entity", entity);
                 String ccEntity = StringUtils.decapitalize(entity.getName());
                 context.put("ccEntity", ccEntity);
-                context.put("daoPackage", meta.getTopLevelPackage() + ".repo");
+
+                if (targetDir.equals("/"))
+                {
+                    context.put("daoPackage", meta.getTopLevelPackage() + ".repo.root");
+                    context.put("mvcPackage",  meta.getTopLevelPackage() + ".mvc.root");
+                    context.put("targetDir", targetDir);
+                }
+
+                else
+                {
+                    context.put("daoPackage", meta.getTopLevelPackage() + ".repo" + targetDir.replace('/', '.'));
+                    context.put("mvcPackage", meta.getTopLevelPackage() + ".mvc" + targetDir.replace('/', '.'));
+                    context.put("targetDir", targetDir + "/");
+                }
+
                 context.put("entityName", StringUtils.uncamelCase(entity.getName()));
-                context.put("mvcPackage",  meta.getTopLevelPackage() + ".mvc");
                 String entityPlural = pluralOf(entity.getName());
                 context.put("entityPlural", entityPlural);
                 context.put("entityPluralName", pluralOf(StringUtils.uncamelCase(entity.getName())));
-
-                if (targetDir.equals("/"))
-                    context.put("targetDir", targetDir);
-                else
-                    context.put("targetDir", targetDir + "/");
 
                 // Prepare qbeMetawidget
 
@@ -411,6 +421,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(entityController),
                         entityController.toString(), overwrite));
 
+                // Create a Spring MVC controller for the root of the servlet, using IndexControllerTemplate.jv
+
+                JavaClass indexController = JavaParser.parse(JavaClass.class, this.indexControllerTemplate.render(context));
+                java.saveJavaSource(indexController);
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(indexController),
+                        indexController.toString(), overwrite));
             }
             catch (Exception e)
             {
@@ -568,14 +584,17 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
 
         String filename = new String();
+        String mvcPackage = new String();
 
-        if (targetDir == "")
+        if (targetDir.equals("/"))
         {
             filename = "WEB-INF/" + meta.getProjectName().replace(' ', '-').toLowerCase() + "-mvc-context.xml";
+            mvcPackage = meta.getTopLevelPackage() + ".mvc.root";
         }
         else
         {
             filename = "WEB-INF/" + targetDir.substring(1).replace(' ', '-') + "-mvc-context.xml";
+            mvcPackage = meta.getTopLevelPackage() + ".mvc" + targetDir.replace('/', '.').toLowerCase();
         }
 
         // Create or update an mvc-context.xml file for the web application.
@@ -605,7 +624,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         if (beans.get("context:component-scan").isEmpty())
         {
             Node componentScan = new Node("context:component-scan", beans);
-            componentScan.attribute("base-package", meta.getTopLevelPackage() + ".mvc");
+            componentScan.attribute("base-package", mvcPackage);
         }
         else
         {
@@ -613,7 +632,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
             for (Node node : beans.get("context:component-scan"))
             {
-                if (node.getAttribute("base-package").equals(meta.getTopLevelPackage() + ".mvc"))
+                if (node.getAttribute("base-package").equals(mvcPackage))
                 {
                     exists = true;
                 }
@@ -622,7 +641,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
             if (exists == false)
             {
                 Node componentScan = new Node("context:component-scan", beans);
-                componentScan.attribute("base-package", meta.getTopLevelPackage() + ".mvc");
+                componentScan.attribute("base-package", mvcPackage);
             }
         }
 
@@ -806,19 +825,29 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     {
         // Compile the DAO interface Java template.
         
-        if (this.daoInterfaceTemplate == null) {
+        if (this.daoInterfaceTemplate == null)
+        {
             this.daoInterfaceTemplate = compiler.compile(DAO_INTERFACE_TEMPLATE);
         }
         
         // Compile the DAO interface implementation Java template.
         
-        if (this.daoImplementationTemplate == null) {
+        if (this.daoImplementationTemplate == null)
+        {
             this.daoImplementationTemplate = compiler.compile(DAO_IMPLEMENTATION_TEMPLATE);
         }
+
+        // Compile the Spring MVC index controller Java template.
+
+        if (this.indexControllerTemplate == null)
+        {
+            this.indexControllerTemplate = compiler.compile(INDEX_CONTROLLER_TEMPLATE);
+        }
+
+        // Compile the Spring MVC entity controller Java template.
         
-        // Compile the Spring MVC controller Java template.
-        
-        if (this.springControllerTemplate == null) {
+        if (this.springControllerTemplate == null)
+        {
             this.springControllerTemplate = compiler.compile(SPRING_CONTROLLER_TEMPLATE);
         }
 
