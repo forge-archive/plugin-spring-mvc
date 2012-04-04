@@ -304,8 +304,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     
                 writeEntityMetawidget(context, this.createTemplateEntityMetawidgetIndent, this.createTemplateNamespaces);
     
-                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + "create"
-                        + entity.getName() + ".jsp"), this.createTemplate.render(context), overwrite));
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + entity.getName()
+                        + "/create" + entity.getName() + ".jsp"), this.createTemplate.render(context), overwrite));
 
                 if (!tilesDefinitionExists("create" + entity.getName(), tilesDefinitions))
                 {
@@ -317,15 +317,16 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                     createTitleAttribute.attribute("value", "Create New " + StringUtils.uncamelCase(entity.getName()));
                     Node createBodyAttribute = new Node("put-attribute", createDefinition);
                     createBodyAttribute.attribute("name", "body");
-                    createBodyAttribute.attribute("value", "/WEB-INF/views" + targetDir + "create" + entity.getName() + ".jsp");
+                    createBodyAttribute.attribute("value", "/WEB-INF/views" + targetDir + entity.getName() + "/create"
+                            + entity.getName() + ".jsp");
                 }
 
                 // Generate update
 
                 writeEntityMetawidget(context, this.updateTemplateEntityMetawidgetIndent, this.updateTemplateNamespaces);
 
-                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + "update"
-                        + entity.getName() + ".jsp"), this.updateTemplate.render(context), overwrite));
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + entity.getName()
+                        + "/update" + entity.getName() + ".jsp"), this.updateTemplate.render(context), overwrite));
 
                 if (!tilesDefinitionExists("update" + entity.getName(), tilesDefinitions))
                 {
@@ -337,15 +338,16 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                     updateTitleAttribute.attribute("value", "Update " + StringUtils.uncamelCase(entity.getName()));
                     Node updateBodyAttribute = new Node("put-attribute", updateDefinition);
                     updateBodyAttribute.attribute("name", "body");
-                    updateBodyAttribute.attribute("value", "/WEB-INF/views" + targetDir + "update" + entity.getName() + ".jsp");
+                    updateBodyAttribute.attribute("value", "/WEB-INF/views" + targetDir + entity.getName() + "/update"
+                            + entity.getName() + ".jsp");
                 }
 
                 // Generate search/view (all)
 
                 writeEntityMetawidget(context, this.viewTemplateEntityMetawidgetIndent, this.viewTemplateNamespaces);
 
-                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir
-                        + entityPlural.toLowerCase() + ".jsp"), this.viewAllTemplate.render(context), overwrite));
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + entity.getName()
+                        + "/" + entityPlural.toLowerCase() + ".jsp"), this.viewAllTemplate.render(context), overwrite));
 
                 if (!tilesDefinitionExists(entityPlural.toLowerCase(), tilesDefinitions))
                 {
@@ -357,7 +359,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                     viewAllTitleAttribute.attribute( "value", "View All " + pluralOf(StringUtils.uncamelCase(entity.getName())));
                     Node viewAllBodyAttribute = new Node("put-attribute", viewAllDefinition);
                     viewAllBodyAttribute.attribute("name", "body");
-                    viewAllBodyAttribute.attribute("value", "/WEB-INF/views" + targetDir + entityPlural.toLowerCase() + ".jsp");
+                    viewAllBodyAttribute.attribute("value", "/WEB-INF/views" + targetDir + entity.getName() + "/"
+                            + entityPlural.toLowerCase() + ".jsp");
                 }
 
                 // Generate view (single)
@@ -365,8 +368,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 this.entityMetawidget.setReadOnly(true);
                 writeEntityMetawidget(context, this.viewTemplateEntityMetawidgetIndent, this.viewTemplateNamespaces);
     
-                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + "view"
-                        + entity.getName() + ".jsp"), this.viewTemplate.render(context), overwrite));
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + entity.getName()
+                        + "/view" + entity.getName() + ".jsp"), this.viewTemplate.render(context), overwrite));
 
                 if (!tilesDefinitionExists("view" + entity.getName(), tilesDefinitions))
                 {
@@ -378,7 +381,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                     viewTitleAttribute.attribute("value", "View " + StringUtils.uncamelCase(entity.getName()));
                     Node viewBodyAttribute = new Node("put-attribute", viewDefinition);
                     viewBodyAttribute.attribute("name", "body");
-                    viewBodyAttribute.attribute("value", "/WEB-INF/views" + targetDir + "view" + entity.getName() + ".jsp");
+                    viewBodyAttribute.attribute("value", "/WEB-INF/views" + targetDir + entity.getName() + "/view"
+                            + entity.getName() + ".jsp");
                 }
 
                 // Generate navigation
