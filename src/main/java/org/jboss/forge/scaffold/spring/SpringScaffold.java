@@ -54,6 +54,7 @@ import org.jboss.forge.scaffold.AccessStrategy;
 import org.jboss.forge.scaffold.ScaffoldProvider;
 import org.jboss.forge.scaffold.TemplateStrategy;
 import org.jboss.forge.scaffold.spring.metawidget.config.ForgeConfigReader;
+import org.jboss.forge.scaffold.spring.metawidget.widgetbuilder.HtmlAnchor;
 import org.jboss.forge.scaffold.util.ScaffoldUtil;
 import org.jboss.forge.shell.ShellPrompt;
 import org.jboss.forge.shell.plugins.Alias;
@@ -946,7 +947,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
             {
                 FileResource<?> file = (FileResource<?>) resource;
 
-                if ( file.isDirectory() || file.getName().equals("META-INF")
+                if ( !file.isDirectory() || file.getName().equals("META-INF")
                         || file.getName().equals("WEB-INF")
                         || file.getName().equals("resources"))
                 {
@@ -957,16 +958,16 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
             }
         };
         
-        for (Resource<?> resource : web.getWebResource("WEB-INF/views/").listResources(filter))
+        for (Resource<?> resource : web.getWebResource("WEB-INF/views" + targetDir).listResources(filter))
         {
-/*            HtmlAnchor link = new HtmlAnchor();
-            link.putAttribute("href", targetDir+ "/views/" + pluralOf(resource.getName()).toLowerCase());
+            HtmlAnchor link = new HtmlAnchor();
+            link.putAttribute("href", "<c:url value=\"" + targetDir + pluralOf(resource.getName()).toLowerCase() + "\"/>");
             link.setTextContent(StringUtils.uncamelCase(resource.getName()));
 
             HtmlTag listItem = new HtmlTag("li");
             listItem.getChildren().add(link);
             unorderedList.getChildren().add(listItem);
-*/        }
+        }
 
         Writer writer = new IndentedWriter(new StringWriter(), this.navigationTemplateIndent);
         unorderedList.write(writer);
