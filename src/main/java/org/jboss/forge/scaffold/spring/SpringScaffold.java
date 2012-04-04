@@ -259,16 +259,16 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 {
                     context.put("daoPackage", meta.getTopLevelPackage() + ".repo.root");
                     context.put("mvcPackage",  meta.getTopLevelPackage() + ".mvc.root");
-                    context.put("targetDir", targetDir);
                 }
 
                 else
                 {
                     context.put("daoPackage", meta.getTopLevelPackage() + ".repo" + targetDir.replace('/', '.'));
                     context.put("mvcPackage", meta.getTopLevelPackage() + ".mvc" + targetDir.replace('/', '.'));
-                    context.put("targetDir", targetDir + "/");
+                    targetDir += "/";
                 }
 
+                context.put("targetDir", targetDir);
                 context.put("entityName", StringUtils.uncamelCase(entity.getName()));
                 String entityPlural = pluralOf(entity.getName());
                 context.put("entityPlural", entityPlural);
@@ -304,8 +304,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     
                 writeEntityMetawidget(context, this.createTemplateEntityMetawidgetIndent, this.createTemplateNamespaces);
     
-                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/create" + entity.getName() + ".jsp"),
-                        this.createTemplate.render(context), overwrite));
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + "create"
+                        + entity.getName() + ".jsp"), this.createTemplate.render(context), overwrite));
 
                 if (!tilesDefinitionExists("create" + entity.getName(), tilesDefinitions))
                 {
@@ -317,15 +317,15 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                     createTitleAttribute.attribute("value", "Create New " + StringUtils.uncamelCase(entity.getName()));
                     Node createBodyAttribute = new Node("put-attribute", createDefinition);
                     createBodyAttribute.attribute("name", "body");
-                    createBodyAttribute.attribute("value", "/WEB-INF/views/create" + entity.getName() + ".jsp");
+                    createBodyAttribute.attribute("value", "/WEB-INF/views" + targetDir + "create" + entity.getName() + ".jsp");
                 }
 
                 // Generate update
 
                 writeEntityMetawidget(context, this.updateTemplateEntityMetawidgetIndent, this.updateTemplateNamespaces);
 
-                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/update" + entity.getName() + ".jsp"),
-                        this.updateTemplate.render(context), overwrite));
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + "update"
+                        + entity.getName() + ".jsp"), this.updateTemplate.render(context), overwrite));
 
                 if (!tilesDefinitionExists("update" + entity.getName(), tilesDefinitions))
                 {
@@ -337,15 +337,15 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                     updateTitleAttribute.attribute("value", "Update " + StringUtils.uncamelCase(entity.getName()));
                     Node updateBodyAttribute = new Node("put-attribute", updateDefinition);
                     updateBodyAttribute.attribute("name", "body");
-                    updateBodyAttribute.attribute("value", "/WEB-INF/views/update" + entity.getName() + ".jsp");
+                    updateBodyAttribute.attribute("value", "/WEB-INF/views" + targetDir + "update" + entity.getName() + ".jsp");
                 }
 
                 // Generate search/view (all)
 
                 writeEntityMetawidget(context, this.viewTemplateEntityMetawidgetIndent, this.viewTemplateNamespaces);
 
-                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/" + entityPlural.toLowerCase() + ".jsp"),
-                        this.viewAllTemplate.render(context), overwrite));
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir
+                        + entityPlural.toLowerCase() + ".jsp"), this.viewAllTemplate.render(context), overwrite));
 
                 if (!tilesDefinitionExists(entityPlural.toLowerCase(), tilesDefinitions))
                 {
@@ -354,11 +354,10 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                     viewAllDefinition.attribute("extends", "standard");
                     Node viewAllTitleAttribute = new Node("put-attribute", viewAllDefinition);
                     viewAllTitleAttribute.attribute("name", "title");
-                    viewAllTitleAttribute.attribute( "value",
-                            "View All " + pluralOf(StringUtils.uncamelCase(entity.getName())));
+                    viewAllTitleAttribute.attribute( "value", "View All " + pluralOf(StringUtils.uncamelCase(entity.getName())));
                     Node viewAllBodyAttribute = new Node("put-attribute", viewAllDefinition);
                     viewAllBodyAttribute.attribute("name", "body");
-                    viewAllBodyAttribute.attribute("value", "/WEB-INF/views/" + entityPlural.toLowerCase() + ".jsp");
+                    viewAllBodyAttribute.attribute("value", "/WEB-INF/views" + targetDir + entityPlural.toLowerCase() + ".jsp");
                 }
 
                 // Generate view (single)
@@ -366,8 +365,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 this.entityMetawidget.setReadOnly(true);
                 writeEntityMetawidget(context, this.viewTemplateEntityMetawidgetIndent, this.viewTemplateNamespaces);
     
-                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/view" + entity.getName() + ".jsp"),
-                        this.viewTemplate.render(context), overwrite));
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + "view"
+                        + entity.getName() + ".jsp"), this.viewTemplate.render(context), overwrite));
 
                 if (!tilesDefinitionExists("view" + entity.getName(), tilesDefinitions))
                 {
@@ -379,7 +378,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                     viewTitleAttribute.attribute("value", "View " + StringUtils.uncamelCase(entity.getName()));
                     Node viewBodyAttribute = new Node("put-attribute", viewDefinition);
                     viewBodyAttribute.attribute("name", "body");
-                    viewBodyAttribute.attribute("value", "/WEB-INF/views/view" + entity.getName() + ".jsp");
+                    viewBodyAttribute.attribute("value", "/WEB-INF/views" + targetDir + "view" + entity.getName() + ".jsp");
                 }
 
                 // Generate navigation
@@ -398,7 +397,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                     indexTitleAttribute.attribute("value", "Welcome to Forge");
                     Node indexBodyAttribute = new Node("put-attribute", indexDefinition);
                     indexBodyAttribute.attribute("name", "body");
-                    indexBodyAttribute.attribute("value", "/WEB-INF/views/index.jsp");
+                    indexBodyAttribute.attribute("value", "/WEB-INF/views" + targetDir + "index.jsp");
                 }
 
                 String viewsFile = XMLParser.toXMLString(tilesDefinitions);
