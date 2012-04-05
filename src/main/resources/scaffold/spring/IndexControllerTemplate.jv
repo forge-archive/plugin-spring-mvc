@@ -11,6 +11,6 @@ public class IndexController
 	@RequestMapping(method=RequestMethod.GET)
 	public String rootView()
 	{
-		return "index";
+		return "@{targetDir}index";
 	}
 }
