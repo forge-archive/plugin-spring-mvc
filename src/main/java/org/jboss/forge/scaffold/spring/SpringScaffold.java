@@ -301,13 +301,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                     tilesDefinitions = XMLParser.parse(viewsXML.getResourceInputStream());
                 }
 
-                // Generate navigation, for both "/" and for targetDir
-
-                if (!targetDir.equals("/"))
-                    result.add(generateNavigation(targetDir.substring(0, targetDir.length()-1), overwrite));
-
-                result.add(generateNavigation("/", overwrite));
-
                 String tilesName = targetDir.substring(1, targetDir.length()-1);
 
                 // Generate create
@@ -479,6 +472,13 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 java.saveJavaSource(rootIndexController);
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(rootIndexController),
                         rootIndexController.toString(), overwrite));
+
+                // Generate navigation, for both "/" and for targetDir
+
+                if (!targetDir.equals("/"))
+                    result.add(generateNavigation(targetDir.substring(0, targetDir.length()-1), overwrite));
+
+                result.add(generateNavigation("/", overwrite));
             }
             catch (Exception e)
             {
@@ -876,7 +876,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
             if (targetDir.equals("/"))
                 url.text(targetDir);
             else
-                url.text(targetDir + "*");
+                url.text(targetDir + "/*");
         }
 
         // Add a unique mapping for the error page
