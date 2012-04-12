@@ -495,7 +495,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 if (!targetDir.equals("/"))
                     result.add(generateNavigation(targetDir.substring(0, targetDir.length()-1), overwrite));
 
-                result.add(generateNavigation("/", overwrite));
+                if (!web.getWebResource("WEB-INF/layouts/pageTemplate.jsp").exists())
+                    result.add(generateNavigation("/", overwrite));
             }
             catch (Exception e)
             {
@@ -664,7 +665,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         }
         else
         {
-            filename = "WEB-INF/" + targetDir.substring(1).replace(' ', '-') + "-mvc-context.xml";
+            filename = "WEB-INF/" + targetDir.substring(1, targetDir.length()-1).replace(' ', '-') + "-mvc-context.xml";
             mvcPackage = meta.getTopLevelPackage() + ".mvc" + targetDir.replace('/', '.').toLowerCase();
         }
 
@@ -818,11 +819,11 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         if (!targetDir.equals("/"))
         {
-            if(!tilesDefinitionExists(targetDir.substring(1), tilesDefinitions))
+            if(!tilesDefinitionExists(targetDir.substring(1, targetDir.length()-1), tilesDefinitions))
             {
                 Node targetDirDefinition = new Node("definition", tilesDefinitions);
-                targetDirDefinition.attribute("name", targetDir.substring(1));
-                targetDirDefinition.attribute("template", "/WEB-INF/layouts/" + targetDir.substring(1) + "Template.jsp");
+                targetDirDefinition.attribute("name", targetDir.substring(1, targetDir.length()-1));
+                targetDirDefinition.attribute("template", "/WEB-INF/layouts/" + targetDir.substring(1, targetDir.length()-1) + "Template.jsp");
             }
         }
 
@@ -851,7 +852,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         }
         else
         {
-            filename = "WEB-INF/" + targetDir.substring(1).replace(' ', '-') + "-mvc-context.xml";
+            filename = "WEB-INF/" + targetDir.substring(1, targetDir.length()-1).replace(' ', '-') + "-mvc-context.xml";
             servletName = targetDir.substring(1, targetDir.length()-1).replace(' ', '-');
         }
 
@@ -887,7 +888,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
             if (targetDir.equals("/"))
                 url.text(targetDir);
             else
-                url.text(targetDir + "/*");
+                url.text(targetDir + "*");
         }
 
         // Add a unique mapping for the error page
@@ -1004,6 +1005,9 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
         HtmlTag unorderedList = new HtmlTag("ul");
 
+        if (!targetDir.endsWith("/"))
+            targetDir += "/";
+
         ResourceFilter filter = new ResourceFilter()
         {
             @Override
@@ -1026,9 +1030,9 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         {
             HtmlAnchor link = new HtmlAnchor();
             if (!this.scaffoldedEntities.contains(resource.getName()))
-                link.putAttribute("href", "<c:url value=\"/" + resource.getName() + "/\"/>");
+                link.putAttribute("href", "<c:url value=\"" + targetDir + resource.getName() + "/\"/>");
             else
-                link.putAttribute("href", "<c:url value=\"" + targetDir + "/" + pluralOf(resource.getName()).toLowerCase() + "\"/>");
+                link.putAttribute("href", "<c:url value=\"" + targetDir + pluralOf(resource.getName()).toLowerCase() + "\"/>");
             link.setTextContent(StringUtils.uncamelCase(resource.getName()));
 
             HtmlTag listItem = new HtmlTag("li");
@@ -1054,7 +1058,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                     this.navigationTemplate.render(context), overwrite);
         }
         else
-            return ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/layouts/" + targetDir.substring(1) + "Template.jsp"),
+            return ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/layouts/" + targetDir.substring(1, targetDir.length()) + "Template.jsp"),
                     this.navigationTemplate.render(context), overwrite);
     }
 
