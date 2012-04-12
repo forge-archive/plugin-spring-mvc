@@ -37,6 +37,7 @@ import javax.inject.Inject;
 import org.jboss.forge.parser.JavaParser;
 import org.jboss.forge.parser.java.JavaClass;
 import org.jboss.forge.parser.java.JavaInterface;
+import org.jboss.forge.parser.java.util.Strings;
 import org.jboss.forge.parser.xml.Node;
 import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.project.Project;
@@ -151,6 +152,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     private StaticJavaMetawidget qbeMetawidget;
 
     private List<Resource<?>> generatedResources;
+    private List<String> scaffoldedEntities;
 
     //
     // Constructor
@@ -173,6 +175,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         }
 
         this.generatedResources = new ArrayList<Resource<?>>();
+        this.scaffoldedEntities = new ArrayList<String>();
     }
     
     //
@@ -183,6 +186,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     public List<Resource<?>> setup(String targetDir, Resource<?> template, boolean overwrite)
     {
         DependencyFacet deps = this.project.getFacet(DependencyFacet.class);
+
+        if (!targetDir.startsWith("/"))
+            targetDir = "/" + targetDir;
+
+        if (!targetDir.endsWith("/"))
+            targetDir += "/";
 
         List<Resource<?>> result = generateIndex(targetDir, template, overwrite);
 
@@ -256,6 +265,9 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 String ccEntity = StringUtils.decapitalize(entity.getName());
                 context.put("ccEntity", ccEntity);
 
+                if (!targetDir.startsWith("/"))
+                    targetDir = "/" + targetDir;
+
                 if (targetDir.equals("/"))
                 {
                     context.put("daoPackage", meta.getTopLevelPackage() + ".repo.root");
@@ -301,7 +313,10 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                     tilesDefinitions = XMLParser.parse(viewsXML.getResourceInputStream());
                 }
 
-                String tilesName = targetDir.substring(1, targetDir.length()-1);
+                String tilesName = "standard";
+
+                if (!targetDir.equals("/"))
+                    tilesName = targetDir.substring(1, targetDir.length()-1);
 
                 // Generate create
     
@@ -475,6 +490,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
                 // Generate navigation, for both "/" and for targetDir
 
+                scaffoldedEntities.add(entity.getName());
+
                 if (!targetDir.equals("/"))
                     result.add(generateNavigation(targetDir.substring(0, targetDir.length()-1), overwrite));
 
@@ -526,19 +543,13 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
 //        generateTemplates(overwrite);
         HashMap<Object, Object> context = getTemplateContext(template);
-
-        if (!targetDir.equals("/"))
-            targetDir += "/";
-
-        context.put("targetDir", "/");
+        context.put("targetDir", targetDir);
 
         // Root index page
 
         if (!targetDir.equals("/"))
             result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/index.jsp"),
                     this.indexTemplate.render(context), overwrite));
-
-        context.put("targetDir", targetDir);
 
         // Basic pages
 
@@ -779,7 +790,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         {
             Node mvcStaticContent = new Node("mvc:resources", beans);
             mvcStaticContent.attribute("mapping", "/static/**");
-            mvcStaticContent.attribute("location", "/");
+            mvcStaticContent.attribute("location", targetDir);
         }
 
         // Write the mvc-context file to 'src/main/webapp/WEB-INF/{lowercase-project-name}-mvc-context.xml'.
@@ -833,7 +844,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         String filename = new String();
         String servletName = new String();
 
-        if (targetDir == "/")
+        if (targetDir.equals("/"))
         {
             filename = "WEB-INF/" + meta.getProjectName().replace(' ', '-').toLowerCase() + "-mvc-context.xml";
             servletName = meta.getProjectName().replace(' ', '-').toLowerCase();
@@ -841,7 +852,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         else
         {
             filename = "WEB-INF/" + targetDir.substring(1).replace(' ', '-') + "-mvc-context.xml";
-            servletName = targetDir.substring(1).replace(' ', '-');
+            servletName = targetDir.substring(1, targetDir.length()-1).replace(' ', '-');
         }
 
         // Retrieve the existing web.xml file
@@ -1014,7 +1025,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         for (Resource<?> resource : web.getWebResource("WEB-INF/views" + targetDir).listResources(filter))
         {
             HtmlAnchor link = new HtmlAnchor();
-            if (targetDir.equals("/"))
+            if (!this.scaffoldedEntities.contains(resource.getName()))
                 link.putAttribute("href", "<c:url value=\"/" + resource.getName() + "/\"/>");
             else
                 link.putAttribute("href", "<c:url value=\"" + targetDir + "/" + pluralOf(resource.getName()).toLowerCase() + "\"/>");
