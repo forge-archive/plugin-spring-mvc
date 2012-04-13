@@ -37,7 +37,6 @@ import javax.inject.Inject;
 import org.jboss.forge.parser.JavaParser;
 import org.jboss.forge.parser.java.JavaClass;
 import org.jboss.forge.parser.java.JavaInterface;
-import org.jboss.forge.parser.java.util.Strings;
 import org.jboss.forge.parser.xml.Node;
 import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.project.Project;
@@ -493,7 +492,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 scaffoldedEntities.add(entity.getName());
 
                 if (!targetDir.equals("/"))
-                    result.add(generateNavigation(targetDir.substring(0, targetDir.length()-1), overwrite));
+                    result.add(generateNavigation(targetDir, overwrite));
 
                 if (!web.getWebResource("WEB-INF/layouts/pageTemplate.jsp").exists())
                     result.add(generateNavigation("/", overwrite));
@@ -1058,8 +1057,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                     this.navigationTemplate.render(context), overwrite);
         }
         else
-            return ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/layouts/" + targetDir.substring(1, targetDir.length()) + "Template.jsp"),
-                    this.navigationTemplate.render(context), overwrite);
+            return ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/layouts/" + targetDir.substring(1,
+                    targetDir.length()-1) + "Template.jsp"), this.navigationTemplate.render(context), overwrite);
     }
 
     /**
