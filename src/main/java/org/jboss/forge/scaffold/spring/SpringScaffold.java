@@ -70,11 +70,7 @@ import org.metawidget.statically.javacode.StaticJavaMetawidget;
 import org.metawidget.statically.html.widgetbuilder.HtmlTag;
 import org.metawidget.statically.spring.StaticSpringMetawidget;
 import org.metawidget.util.CollectionUtils;
-import org.metawidget.util.XmlUtils;
 import org.metawidget.util.simple.StringUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 
 /**
  * Facet to generate a UI using the Spring JSP taglib.
@@ -1062,35 +1058,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     }
 
     /**
-     * Parses the given XML and determines what namespaces it already declares. These are later removed from the list of
-     * namespaces that Metawidget introduces.
-     */
-
-    protected Map<String, String> parseNamespaces(final String template)
-    {
-        Map<String, String> namespaces = CollectionUtils.newHashMap();
-        Document document = XmlUtils.documentFromString(template);
-        Element element = document.getDocumentElement();
-        NamedNodeMap attributes = element.getAttributes();
-
-        for (int i = 0; i < attributes.getLength(); i++)
-        {
-            org.w3c.dom.Node node = attributes.item(i);
-            String nodeName = node.getNodeName();
-            int indexOf = nodeName.indexOf(XMLNS_PREFIX);
-
-            if (indexOf == -1)
-            {
-                continue;
-            }
-
-            namespaces.put(nodeName.substring(indexOf + XMLNS_PREFIX.length()), node.getNodeValue());
-        }
-
-        return namespaces;
-    }
-
-    /**
      * Parses the given XML and determines the indent of the given String namespaces that Metawidget introduces.
      */
 
@@ -1129,25 +1096,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         {
             namespaces.keySet().removeAll(existingNamespaces.keySet());
         }
-
-        context.put("metawidgetNamespaces", namespacesToString(namespaces));
-    }
-
-    protected String namespacesToString(Map<String, String> namespaces)
-    {
-        StringBuilder builder = new StringBuilder();
-
-        for (Map.Entry<String, String> entry : namespaces.entrySet())
-        {
-            // At the start, break out of the current quote. Field must be in quotes so that we're valid XML
-
-            builder.append("\"\r\n\txmlns:");
-            builder.append(entry.getKey());
-            builder.append("=\"");
-            builder.append(entry.getValue());
-        }
-
-        return builder.toString();
     }
 
     /**
