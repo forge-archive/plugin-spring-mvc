@@ -3,11 +3,11 @@
 
 	<div class="section">
 	<div class="header">
-		<h1>Welcome to Forge</h3>
+		<h1>Welcome to Forge</h1>
 	</div>
 
 	<div class="subheader">
-		<h4>Your application is running</h2>
+		<h4>Your application is running</h4>
 	</div>
 
 	<div class="main">
