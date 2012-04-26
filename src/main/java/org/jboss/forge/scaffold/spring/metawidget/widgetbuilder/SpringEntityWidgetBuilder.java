@@ -64,13 +64,6 @@ public class SpringEntityWidgetBuilder
     //
 
     /**
-     * When expanding OneToOne or Embedded types in data table rows, we must point the row link to the original type, not
-     * the type being expanded
-     */
-
-    private String TOP_LEVEL_PARAMETERIZED_TYPE = "top-level-parameterized-type";
-
-    /**
      * Current Forge configuration.  Useful to retrieve <code>targetDir</code>.
      */
 

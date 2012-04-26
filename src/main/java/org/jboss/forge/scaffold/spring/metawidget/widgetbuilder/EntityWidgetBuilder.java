@@ -24,8 +24,6 @@ package org.jboss.forge.scaffold.spring.metawidget.widgetbuilder;
 
 import static org.jboss.forge.scaffold.spring.metawidget.inspector.ForgeInspectionResultConstants.*;
 import static org.metawidget.inspector.InspectionResultConstants.*;
-import static org.metawidget.inspector.jsp.JspInspectionResultConstants.*;
-import static org.metawidget.inspector.spring.SpringInspectionResultConstants.*;
 import static org.jvnet.inflector.Noun.pluralOf;
 
 import java.util.Collection;
@@ -34,7 +32,6 @@ import java.util.Map;
 
 import org.metawidget.statically.StaticWidget;
 import org.metawidget.statically.StaticXmlMetawidget;
-import org.metawidget.statically.StaticXmlStub;
 import org.metawidget.statically.StaticXmlWidget;
 import org.metawidget.statically.html.widgetbuilder.HtmlTable;
 import org.metawidget.statically.html.widgetbuilder.HtmlTableCell;
@@ -45,7 +42,6 @@ import org.metawidget.statically.jsp.widgetprocessor.StandardBindingProcessor;
 import org.metawidget.statically.jsp.widgetbuilder.CoreForEach;
 import org.metawidget.statically.jsp.widgetbuilder.CoreOut;
 import org.metawidget.statically.jsp.widgetbuilder.JspWidgetBuilder;
-import org.metawidget.statically.spring.StaticSpringMetawidget;
 import org.metawidget.statically.spring.widgetbuilder.FormOptionTag;
 import org.metawidget.statically.spring.widgetbuilder.FormOptionsTag;
 import org.metawidget.statically.spring.widgetbuilder.FormSelectTag;
@@ -77,71 +73,12 @@ public class EntityWidgetBuilder
     //
 
     @Override
-    public StaticXmlWidget buildWidget(String elementName, Map<String, String> attributes, StaticXmlMetawidget metawidget) {
+    public StaticXmlWidget buildWidget(String elementName, Map<String, String> attributes, StaticXmlMetawidget metawidget)
+    {
         
-        // Suppress nested INVERSE ONE_TO_ONE, to avoid recursion
-        
-        if (TRUE.equals(attributes.get(ONE_TO_ONE)) && TRUE.equals(attributes.get(INVERSE_RELATIONSHIP))
-                && metawidget.getParent() != null)
-        {
-            return new StaticXmlStub();
-        }
-
         String type = WidgetBuilderUtils.getActualClassOrType(attributes);
 
-        // Render read-only JSP_LOOKUP as a link.
-        
-        if (WidgetBuilderUtils.isReadOnly(attributes))
-        {
-
-            // Render JSP_LOOKUP and SPRING_LOOKUP as a link
-
-            if (attributes.containsKey(JSP_LOOKUP) || attributes.containsKey(SPRING_LOOKUP))
-            {
-                // (unless the parent is already a link).
-
-                if (metawidget.getParent() instanceof HtmlAnchor)
-                {
-                    return null;
-                }
-
-                String entity = ClassUtils.getSimpleName(WidgetBuilderUtils.getActualClassOrType(attributes));
-                entity = StringUtils.decapitalize(entity);
-
-                HtmlAnchor link = new HtmlAnchor();
-                String targetExpression = StaticJspUtils.unwrapExpression(metawidget.getAttribute("value"));
-
-                if (!ENTITY.equals(elementName))
-                {
-                    targetExpression += StringUtils.SEPARATOR_DOT_CHAR;
-                    targetExpression += StringUtils.decapitalize(attributes.get(NAME));
-                }
-
-                link.setTextContent(StaticJspUtils.wrapExpression(targetExpression));
-                CoreOut cout = new CoreOut();
-                cout.putAttribute("value", "/" + pluralOf(entity) + "/"  + 
-                        StaticJspUtils.wrapExpression(targetExpression + ".id"));
-                link.putAttribute("href", cout.toString());
-                    
-                return link;
-            }
-
-            Class<?> clazz = ClassUtils.niceForName(type);
-
-            if (clazz != null)
-            {
-                // Render read-only booleans
-
-                if (boolean.class.equals(clazz))
-                {
-                    CoreOut cout = new CoreOut();
-                    StandardBindingProcessor bindingProcessor = new StandardBindingProcessor();
-                    bindingProcessor.processWidget(cout, elementName, attributes, (StaticJspMetawidget) metawidget);
-
-                    return cout;
-                }
-            }
-        }
+        Class<?> clazz = ClassUtils.niceForName(type);
         
         // Render collection tables with links
               
@@ -158,48 +95,6 @@ public class EntityWidgetBuilder
                     return null;
                 }
                 
-                // Create nestedMetawidget with conditional 'rendered' attribute
-                
-                StaticSpringMetawidget nestedMetawidget = new StaticSpringMetawidget();
-                metawidget.initNestedMetawidget(nestedMetawidget, attributes);
-                String unwrappedExpression = StaticJspUtils.unwrapExpression(nestedMetawidget.getAttribute("value"));
-                nestedMetawidget.putAttribute("rendered", StaticJspUtils.wrapExpression("!empty" + unwrappedExpression));
-                
-                // If read-only, we're done
-                
-                if(WidgetBuilderUtils.isReadOnly(attributes))
-                {
-                    return nestedMetawidget;
-                }
-                
-                // Otherwise, further wrap it with a button.
-                
-                int lastIndexOf = unwrappedExpression.lastIndexOf('.');
-                String childExpression = unwrappedExpression.substring(lastIndexOf + 1);
-                
-                HtmlAnchor createLink = new HtmlAnchor();
-                String entity = ClassUtils.getSimpleName(WidgetBuilderUtils.getActualClassOrType(attributes));
-                entity = pluralOf(entity);
-                CoreOut cout = new CoreOut();
-                cout.putAttribute("value", "/" + entity + "/create");
-                createLink.setTextContent("Create New " + StringUtils.uncamelCase(childExpression));
-                createLink.putAttribute("href", cout.toString());
-                createLink.putAttribute("rendered", StaticJspUtils.wrapExpression("empty" + unwrappedExpression));
-                
-                HtmlTableRow row = new HtmlTableRow();
-                HtmlTableCell createLinkCell = new HtmlTableCell();
-                HtmlTableCell nestedMetawidgetCell = new HtmlTableCell();
-                createLinkCell.getChildren().add(createLink);
-                row.getChildren().add(createLinkCell);
-                nestedMetawidgetCell.getChildren().add(nestedMetawidget);
-                row.getChildren().add(nestedMetawidgetCell);
-                return row;
-            }
-            
-            Class<?> clazz = ClassUtils.niceForName(type);
-            
-            if(clazz != null)
-            {
                 if(Collection.class.isAssignableFrom(clazz))
                 {
                     return createDataTableComponent(elementName, attributes, metawidget);
