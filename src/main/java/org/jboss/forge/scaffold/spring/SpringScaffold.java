@@ -282,16 +282,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 context.put("entityPlural", entityPlural);
                 context.put("entityPluralName", pluralOf(StringUtils.uncamelCase(entity.getName())));
 
-                // Prepare qbeMetawidget
-
-                this.qbeMetawidget.setPath(entity.getQualifiedName());
-                StringWriter writer = new StringWriter();
-                this.qbeMetawidget.write(writer, backingBeanTemplateQbeMetawidgetIndent);
-
-                context.put("qbeMetawidget", writer.toString().trim());
-                context.put("qbeMetawidgetImports",
-                        CollectionUtils.toString(this.qbeMetawidget.getImports(), ";\r\n", true, false));
-
                 // Prepare entity metawidget
 
                 this.entityMetawidget.putAttribute("value", ccEntity);
@@ -446,6 +436,16 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 viewsFile = viewsFile.substring(0, 55) + "\n<!DOCTYPE tiles-definitions PUBLIC\n\"-//Apache Software Foundation"
                 + "//DTD Tiles Configuration 2.0//EN\"\n\"http://tiles.apache.org/dtds/tiles-config_2_0.dtd\">\n\n" + viewsFile.substring(55);
                 result.add(web.createWebResource(viewsFile, "WEB-INF/views/views.xml"));
+
+                // Prepare qbeMetawidget
+
+                this.qbeMetawidget.setPath(entity.getQualifiedName());
+                StringWriter writer = new StringWriter();
+                this.qbeMetawidget.write(writer, backingBeanTemplateQbeMetawidgetIndent);
+
+                context.put("qbeMetawidget", writer.toString().trim());
+                context.put("qbeMetawidgetImports",
+                        CollectionUtils.toString(this.qbeMetawidget.getImports(), ";\r\n", true, false));
 
                 JavaInterface daoInterface = JavaParser.parse(JavaInterface.class, this.daoInterfaceTemplate.render(context));
                 JavaClass daoImplementation = JavaParser.parse(JavaClass.class, this.daoImplementationTemplate.render(context));
