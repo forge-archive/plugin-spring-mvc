@@ -50,7 +50,11 @@
 				<widgetBuilders>
 					<array>
 						<readOnlyWidgetBuilder xmlns="java:org.metawidget.statically.jsp.widgetbuilder"/>
-						<springEntityWidgetBuilder xmlns="java:org.jboss.forge.scaffold.spring.metawidget.widgetbuilder"/>
+						<springEntityWidgetBuilder xmlns="java:org.jboss.forge.scaffold.spring.metawidget.widgetbuilder" config="EntityWidgetBuilderConfig">
+							<config>
+								<forgeConfig/>
+							</config>
+						</springEntityWidgetBuilder>
 						<springWidgetBuilder xmlns="java:org.metawidget.statically.spring.widgetbuilder"/>
 					</array>
 				</widgetBuilders>
@@ -100,6 +104,12 @@
 							<propertyStyle>
 								<forgePropertyStyle refId="forgePropertyStyle"/>
 							</propertyStyle>
+							<project>
+								<forgeProject/>
+							</project>
+							<annotationLookup>
+								<annotationLookup/>
+							</annotationLookup>
 						</beanValidationInspector>
 					</array>
 				</inspectors>
