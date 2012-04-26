@@ -61,7 +61,7 @@ public class EntityWidgetBuilderTest
     {
         StaticJspMetawidget metawidget = new StaticJspMetawidget();
         metawidget.setValue("#{foo}");
-        EntityWidgetBuilder widgetBuilder = new EntityWidgetBuilder();
+        JspEntityWidgetBuilder widgetBuilder = new JspEntityWidgetBuilder();
         Map<String, String> attributes = CollectionUtils.newHashMap();
         attributes.put(NAME, "bar");
         attributes.put(TYPE, Bar.class.getName());
@@ -80,7 +80,7 @@ public class EntityWidgetBuilderTest
         StaticJspMetawidget metawidget = new StaticJspMetawidget();
         metawidget.setValue("#{foo}");
         metawidget.setPath(FooOneToOne.class.getName());
-        EntityWidgetBuilder widgetBuilder = new EntityWidgetBuilder();
+        JspEntityWidgetBuilder widgetBuilder = new JspEntityWidgetBuilder();
         Map<String, String> attributes = CollectionUtils.newHashMap();
         attributes.put(NAME, "bar");
         attributes.put(TYPE, Bar.class.getName());
@@ -103,7 +103,7 @@ public class EntityWidgetBuilderTest
         StaticJspMetawidget metawidget = new StaticJspMetawidget();
         metawidget.setValue("#{foo}");
         metawidget.setPath(FooOneToOne.class.getName());
-        EntityWidgetBuilder widgetBuilder = new EntityWidgetBuilder();
+        JspEntityWidgetBuilder widgetBuilder = new JspEntityWidgetBuilder();
         Map<String, String> attributes = CollectionUtils.newHashMap();
         attributes.put(NAME, "bar");
         attributes.put(TYPE, Bar.class.getName());
@@ -121,7 +121,7 @@ public class EntityWidgetBuilderTest
         StaticJspMetawidget metawidget = new StaticJspMetawidget();
         metawidget.setValue("#{foo}");
         metawidget.setPath(FooOneToOne.class.getName());
-        EntityWidgetBuilder widgetBuilder = new EntityWidgetBuilder();
+        JspEntityWidgetBuilder widgetBuilder = new JspEntityWidgetBuilder();
         Map<String, String> attributes = CollectionUtils.newHashMap();
         attributes.put(NAME, "bar");
         attributes.put(TYPE, Bar.class.getName());
@@ -145,7 +145,7 @@ public class EntityWidgetBuilderTest
     {
         StaticJspMetawidget metawidget = new StaticJspMetawidget();
         metawidget.setValue("#{foo}");
-        EntityWidgetBuilder widgetBuilder = new EntityWidgetBuilder();
+        JspEntityWidgetBuilder widgetBuilder = new JspEntityWidgetBuilder();
         Map<String, String> attributes = CollectionUtils.newHashMap();
         attributes.put(NAME, "bars");
         attributes.put(TYPE, List.class.getName());
@@ -164,7 +164,7 @@ public class EntityWidgetBuilderTest
             throws Exception
     {
         StaticJspMetawidget metawidget = new StaticJspMetawidget();
-        metawidget.setValue("#{foo}");        EntityWidgetBuilder widgetBuilder = new EntityWidgetBuilder();
+        metawidget.setValue("#{foo}");        JspEntityWidgetBuilder widgetBuilder = new JspEntityWidgetBuilder();
         Map<String, String> attributes = CollectionUtils.newHashMap();
         attributes.put(NAME, "bars");
         attributes.put(TYPE, Set.class.getName());
@@ -199,7 +199,7 @@ public class EntityWidgetBuilderTest
     {
         StaticJspMetawidget metawidget = new StaticJspMetawidget();
         metawidget.setValue("#{foo}");
-        EntityWidgetBuilder widgetBuilder = new EntityWidgetBuilder();
+        JspEntityWidgetBuilder widgetBuilder = new JspEntityWidgetBuilder();
         Map<String, String> attributes = CollectionUtils.newHashMap();
         attributes.put(NAME, "bars");
         attributes.put(TYPE, Set.class.getName());
@@ -249,7 +249,7 @@ public class EntityWidgetBuilderTest
 
         metawidget.setInspector(inspector);
         metawidget.setValue("#{foo}");
-        EntityWidgetBuilder widgetBuilder = new EntityWidgetBuilder();
+        JspEntityWidgetBuilder widgetBuilder = new JspEntityWidgetBuilder();
         Map<String, String> attributes = CollectionUtils.newHashMap();
         attributes.put(NAME, "bars");
         attributes.put(TYPE, Set.class.getName());
@@ -275,7 +275,7 @@ public class EntityWidgetBuilderTest
 
         StaticJspMetawidget metawidget = new StaticJspMetawidget();
         metawidget.setValue("#{foo}");
-        EntityWidgetBuilder widgetBuilder = new EntityWidgetBuilder();
+        JspEntityWidgetBuilder widgetBuilder = new JspEntityWidgetBuilder();
         Map<String, String> attributes = CollectionUtils.newHashMap();
         attributes.put(NAME, "bar");
         attributes.put(TYPE, boolean.class.getName());

@@ -59,7 +59,7 @@ import org.w3c.dom.NodeList;
  * @author <a href="mailto:ryan.k.bradley@gmail.com">Ryan Bradley</a>
  */
 
-public class EntityWidgetBuilder
+public class JspEntityWidgetBuilder
         extends JspWidgetBuilder
 {
     //
