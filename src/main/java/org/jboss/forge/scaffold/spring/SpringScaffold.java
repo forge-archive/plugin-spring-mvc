@@ -34,6 +34,8 @@ import java.util.Map;
 
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
+
+import org.jboss.forge.env.Configuration;
 import org.jboss.forge.parser.JavaParser;
 import org.jboss.forge.parser.java.JavaClass;
 import org.jboss.forge.parser.java.JavaInterface;
@@ -149,15 +151,19 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     private List<Resource<?>> generatedResources;
     private List<String> scaffoldedEntities;
 
+    private Configuration config;
+
     //
     // Constructor
     //
     
     @Inject
-    public SpringScaffold(final ShellPrompt prompt,
+    public SpringScaffold(final Configuration config,
+                    final ShellPrompt prompt,
                     final TemplateCompiler compiler,
                     final Event<InstallFacets> install)
     {
+        this.config = config;
         this.prompt = prompt;
         this.compiler = compiler;
         this.install = install;
@@ -215,7 +221,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     {
         super.setProject(project);
         
-        ForgeConfigReader configReader = new ForgeConfigReader(project);
+        ForgeConfigReader configReader = new ForgeConfigReader(this.config, this.project);
         
         this.entityMetawidget = new StaticSpringMetawidget();
         this.entityMetawidget.setConfigReader(configReader);
