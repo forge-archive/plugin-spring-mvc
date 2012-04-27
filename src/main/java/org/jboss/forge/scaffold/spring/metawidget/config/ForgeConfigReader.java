@@ -19,10 +19,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.forge.scaffold.spring.metawidget.config;
 
+import org.jboss.forge.env.Configuration;
 import org.jboss.forge.project.Project;
+import org.jboss.forge.scaffold.spring.util.AnnotationLookup;
 import org.metawidget.config.impl.BaseConfigReader;
 
 /**
@@ -38,20 +39,29 @@ public class ForgeConfigReader
    // Private statics
    //
 
+   private static final String CONFIG_ELEMENT_NAME = "forgeConfig";
+
    private static final String PROJECT_ELEMENT_NAME = "forgeProject";
+
+   private static final String ANNOTATION_LOOKUP = "annotationLookup";
+
    //
    // Private members
    //
 
+   private Configuration config;
    private Project project;
+   private AnnotationLookup annotationLookup;
 
    //
    // Constructor
    //
 
-   public ForgeConfigReader(Project project)
+   public ForgeConfigReader(Configuration config, Project project)
    {
+      this.config = config;
       this.project = project;
+      this.annotationLookup = new AnnotationLookup(project);
    }
 
    //
@@ -61,7 +71,12 @@ public class ForgeConfigReader
    @Override
    protected boolean isNative(String name)
    {
-      if (PROJECT_ELEMENT_NAME.equals(name))
+      if (PROJECT_ELEMENT_NAME.equals(name) || ANNOTATION_LOOKUP.equals(name))
+      {
+         return true;
+      }
+
+      if (CONFIG_ELEMENT_NAME.equals(name))
       {
          return true;
       }
@@ -76,7 +91,16 @@ public class ForgeConfigReader
       {
          return this.project;
       }
+      if (ANNOTATION_LOOKUP.equals(name)) {
+         return this.annotationLookup;
+      }
+
+      if(CONFIG_ELEMENT_NAME.equals(name))
+      {
+         return this.config;
+      }
 
       return super.createNative(name, namespace, recordedText);
    }
+
 }
