@@ -41,6 +41,7 @@ import org.metawidget.statically.html.widgetbuilder.HtmlInput;
 import org.metawidget.statically.html.widgetbuilder.HtmlTableCell;
 import org.metawidget.statically.html.widgetbuilder.HtmlTableRow;
 import org.metawidget.statically.jsp.StaticJspMetawidget;
+import org.metawidget.statically.jsp.StaticJspUtils;
 import org.metawidget.statically.jsp.widgetbuilder.CoreOut;
 import org.metawidget.statically.jsp.widgetprocessor.StandardBindingProcessor;
 import org.metawidget.statically.layout.SimpleLayout;
@@ -154,6 +155,9 @@ public class SpringEntityWidgetBuilder
                 // Create nested StaticSpringMetawidget
 
                 StaticSpringMetawidget nestedMetawidget = new StaticSpringMetawidget();
+                String valueExpression = StaticJspUtils.unwrapExpression(((StaticJspMetawidget) metawidget).getValue());
+                valueExpression += StringUtils.SEPARATOR_DOT_CHAR + attributes.get(NAME);
+                ((StaticJspMetawidget) nestedMetawidget).setValue(valueExpression);
                 metawidget.initNestedMetawidget(nestedMetawidget, attributes);
 
                 // If read-only, we're done.
