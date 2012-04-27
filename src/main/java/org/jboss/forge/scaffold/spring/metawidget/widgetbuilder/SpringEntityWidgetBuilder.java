@@ -112,7 +112,7 @@ public class SpringEntityWidgetBuilder
                 curl.setValue(getTargetDir() + "/" + controllerName);
     
                 HtmlInput button = new HtmlInput();
-                button.putAttribute("onclick", "window.location='" + curl.toString() + "'\"");
+                button.putAttribute("onclick", "window.location='" + curl.toString() + "'");
                 button.putAttribute("type", "submit");
                 button.putAttribute("value", StringUtils.uncamelCase(ClassUtils.getSimpleName(type)));
     
