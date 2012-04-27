@@ -151,9 +151,9 @@ public class SpringEntityWidgetBuilder
                     return null;
                 }
 
-                // Create nested StaticJspMetawidget to handle collections
+                // Create nested StaticSpringMetawidget
 
-                StaticJspMetawidget nestedMetawidget = new StaticJspMetawidget();
+                StaticSpringMetawidget nestedMetawidget = new StaticSpringMetawidget();
                 metawidget.initNestedMetawidget(nestedMetawidget, attributes);
 
                 // If read-only, we're done.
@@ -188,26 +188,29 @@ public class SpringEntityWidgetBuilder
 
             Class<?> clazz = ClassUtils.niceForName(type);
 
-            if (Collection.class.isAssignableFrom(clazz))
+            if (clazz != null)
             {
-                StaticJspMetawidget nestedMetawidget = new StaticJspMetawidget();
-                nestedMetawidget.setInspector( metawidget.getInspector() );
-                nestedMetawidget.setLayout( new SimpleLayout() );
-                nestedMetawidget.setPath( metawidget.getPath() + StringUtils.SEPARATOR_FORWARD_SLASH_CHAR + attributes.get( NAME ) );
-
-                // If using an external config, lookup StaticJspMetawidget within it
-
-                if ( metawidget.getConfig() != null )
+                if (Collection.class.isAssignableFrom(clazz))
                 {
-                    nestedMetawidget.setConfig( metawidget.getConfig() );
-                    try {
-                        nestedMetawidget.getWidgetProcessors();
-                    } catch ( MetawidgetException e ) {
-                        nestedMetawidget.setConfig( null );
+                    StaticJspMetawidget nestedMetawidget = new StaticJspMetawidget();
+                    nestedMetawidget.setInspector( metawidget.getInspector() );
+                    nestedMetawidget.setLayout( new SimpleLayout() );
+                    nestedMetawidget.setPath( metawidget.getPath() + StringUtils.SEPARATOR_FORWARD_SLASH_CHAR + attributes.get( NAME ) );
+    
+                    // If using an external config, lookup StaticJspMetawidget within it
+    
+                    if ( metawidget.getConfig() != null )
+                    {
+                        nestedMetawidget.setConfig( metawidget.getConfig() );
+                        try {
+                            nestedMetawidget.getWidgetProcessors();
+                        } catch ( MetawidgetException e ) {
+                            nestedMetawidget.setConfig( null );
+                        }
                     }
+    
+                    return nestedMetawidget;
                 }
-
-                return nestedMetawidget;
             }
         }
 
