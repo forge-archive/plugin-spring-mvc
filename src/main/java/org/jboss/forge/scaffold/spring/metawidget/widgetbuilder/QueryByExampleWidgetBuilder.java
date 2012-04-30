@@ -80,7 +80,7 @@ public class QueryByExampleWidgetBuilder
         {
             StaticJavaStub toReturn = new StaticJavaStub();
             toReturn.getChildren().add(
-                     new JavaStatement("int " + name + " = this.search.get" + StringUtils.capitalize(name) + "()"));
+                     new JavaStatement("int " + name + " = search.get" + StringUtils.capitalize(name) + "()"));
             JavaStatement ifNotEmpty = new JavaStatement("if (" + name + " != 0)");
             ifNotEmpty.getChildren().add(
                      new JavaStatement("predicatesList.add(builder.equal(root.get(\"" + name + "\"), " + name + "))"));
@@ -93,7 +93,7 @@ public class QueryByExampleWidgetBuilder
         if (attributes.containsKey(LOOKUP))
         {
            StaticJavaStub toReturn = new StaticJavaStub();
-           JavaStatement getValue = new JavaStatement(ClassUtils.getSimpleName(type) + " " + name + " = this.search.get"
+           JavaStatement getValue = new JavaStatement(ClassUtils.getSimpleName(type) + " " + name + " = search.get"
                     + StringUtils.capitalize(name) + "()");
            getValue.putImport(type);
            toReturn.getChildren().add(getValue);
@@ -109,7 +109,7 @@ public class QueryByExampleWidgetBuilder
         if (attributes.containsKey(SPRING_LOOKUP))
         {
            StaticJavaStub toReturn = new StaticJavaStub();
-           JavaStatement getValue = new JavaStatement(ClassUtils.getSimpleName(type) + " " + name + " = this.search.get"
+           JavaStatement getValue = new JavaStatement(ClassUtils.getSimpleName(type) + " " + name + " = search.get"
                     + StringUtils.capitalize(name) + "()");
            getValue.putImport(type);
            toReturn.getChildren().add(getValue);
