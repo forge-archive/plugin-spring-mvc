@@ -169,25 +169,17 @@ public class SpringEntityWidgetBuilder
 
                 // Otherwise, further wrap it with a button.
 
+                // TODO: Find a way to direct this link to a create form for the top entity, not the member.
+
                 String controllerName = Noun.pluralOf(ClassUtils.getSimpleName(type)).toLowerCase();
                 CoreUrl curl = new CoreUrl();
-                curl.setValue(getTargetDir() + "/" + controllerName + "/create");
+                curl.setValue(getTargetDir() + controllerName + "/create");
 
-                HtmlInput createButton = new HtmlInput();
-                createButton.putAttribute("type", "submit");
-                createButton.setValue("Create New " + StringUtils.uncamelCase(ClassUtils.getSimpleName(type)));
-                createButton.putAttribute("onclick", "window.location='" + curl.toString() + "'\"");
+                HtmlAnchor createLink = new HtmlAnchor();
+                createLink.setTextContent("Create New " + StringUtils.uncamelCase(ClassUtils.getSimpleName(type)));
+                createLink.putAttribute("href", curl.toString());
 
-                HtmlTableRow row = new HtmlTableRow();
-                HtmlTableCell metawidgetCell = new HtmlTableCell();
-                HtmlTableCell buttonCell = new HtmlTableCell();
-
-                row.getChildren().add(buttonCell);
-                buttonCell.getChildren().add(createButton);
-                row.getChildren().add(metawidgetCell);
-                metawidgetCell.getChildren().add(nestedMetawidget);
-
-                return row;
+                return createLink;
             }
 
             Class<?> clazz = ClassUtils.niceForName(type);
