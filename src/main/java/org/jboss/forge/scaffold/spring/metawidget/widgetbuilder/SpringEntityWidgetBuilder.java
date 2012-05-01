@@ -39,13 +39,14 @@ import org.metawidget.statically.StaticXmlStub;
 import org.metawidget.statically.StaticXmlWidget;
 import org.metawidget.statically.html.widgetbuilder.HtmlInput;
 import org.metawidget.statically.html.widgetbuilder.HtmlTableCell;
-import org.metawidget.statically.html.widgetbuilder.HtmlTableRow;
 import org.metawidget.statically.jsp.StaticJspMetawidget;
 import org.metawidget.statically.jsp.StaticJspUtils;
 import org.metawidget.statically.jsp.widgetbuilder.CoreOut;
 import org.metawidget.statically.jsp.widgetprocessor.StandardBindingProcessor;
 import org.metawidget.statically.layout.SimpleLayout;
 import org.metawidget.statically.spring.StaticSpringMetawidget;
+import org.metawidget.statically.spring.widgetbuilder.FormOptionTag;
+import org.metawidget.statically.spring.widgetbuilder.FormSelectTag;
 import org.metawidget.statically.spring.widgetbuilder.SpringWidgetBuilder;
 import org.metawidget.util.ClassUtils;
 import org.metawidget.util.WidgetBuilderUtils;
@@ -108,16 +109,42 @@ public class SpringEntityWidgetBuilder
                     return null;
                 }
 
+                FormSelectTag select = new FormSelectTag();
+                select.putAttribute("items", Noun.pluralOf(attributes.get(NAME)));
+
+                String itemLabel = attributes.get(SPRING_LOOKUP_ITEM_LABEL);
+                String itemValue = attributes.get(SPRING_LOOKUP_ITEM_VALUE);
+
+                if (itemLabel != null)
+                {
+                    select.putAttribute("itemLabel", itemLabel);
+                }
+
+                if (itemValue != null)
+                {
+                    select.putAttribute("itemValue", itemValue);
+                }
+
+                if (TRUE.equals(attributes.get(REQUIRED)))
+                {
+                    FormOptionTag emptyOption = new FormOptionTag();
+                    emptyOption.putAttribute("value", "");
+                    select.getChildren().add(emptyOption);
+                }
+
                 String controllerName = Noun.pluralOf(ClassUtils.getSimpleName(type)).toLowerCase();
                 CoreUrl curl = new CoreUrl();
                 curl.setValue(getTargetDir() + "/" + controllerName);
     
-                HtmlInput button = new HtmlInput();
-                button.putAttribute("onclick", "window.location='" + curl.toString() + "'");
-                button.putAttribute("type", "submit");
-                button.putAttribute("value", StringUtils.uncamelCase(ClassUtils.getSimpleName(type)));
-    
-                return button;
+                HtmlAnchor link = new HtmlAnchor();
+                link.putAttribute("href", curl.toString());
+                link.putAttribute("value", "Create New " + StringUtils.uncamelCase(ClassUtils.getSimpleName(type)));
+
+                HtmlTableCell lookupCell = new HtmlTableCell();
+                lookupCell.getChildren().add(select);
+                lookupCell.getChildren().add(link);
+
+                return lookupCell;
             }
 
             Class<?> clazz = ClassUtils.niceForName(type);
@@ -169,6 +196,9 @@ public class SpringEntityWidgetBuilder
 
                 // Otherwise, further wrap it with a button.
 
+                HtmlTableCell cell = new HtmlTableCell();
+                cell.getChildren().add(nestedMetawidget);
+
                 // TODO: Find a way to direct this link to a create form for the top entity, not the member.
 
                 String controllerName = Noun.pluralOf(ClassUtils.getSimpleName(type)).toLowerCase();
@@ -178,8 +208,9 @@ public class SpringEntityWidgetBuilder
                 HtmlAnchor createLink = new HtmlAnchor();
                 createLink.setTextContent("Create New " + StringUtils.uncamelCase(ClassUtils.getSimpleName(type)));
                 createLink.putAttribute("href", curl.toString());
+                cell.getChildren().add(createLink);
 
-                return createLink;
+                return cell;
             }
 
             Class<?> clazz = ClassUtils.niceForName(type);
