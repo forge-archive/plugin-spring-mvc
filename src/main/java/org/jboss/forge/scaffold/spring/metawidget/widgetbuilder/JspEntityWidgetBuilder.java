@@ -43,7 +43,6 @@ import org.metawidget.statically.jsp.widgetbuilder.CoreForEach;
 import org.metawidget.statically.jsp.widgetbuilder.CoreOut;
 import org.metawidget.statically.jsp.widgetbuilder.JspWidgetBuilder;
 import org.metawidget.statically.spring.widgetbuilder.FormOptionTag;
-import org.metawidget.statically.spring.widgetbuilder.FormOptionsTag;
 import org.metawidget.statically.spring.widgetbuilder.FormSelectTag;
 import org.metawidget.util.ClassUtils;
 import org.metawidget.util.CollectionUtils;
@@ -303,11 +302,7 @@ public class JspEntityWidgetBuilder
             select.getChildren().add(emptyOption);
         }
         
-        // Options tag
-        
-        FormOptionsTag options = new FormOptionsTag();
-        options.putAttribute("items", expression);
-        select.getChildren().add(options);
+        select.putAttribute("items", expression);
         
         return select;
     }

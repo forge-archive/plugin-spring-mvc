@@ -111,6 +111,7 @@ public class SpringEntityWidgetBuilder
 
                 FormSelectTag select = new FormSelectTag();
                 select.putAttribute("items", Noun.pluralOf(attributes.get(NAME)));
+                select.putAttribute("path", attributes.get(NAME));
 
                 String itemLabel = attributes.get(SPRING_LOOKUP_ITEM_LABEL);
                 String itemValue = attributes.get(SPRING_LOOKUP_ITEM_VALUE);
@@ -170,7 +171,7 @@ public class SpringEntityWidgetBuilder
         {
             // Render non-optional ONE_TO_ONE with a button.
 
-            if (TRUE.equals(attributes.get(ONE_TO_ONE)) && !TRUE.equals(attributes.get(REQUIRED)))
+            if (TRUE.equals(attributes.get(ONE_TO_ONE)))
             {
                 // (we are about to create a nested metawidget, so we must prevent recursion)
 
@@ -194,10 +195,21 @@ public class SpringEntityWidgetBuilder
                     return nestedMetawidget;
                 }
 
-                // Otherwise, further wrap it with a button.
+                // Otherwise, use a dropdown menue with a create button.
+
+                FormSelectTag select = new FormSelectTag();
+                select.putAttribute("items", StaticJspUtils.wrapExpression(Noun.pluralOf(attributes.get(NAME))));
+                select.putAttribute("path", attributes.get(NAME));
+
+                if (!TRUE.equals(attributes.get(REQUIRED)))
+                {
+                    FormOptionTag emptyOption = new FormOptionTag();
+                    emptyOption.putAttribute("value", "");
+                    select.getChildren().add(emptyOption);
+                }
 
                 HtmlTableCell cell = new HtmlTableCell();
-                cell.getChildren().add(nestedMetawidget);
+                cell.getChildren().add(select);
 
                 // TODO: Find a way to direct this link to a create form for the top entity, not the member.
 
