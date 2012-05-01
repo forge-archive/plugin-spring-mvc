@@ -6,7 +6,7 @@ import @{entity.getQualifiedName()};
 
 public interface @{entity.getName()}Dao
 {
-	public List<@{entity.getName()} getAll();
+	public List<@{entity.getName()}> getAll();
 
 	public @{entity.getName()} getById(Long id);
 	
