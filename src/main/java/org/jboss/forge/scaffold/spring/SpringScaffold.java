@@ -1217,12 +1217,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
     protected Map<Object, Object> findEntityRelationships(JavaClass entity, Map<Object, Object> context)
     {
-        if (!entity.hasAnnotation(OneToOne.class) && !entity.hasAnnotation(OneToMany.class) && !entity.hasAnnotation(ManyToOne.class)
-                && !entity.hasAnnotation(ManyToMany.class))
-        {
-            return null;
-        }
-
         List<String> entityTypes = new ArrayList<String>();
         List<String> entityClasses = new ArrayList<String>();
         List<String> ccEntityClasses = new ArrayList<String>();
@@ -1232,17 +1226,20 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
             if (field.hasAnnotation(OneToOne.class) || field.hasAnnotation(OneToMany.class) || field.hasAnnotation(ManyToOne.class)
                     || field.hasAnnotation(ManyToMany.class))
             {
-                String type = field.getType();
+                String type = field.getTypeInspector().getName();
                 entityTypes.add(type);
-                String clazz = ClassUtils.getSimpleName(field.getClass().getName());
+                String clazz = ClassUtils.getSimpleName(field.getType());
                 entityClasses.add(clazz);
                 String ccEntity = StringUtils.camelCase(clazz);
                 ccEntityClasses.add(ccEntity);
             }
         }
 
-        context.put("entityTypes", entityTypes);
-        context.put("entityClasses", entityClasses);
+        if (entityTypes.isEmpty() || entityClasses.isEmpty() || ccEntityClasses.isEmpty())
+        {
+            context.put("entityTypes", entityTypes);
+            context.put("entityClasses", entityClasses);
+        }
 
         return context;
     }
