@@ -34,9 +34,14 @@ import java.util.Map;
 
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 
 import org.jboss.forge.env.Configuration;
 import org.jboss.forge.parser.JavaParser;
+import org.jboss.forge.parser.java.Field;
 import org.jboss.forge.parser.java.JavaClass;
 import org.jboss.forge.parser.java.JavaInterface;
 import org.jboss.forge.parser.xml.Node;
@@ -71,6 +76,7 @@ import org.metawidget.statically.StaticUtils.IndentedWriter;
 import org.metawidget.statically.javacode.StaticJavaMetawidget;
 import org.metawidget.statically.html.widgetbuilder.HtmlTag;
 import org.metawidget.statically.spring.StaticSpringMetawidget;
+import org.metawidget.util.ClassUtils;
 import org.metawidget.util.CollectionUtils;
 import org.metawidget.util.simple.StringUtils;
 
@@ -265,6 +271,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 context.put("entity", entity);
                 String ccEntity = StringUtils.decapitalize(entity.getName());
                 context.put("ccEntity", ccEntity);
+                findEntityRelationships(entity, context);
 
                 if (!targetDir.startsWith("/"))
                     targetDir = "/" + targetDir;
@@ -457,7 +464,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 JavaClass daoImplementation = JavaParser.parse(JavaClass.class, this.daoImplementationTemplate.render(context));
     
                 // Save the created interface and class implementation, so they can be referenced by the controller.
-    
+
                 java.saveJavaSource(daoInterface);
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(daoInterface),
                         daoInterface.toString(), overwrite));
@@ -802,7 +809,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         return web.getWebResource(filename);
     }
 
-    private Resource<?> setupTilesLayout(String targetDir)
+    protected Resource<?> setupTilesLayout(String targetDir)
     {
         WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
 
@@ -1206,5 +1213,34 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         }
 
         return false;
+    }
+
+    protected Map<Object, Object> findEntityRelationships(JavaClass entity, Map<Object, Object> context)
+    {
+        if (!entity.hasAnnotation(OneToOne.class) && !entity.hasAnnotation(OneToMany.class) && !entity.hasAnnotation(ManyToOne.class)
+                && !entity.hasAnnotation(ManyToMany.class))
+        {
+            return null;
+        }
+
+        List<String> entityTypes = new ArrayList<String>();
+        List<String> entityClasses = new ArrayList<String>();
+
+        for ( Field<?> field : entity.getFields())
+        {
+            if (field.hasAnnotation(OneToOne.class) || field.hasAnnotation(OneToMany.class) || field.hasAnnotation(ManyToOne.class)
+                    || field.hasAnnotation(ManyToMany.class))
+            {
+                String type = field.getType();
+                entityTypes.add(type);
+                String clazz = ClassUtils.getSimpleName(field.getClass().getName());
+                entityClasses.add(clazz);
+            }
+        }
+
+        context.put("entityTypes", entityTypes);
+        context.put("entityClasses", entityClasses);
+
+        return context;
     }
 }
