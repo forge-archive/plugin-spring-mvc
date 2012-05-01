@@ -1225,6 +1225,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         List<String> entityTypes = new ArrayList<String>();
         List<String> entityClasses = new ArrayList<String>();
+        List<String> ccEntityClasses = new ArrayList<String>();
 
         for ( Field<?> field : entity.getFields())
         {
@@ -1235,6 +1236,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 entityTypes.add(type);
                 String clazz = ClassUtils.getSimpleName(field.getClass().getName());
                 entityClasses.add(clazz);
+                String ccEntity = StringUtils.camelCase(clazz);
+                ccEntityClasses.add(ccEntity);
             }
         }
 
