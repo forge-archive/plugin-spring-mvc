@@ -26,7 +26,7 @@ public class @{entity.getName()}DaoImpl implements @{entity.getName()}Dao
 	private EntityManager entityManager;
 
 	@SuppressWarnings("unchecked")
-	public List<@{entity.getName()}> getAllEntities()
+	public List<@{entity.getName()}> getAll()
 	{
 		Query query = entityManager.createQuery("select e from " + "@{entity.getName()}" + " e");
 		List<@{entity.getName()}> entities = query.getResultList();
