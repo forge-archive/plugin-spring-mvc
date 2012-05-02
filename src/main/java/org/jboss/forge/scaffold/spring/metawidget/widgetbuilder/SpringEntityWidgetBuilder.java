@@ -46,6 +46,7 @@ import org.metawidget.statically.jsp.widgetprocessor.StandardBindingProcessor;
 import org.metawidget.statically.layout.SimpleLayout;
 import org.metawidget.statically.spring.StaticSpringMetawidget;
 import org.metawidget.statically.spring.widgetbuilder.FormOptionTag;
+import org.metawidget.statically.spring.widgetbuilder.FormOptionsTag;
 import org.metawidget.statically.spring.widgetbuilder.FormSelectTag;
 import org.metawidget.statically.spring.widgetbuilder.SpringWidgetBuilder;
 import org.metawidget.util.WidgetBuilderUtils;
@@ -164,87 +165,93 @@ public class SpringEntityWidgetBuilder
 
         // Render collection tables with links.
 
-        if (clazz != null)
+        // Render non-optional ONE_TO_ONE with a button.
+
+        if (TRUE.equals(attributes.get(ONE_TO_ONE)))
         {
-            // Render non-optional ONE_TO_ONE with a button.
+            // (we are about to create a nested metawidget, so we must prevent recursion)
 
-            if (TRUE.equals(attributes.get(ONE_TO_ONE)))
+            if (ENTITY.equals(elementName))
             {
-                // (we are about to create a nested metawidget, so we must prevent recursion)
-
-                if (ENTITY.equals(elementName))
-                {
-                    return null;
-                }
-
-                // Create nested StaticSpringMetawidget
-
-                StaticSpringMetawidget nestedMetawidget = new StaticSpringMetawidget();
-                String valueExpression = StaticJspUtils.unwrapExpression(((StaticJspMetawidget) metawidget).getValue());
-                valueExpression += StringUtils.SEPARATOR_DOT_CHAR + attributes.get(NAME);
-                ((StaticJspMetawidget) nestedMetawidget).setValue(valueExpression);
-                metawidget.initNestedMetawidget(nestedMetawidget, attributes);
-
-                // If read-only, we're done.
-
-                if (WidgetBuilderUtils.isReadOnly(attributes))
-                {
-                    return nestedMetawidget;
-                }
-
-                // Otherwise, use a dropdown menue with a create button.
-
-                FormSelectTag select = new FormSelectTag();
-                select.putAttribute("items", StaticJspUtils.wrapExpression(Noun.pluralOf(attributes.get(NAME))));
-                select.putAttribute("path", attributes.get(NAME));
-
-                if (!TRUE.equals(attributes.get(REQUIRED)))
-                {
-                    FormOptionTag emptyOption = new FormOptionTag();
-                    emptyOption.putAttribute("value", "");
-                    select.getChildren().add(emptyOption);
-                }
-
-                HtmlTableCell cell = new HtmlTableCell();
-                cell.getChildren().add(select);
-
-                // TODO: Find a way to direct this link to a create form for the top entity, not the member.
-
-                String controllerName = Noun.pluralOf(clazz.getSimpleName()).toLowerCase();
-                CoreUrl curl = new CoreUrl();
-                curl.setValue(getTargetDir() + controllerName + "/create");
-
-                HtmlAnchor createLink = new HtmlAnchor();
-                createLink.setTextContent("Create New " + StringUtils.uncamelCase(clazz.getSimpleName()));
-                createLink.putAttribute("href", curl.toString());
-                cell.getChildren().add(createLink);
-
-                return cell;
+                return null;
             }
 
-            if (clazz != null)
+            // Create nested StaticSpringMetawidget
+
+            StaticSpringMetawidget nestedMetawidget = new StaticSpringMetawidget();
+            String valueExpression = StaticJspUtils.unwrapExpression(((StaticJspMetawidget) metawidget).getValue());
+            valueExpression += StringUtils.SEPARATOR_DOT_CHAR + attributes.get(NAME);
+            ((StaticJspMetawidget) nestedMetawidget).setValue(valueExpression);
+            metawidget.initNestedMetawidget(nestedMetawidget, attributes);
+
+            // If read-only, we're done.
+
+            if (WidgetBuilderUtils.isReadOnly(attributes))
             {
-                if (Collection.class.isAssignableFrom(clazz))
+                return nestedMetawidget;
+            }
+
+            // Otherwise, use a dropdown menu with a create button.
+
+            FormSelectTag select = new FormSelectTag();
+            select.putAttribute("path", attributes.get(NAME));
+
+            if (!TRUE.equals(attributes.get(REQUIRED)))
+            {
+                FormOptionTag emptyOption = new FormOptionTag();
+                emptyOption.putAttribute("value", "");
+                select.getChildren().add(emptyOption);
+                FormOptionsTag options = new FormOptionsTag();
+                options.putAttribute("items", StaticJspUtils.wrapExpression(attributes.get(NAME)));
+                select.getChildren().add(options);
+            }
+            else
+            {
+                select.putAttribute("items", StaticJspUtils.wrapExpression(Noun.pluralOf(attributes.get(NAME))));
+            }
+
+            HtmlTableCell cell = new HtmlTableCell();
+            cell.getChildren().add(select);
+
+            // TODO: Find a way to direct this link to a create form for the top entity, not the member.
+
+            // TODO: Find a better way to retrieve the controller name.
+
+            int lastIndexOf = attributes.get(TYPE).lastIndexOf(StringUtils.SEPARATOR_DOT_CHAR);
+            String controllerName = Noun.pluralOf(attributes.get(TYPE).substring(lastIndexOf + 1)).toLowerCase();
+            CoreUrl curl = new CoreUrl();
+            curl.setValue(getTargetDir() + controllerName + "/create");
+
+            HtmlAnchor createLink = new HtmlAnchor();
+            createLink.setTextContent("Create New " + StringUtils.uncamelCase(attributes.get(TYPE).substring(lastIndexOf + 1)));
+            createLink.putAttribute("href", curl.toString());
+            cell.getChildren().add(createLink);
+
+            return cell;
+        }
+
+        if (clazz != null)
+        {
+            if (Collection.class.isAssignableFrom(clazz))
+            {
+                StaticJspMetawidget nestedMetawidget = new StaticJspMetawidget();
+                nestedMetawidget.setInspector( metawidget.getInspector() );
+                nestedMetawidget.setLayout( new SimpleLayout() );
+                nestedMetawidget.setPath( metawidget.getPath() + StringUtils.SEPARATOR_FORWARD_SLASH_CHAR + attributes.get( NAME ) );
+    
+                // If using an external config, lookup StaticJspMetawidget within it
+    
+                if ( metawidget.getConfig() != null )
                 {
-                    StaticJspMetawidget nestedMetawidget = new StaticJspMetawidget();
-                    nestedMetawidget.setInspector( metawidget.getInspector() );
-                    nestedMetawidget.setLayout( new SimpleLayout() );
-                    nestedMetawidget.setPath( metawidget.getPath() + StringUtils.SEPARATOR_FORWARD_SLASH_CHAR + attributes.get( NAME ) );
-    
-                    // If using an external config, lookup StaticJspMetawidget within it
-    
-                    if ( metawidget.getConfig() != null )
-                    {
-                        nestedMetawidget.setConfig( metawidget.getConfig() );
-                        try {
-                            nestedMetawidget.getWidgetProcessors();
-                        } catch ( MetawidgetException e ) {
-                            nestedMetawidget.setConfig( null );
-                        }
+                    nestedMetawidget.setConfig( metawidget.getConfig() );
+                    try {
+                        nestedMetawidget.getWidgetProcessors();
+                    } catch ( MetawidgetException e ) {
+                        nestedMetawidget.setConfig( null );
                     }
-    
-                    return nestedMetawidget;
                 }
+    
+                return nestedMetawidget;
             }
         }
 
