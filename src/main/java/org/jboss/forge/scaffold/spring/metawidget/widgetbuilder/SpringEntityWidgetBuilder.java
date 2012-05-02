@@ -94,7 +94,7 @@ public class SpringEntityWidgetBuilder
             return new StaticXmlStub();
         }
 
-        Class<?> clazz = WidgetBuilderUtils.getActualClassOrType(attributes, null);
+        Class<?> clazz = WidgetBuilderUtils.getActualClassOrType(attributes, String.class);
 
         if (WidgetBuilderUtils.isReadOnly(attributes))
         {
