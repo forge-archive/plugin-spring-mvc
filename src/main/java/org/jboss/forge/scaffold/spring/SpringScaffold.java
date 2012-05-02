@@ -154,9 +154,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     private StaticSpringMetawidget entityMetawidget;
     private StaticJavaMetawidget qbeMetawidget;
 
-    private List<Resource<?>> generatedResources;
-    private List<String> scaffoldedEntities;
-
     private Configuration config;
 
     //
@@ -180,9 +177,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         {
             this.compiler.getTemplateResolverFactory().addResolver(this. resolver);
         }
-
-        this.generatedResources = new ArrayList<Resource<?>>();
-        this.scaffoldedEntities = new ArrayList<String>();
     }
     
     //
@@ -205,8 +199,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         result.add(setupMVCContext(targetDir));
         result.add(updateWebXML(targetDir));
         result.add(setupTilesLayout(targetDir));
-
-        generatedResources.addAll(result);
 
         deps.addDirectDependency(DependencyBuilder.create("org.jboss.spec.javax.servlet:jboss-servlet-api_3.0_spec"));
         deps.addDirectDependency(DependencyBuilder.create("org.apache.tiles:tiles-jsp:2.1.3"));
@@ -497,13 +489,10 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
                 // Generate navigation, for both "/" and for targetDir
 
-                scaffoldedEntities.add(entity.getName());
-
                 if (!targetDir.equals("/"))
-                    result.add(generateNavigation(targetDir, overwrite));
+                    result.add(generateNavigation(entity.getPackage(), targetDir, overwrite));
 
-                if (!web.getWebResource("WEB-INF/layouts/pageTemplate.jsp").exists())
-                    result.add(generateNavigation("/", overwrite));
+                result.add(generateNavigation(entity.getPackage(), "/", overwrite));
             }
             catch (Exception e)
             {
@@ -516,8 +505,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
             Thread.currentThread().setContextClassLoader(oldClassLoader);
         }
-
-        generatedResources.addAll(result);
 
         return result;
     }
@@ -599,10 +586,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/true.png"),
                 getClass().getResourceAsStream("/scaffold/spring/true.png"), overwrite));
 
-       // TODO: Perhaps should be modified to only add index.jsp and error.jsp, and not all static resources.
-
-       generatedResources.addAll(result);
-
        return result;
     }
 
@@ -618,9 +601,9 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
             result.add(ScaffoldUtil.createOrOverwrite(this.prompt,
                     web.getWebResource("/resources/scaffold/paginator.xhtml"),
                     getClass().getResourceAsStream("/resources/scaffold/paginator.xhtml"),
-                    overwrite));*/
+                    overwrite));
 
-            result.add(generateNavigation(targetDir, overwrite));
+            result.add(generateNavigation(targetDir, overwrite));*/
         } catch (Exception e)
         {
             throw new RuntimeException("Error generating default templates.", e);
@@ -634,7 +617,11 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     @Override
     public List<Resource<?>> getGeneratedResources(String targetDir)
     {
-        return this.generatedResources;
+        /**
+         * Not implemented as of yet.
+         */
+
+        return null;
     }
 
     @Override
@@ -1006,10 +993,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
      * Generates the navigation menu based on scaffolded entities.
      */
 
-    protected Resource<?> generateNavigation(String targetDir, final boolean overwrite)
+    protected Resource<?> generateNavigation(String domainPackage, String targetDir, final boolean overwrite)
             throws IOException
     {
+        JavaSourceFacet java = this.project.getFacet(JavaSourceFacet.class);
         WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
+
         HtmlTag unorderedList = new HtmlTag("ul");
 
         if (!targetDir.endsWith("/"))
@@ -1024,7 +1013,9 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
                 if ( !file.isDirectory() || file.getName().equals("META-INF")
                         || file.getName().equals("WEB-INF")
-                        || file.getName().equals("resources"))
+                        || file.getName().equals("resources")
+                        || file.getName().equals("layouts")
+                        || file.getName().equals("views"))
                 {
                     return false;
                 }
@@ -1036,10 +1027,10 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         for (Resource<?> resource : web.getWebResource("WEB-INF/views" + targetDir).listResources(filter))
         {
             HtmlAnchor link = new HtmlAnchor();
-            if (!this.scaffoldedEntities.contains(resource.getName()))
-                link.putAttribute("href", "<c:url value=\"" + targetDir + resource.getName() + "/\"/>");
+            if (java.getJavaResource(domainPackage + StringUtils.SEPARATOR_DOT_CHAR + resource.getName()).exists())
+                link.putAttribute("href", "<c:url value=\"" + targetDir + pluralOf(resource.getName()).toLowerCase() + "/\"/>");
             else
-                link.putAttribute("href", "<c:url value=\"" + targetDir + pluralOf(resource.getName()).toLowerCase() + "\"/>");
+                link.putAttribute("href", "<c:url value=\"" + targetDir + resource.getName() + "\"/>");
             link.setTextContent(StringUtils.uncamelCase(resource.getName()));
 
             HtmlTag listItem = new HtmlTag("li");
