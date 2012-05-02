@@ -26,18 +26,14 @@ public class @{entity.getName()}Controller
 	
     @Autowired
 	private @{entity.getName()}Dao @{ccEntity}Dao;
-
-	@if{!entityTypes.isEmpty() && !entityClasses.isEmpty() && !ccEntityClasses.isEmpty()}
+	@if{!entityNames.isEmpty() && !entityClasses.isEmpty() && !ccEntityClasses.isEmpty()}
 	// Inject data-access objects for any inter-entity relationships.
-	
 	@foreach{clazz : entityClasses, ccClazz : ccEntityClasses}
 	@Autowired
 	private @{clazz}Dao @{ccClazz}Dao;
-	
 	@end{}
 	@else{}
 	@end{}
-
 	@RequestMapping(method=RequestMethod.GET)
 	public @ModelAttribute("entities")
 	List<@{entity.getName()}> view@{entityPlural}(@ModelAttribute("search") @{entity.getName()} search)

@@ -267,7 +267,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 // Set context for Java and JSP generation
 
                 Map<Object, Object> context = CollectionUtils.newHashMap();
-                context = getTemplateContext(template);
                 context.put("entity", entity);
                 String ccEntity = StringUtils.decapitalize(entity.getName());
                 context.put("ccEntity", ccEntity);
@@ -1217,7 +1216,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
     protected Map<Object, Object> findEntityRelationships(JavaClass entity, Map<Object, Object> context)
     {
-        List<String> entityTypes = new ArrayList<String>();
+        List<String> entityNames = new ArrayList<String>();
         List<String> entityClasses = new ArrayList<String>();
         List<String> ccEntityClasses = new ArrayList<String>();
 
@@ -1226,8 +1225,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
             if (field.hasAnnotation(OneToOne.class) || field.hasAnnotation(OneToMany.class) || field.hasAnnotation(ManyToOne.class)
                     || field.hasAnnotation(ManyToMany.class))
             {
-                String type = field.getTypeInspector().getName();
-                entityTypes.add(type);
+                String name = field.getName();
+                entityNames.add(name);
                 String clazz = ClassUtils.getSimpleName(field.getType());
                 entityClasses.add(clazz);
                 String ccEntity = StringUtils.camelCase(clazz);
@@ -1235,10 +1234,11 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
             }
         }
 
-        if (entityTypes.isEmpty() || entityClasses.isEmpty() || ccEntityClasses.isEmpty())
+        if (!entityNames.isEmpty() && !entityClasses.isEmpty() && !ccEntityClasses.isEmpty())
         {
-            context.put("entityTypes", entityTypes);
+            context.put("entityNames", entityNames);
             context.put("entityClasses", entityClasses);
+            context.put("ccEntityClasses", ccEntityClasses);
         }
 
         return context;
