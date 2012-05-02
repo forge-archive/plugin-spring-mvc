@@ -25,7 +25,6 @@ import org.metawidget.statically.javacode.JavaStatement;
 import org.metawidget.statically.javacode.StaticJavaMetawidget;
 import org.metawidget.statically.javacode.StaticJavaStub;
 import org.metawidget.statically.javacode.StaticJavaWidget;
-import org.metawidget.util.ClassUtils;
 import org.metawidget.util.WidgetBuilderUtils;
 import org.metawidget.util.simple.StringUtils;
 import org.metawidget.widgetbuilder.iface.WidgetBuilder;
@@ -55,8 +54,7 @@ public class QueryByExampleWidgetBuilder
             return new StaticJavaStub();
         }
         
-        String type = WidgetBuilderUtils.getActualClassOrType(attributes);
-        Class<?> clazz = ClassUtils.niceForName(type);
+        Class<?> clazz = WidgetBuilderUtils.getActualClassOrType(attributes, null);
         String name = attributes.get(NAME);
         
         // String
@@ -93,9 +91,9 @@ public class QueryByExampleWidgetBuilder
         if (attributes.containsKey(LOOKUP))
         {
            StaticJavaStub toReturn = new StaticJavaStub();
-           JavaStatement getValue = new JavaStatement(ClassUtils.getSimpleName(type) + " " + name + " = search.get"
+           JavaStatement getValue = new JavaStatement(clazz.getSimpleName() + " " + name + " = search.get"
                     + StringUtils.capitalize(name) + "()");
-           getValue.putImport(type);
+           getValue.putImport(clazz.getName());
            toReturn.getChildren().add(getValue);
            JavaStatement ifNotEmpty = new JavaStatement("if (" + name + " != null)");
            ifNotEmpty.getChildren().add(
@@ -109,9 +107,9 @@ public class QueryByExampleWidgetBuilder
         if (attributes.containsKey(SPRING_LOOKUP))
         {
            StaticJavaStub toReturn = new StaticJavaStub();
-           JavaStatement getValue = new JavaStatement(ClassUtils.getSimpleName(type) + " " + name + " = search.get"
+           JavaStatement getValue = new JavaStatement(clazz.getSimpleName() + " " + name + " = search.get"
                     + StringUtils.capitalize(name) + "()");
-           getValue.putImport(type);
+           getValue.putImport(clazz.getName());
            toReturn.getChildren().add(getValue);
            JavaStatement ifNotEmpty = new JavaStatement("if (" + name + " != null && " + name + ".getId() != null)");
            ifNotEmpty.getChildren().add(

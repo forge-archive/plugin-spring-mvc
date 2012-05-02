@@ -74,14 +74,12 @@ public class JspEntityWidgetBuilder
     @Override
     public StaticXmlWidget buildWidget(String elementName, Map<String, String> attributes, StaticXmlMetawidget metawidget)
     {
-        
-        String type = WidgetBuilderUtils.getActualClassOrType(attributes);
 
-        Class<?> clazz = ClassUtils.niceForName(type);
+        Class<?> clazz = WidgetBuilderUtils.getActualClassOrType(attributes, null);
         
         // Render collection tables with links
               
-        if(type != null)
+        if(clazz != null)
         {
             // Render non-optional ONE_TO_ONE with a button
             
@@ -211,16 +209,11 @@ public class JspEntityWidgetBuilder
         //
         // Note: we don't just do N_TO_MANY values, as Collections are sometimes not annotated.
 
-        String type = WidgetBuilderUtils.getActualClassOrType(columnAttributes);
+        Class<?> clazz = WidgetBuilderUtils.getActualClassOrType(columnAttributes, null);
 
-        if (type != null)
+        if (clazz != null && Collection.class.isAssignableFrom(clazz))
         {
-            Class<?> clazz = ClassUtils.niceForName(type);
-
-            if (clazz != null && Collection.class.isAssignableFrom(clazz))
-            {
-                return;
-            }
+            return;
         }
 
         // FORGE-446: Expand columns that show one-to-one values.

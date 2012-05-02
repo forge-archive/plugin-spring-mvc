@@ -48,7 +48,6 @@ import org.metawidget.statically.spring.StaticSpringMetawidget;
 import org.metawidget.statically.spring.widgetbuilder.FormOptionTag;
 import org.metawidget.statically.spring.widgetbuilder.FormSelectTag;
 import org.metawidget.statically.spring.widgetbuilder.SpringWidgetBuilder;
-import org.metawidget.util.ClassUtils;
 import org.metawidget.util.WidgetBuilderUtils;
 import org.metawidget.util.simple.StringUtils;
 
@@ -94,7 +93,7 @@ public class SpringEntityWidgetBuilder
             return new StaticXmlStub();
         }
 
-        String type = WidgetBuilderUtils.getActualClassOrType(attributes);
+        Class<?> clazz = WidgetBuilderUtils.getActualClassOrType(attributes, null);
 
         if (WidgetBuilderUtils.isReadOnly(attributes))
         {
@@ -133,13 +132,13 @@ public class SpringEntityWidgetBuilder
                     select.getChildren().add(emptyOption);
                 }
 
-                String controllerName = Noun.pluralOf(ClassUtils.getSimpleName(type)).toLowerCase();
+                String controllerName = Noun.pluralOf(clazz.getSimpleName()).toLowerCase();
                 CoreUrl curl = new CoreUrl();
                 curl.setValue(getTargetDir() + "/" + controllerName);
     
                 HtmlAnchor link = new HtmlAnchor();
                 link.putAttribute("href", curl.toString());
-                link.putAttribute("value", "Create New " + StringUtils.uncamelCase(ClassUtils.getSimpleName(type)));
+                link.putAttribute("value", "Create New " + StringUtils.uncamelCase(clazz.getSimpleName()));
 
                 HtmlTableCell lookupCell = new HtmlTableCell();
                 lookupCell.getChildren().add(select);
@@ -147,8 +146,6 @@ public class SpringEntityWidgetBuilder
 
                 return lookupCell;
             }
-
-            Class<?> clazz = ClassUtils.niceForName(type);
 
             if (clazz != null)
             {
@@ -167,7 +164,7 @@ public class SpringEntityWidgetBuilder
 
         // Render collection tables with links.
 
-        if (type != null)
+        if (clazz != null)
         {
             // Render non-optional ONE_TO_ONE with a button.
 
@@ -213,19 +210,17 @@ public class SpringEntityWidgetBuilder
 
                 // TODO: Find a way to direct this link to a create form for the top entity, not the member.
 
-                String controllerName = Noun.pluralOf(ClassUtils.getSimpleName(type)).toLowerCase();
+                String controllerName = Noun.pluralOf(clazz.getSimpleName()).toLowerCase();
                 CoreUrl curl = new CoreUrl();
                 curl.setValue(getTargetDir() + controllerName + "/create");
 
                 HtmlAnchor createLink = new HtmlAnchor();
-                createLink.setTextContent("Create New " + StringUtils.uncamelCase(ClassUtils.getSimpleName(type)));
+                createLink.setTextContent("Create New " + StringUtils.uncamelCase(clazz.getSimpleName()));
                 createLink.putAttribute("href", curl.toString());
                 cell.getChildren().add(createLink);
 
                 return cell;
             }
-
-            Class<?> clazz = ClassUtils.niceForName(type);
 
             if (clazz != null)
             {

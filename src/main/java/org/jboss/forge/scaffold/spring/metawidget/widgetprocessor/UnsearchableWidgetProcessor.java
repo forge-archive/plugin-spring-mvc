@@ -26,7 +26,6 @@ import org.metawidget.statically.StaticMetawidget;
 import org.metawidget.statically.StaticWidget;
 import org.metawidget.statically.StaticXmlStub;
 import org.metawidget.statically.javacode.StaticJavaStub;
-import org.metawidget.util.ClassUtils;
 import org.metawidget.util.WidgetBuilderUtils;
 import org.metawidget.widgetprocessor.iface.AdvancedWidgetProcessor;
 
@@ -103,12 +102,10 @@ public class UnsearchableWidgetProcessor
    {
       if (!WidgetBuilderUtils.isReadOnly(attributes))
       {
-         String type = WidgetBuilderUtils.getActualClassOrType(attributes);
+         Class<?> clazz = WidgetBuilderUtils.getActualClassOrType(attributes, null);
 
-         if (type != null)
+         if (clazz != null)
          {
-            Class<?> clazz = ClassUtils.niceForName(type);
-
             if (String.class.equals(clazz) || int.class.equals(clazz))
             {
                return true;
