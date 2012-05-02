@@ -57,6 +57,9 @@ public class @{entity.getName()}Controller
 
 		else
 		{
+			@foreach{name : entityNames, ccClass : ccEntityClasses}
+			model.addAttribute("@{name}", @{ccClass}Dao.getAll());
+			@end{} 
 			return "update@{entity.getName()}";
 		}
 	}
@@ -78,6 +81,9 @@ public class @{entity.getName()}Controller
 	@RequestMapping(value="/create", method=RequestMethod.GET)
 	public String create@{entity.getName()}(Model model)
 	{
+		@foreach{name : entityNames, ccClass : ccEntityClasses}
+		model.addAttribute("@{name}", @{ccClass}Dao.getAll());
+		@end{} 
 		model.addAttribute("@{ccEntity}", new @{entity.getName()}());
 		return "create@{entity.getName()}";
 	}
