@@ -194,7 +194,7 @@ public class SpringEntityWidgetBuilder
             // Otherwise, use a dropdown menu with a create button.
 
             FormSelectTag select = new FormSelectTag();
-            select.putAttribute("path", attributes.get(NAME));
+            select.putAttribute("path", attributes.get(NAME) + ".id");
 
             if (!TRUE.equals(attributes.get(REQUIRED)))
             {
@@ -203,11 +203,13 @@ public class SpringEntityWidgetBuilder
                 select.getChildren().add(emptyOption);
                 FormOptionsTag options = new FormOptionsTag();
                 options.putAttribute("items", StaticJspUtils.wrapExpression(attributes.get(NAME)));
+                options.putAttribute("itemValue", "id");
                 select.getChildren().add(options);
             }
             else
             {
                 select.putAttribute("items", StaticJspUtils.wrapExpression(Noun.pluralOf(attributes.get(NAME))));
+                select.putAttribute("itemValue", "id");
             }
 
             HtmlTableCell cell = new HtmlTableCell();
