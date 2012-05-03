@@ -133,13 +133,14 @@ public class SpringEntityWidgetBuilder
                     select.getChildren().add(emptyOption);
                 }
 
-                String controllerName = Noun.pluralOf(clazz.getSimpleName()).toLowerCase();
+                int lastIndexOf = attributes.get(TYPE).lastIndexOf(StringUtils.SEPARATOR_DOT_CHAR);
+                String controllerName = Noun.pluralOf(attributes.get(TYPE).substring(lastIndexOf + 1)).toLowerCase();
                 CoreUrl curl = new CoreUrl();
                 curl.setValue(getTargetDir() + "/" + controllerName);
     
                 HtmlAnchor link = new HtmlAnchor();
                 link.putAttribute("href", curl.toString());
-                link.putAttribute("value", "Create New " + StringUtils.uncamelCase(clazz.getSimpleName()));
+                link.putAttribute("value", "Create New " + StringUtils.uncamelCase(attributes.get(TYPE).substring(lastIndexOf + 1)));
 
                 HtmlTableCell lookupCell = new HtmlTableCell();
                 lookupCell.getChildren().add(select);
