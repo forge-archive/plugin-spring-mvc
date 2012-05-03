@@ -25,6 +25,7 @@ import org.metawidget.statically.javacode.JavaStatement;
 import org.metawidget.statically.javacode.StaticJavaMetawidget;
 import org.metawidget.statically.javacode.StaticJavaStub;
 import org.metawidget.statically.javacode.StaticJavaWidget;
+import org.metawidget.util.ClassUtils;
 import org.metawidget.util.WidgetBuilderUtils;
 import org.metawidget.util.simple.StringUtils;
 import org.metawidget.widgetbuilder.iface.WidgetBuilder;
@@ -54,7 +55,9 @@ public class QueryByExampleWidgetBuilder
             return new StaticJavaStub();
         }
         
-        Class<?> clazz = WidgetBuilderUtils.getActualClassOrType(attributes, null);
+        String type = WidgetBuilderUtils.getActualClassOrType(attributes);
+        Class<?> clazz = ClassUtils.niceForName(type);
+
         String name = attributes.get(NAME);
         
         // String
