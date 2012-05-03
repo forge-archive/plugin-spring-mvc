@@ -75,8 +75,10 @@ public class JspEntityWidgetBuilder
     public StaticXmlWidget buildWidget(String elementName, Map<String, String> attributes, StaticXmlMetawidget metawidget)
     {
 
-        Class<?> clazz = WidgetBuilderUtils.getActualClassOrType(attributes, null);
-        
+        String type = WidgetBuilderUtils.getActualClassOrType(attributes);
+
+        Class<?> clazz = ClassUtils.niceForName(type);
+
         // Render collection tables with links
               
         if(clazz != null)
@@ -209,7 +211,9 @@ public class JspEntityWidgetBuilder
         //
         // Note: we don't just do N_TO_MANY values, as Collections are sometimes not annotated.
 
-        Class<?> clazz = WidgetBuilderUtils.getActualClassOrType(columnAttributes, null);
+        String type = WidgetBuilderUtils.getActualClassOrType(columnAttributes);
+
+        Class<?> clazz = ClassUtils.niceForName(type);
 
         if (clazz != null && Collection.class.isAssignableFrom(clazz))
         {

@@ -49,6 +49,7 @@ import org.metawidget.statically.spring.widgetbuilder.FormOptionTag;
 import org.metawidget.statically.spring.widgetbuilder.FormOptionsTag;
 import org.metawidget.statically.spring.widgetbuilder.FormSelectTag;
 import org.metawidget.statically.spring.widgetbuilder.SpringWidgetBuilder;
+import org.metawidget.util.ClassUtils;
 import org.metawidget.util.WidgetBuilderUtils;
 import org.metawidget.util.simple.StringUtils;
 
@@ -94,7 +95,9 @@ public class SpringEntityWidgetBuilder
             return new StaticXmlStub();
         }
 
-        Class<?> clazz = WidgetBuilderUtils.getActualClassOrType(attributes, String.class);
+        String type = WidgetBuilderUtils.getActualClassOrType(attributes);
+
+        Class<?> clazz = ClassUtils.niceForName(type);
 
         if (WidgetBuilderUtils.isReadOnly(attributes))
         {
@@ -217,15 +220,12 @@ public class SpringEntityWidgetBuilder
 
             // TODO: Find a way to direct this link to a create form for the top entity, not the member.
 
-            // TODO: Find a better way to retrieve the controller name.
-
-            int lastIndexOf = attributes.get(TYPE).lastIndexOf(StringUtils.SEPARATOR_DOT_CHAR);
-            String controllerName = Noun.pluralOf(attributes.get(TYPE).substring(lastIndexOf + 1)).toLowerCase();
+            String controllerName = Noun.pluralOf(clazz.getSimpleName()).toLowerCase();
             CoreUrl curl = new CoreUrl();
             curl.setValue(getTargetDir() + controllerName + "/create");
 
             HtmlAnchor createLink = new HtmlAnchor();
-            createLink.setTextContent("Create New " + StringUtils.uncamelCase(attributes.get(TYPE).substring(lastIndexOf + 1)));
+            createLink.setTextContent("Create New " + StringUtils.uncamelCase(clazz.getSimpleName()));
             createLink.putAttribute("href", curl.toString());
             cell.getChildren().add(createLink);
 
