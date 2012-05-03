@@ -168,7 +168,7 @@ public class SpringEntityWidgetBuilder
 
         // Render non-optional ONE_TO_ONE with a button.
 
-        if (TRUE.equals(attributes.get(ONE_TO_ONE)))
+        if (TRUE.equals(attributes.get(ONE_TO_ONE)) || TRUE.equals(attributes.get(N_TO_MANY)))
         {
             // (we are about to create a nested metawidget, so we must prevent recursion)
 
@@ -213,6 +213,11 @@ public class SpringEntityWidgetBuilder
                 select.putAttribute("itemValue", "id");
             }
 
+            if (TRUE.equals(attributes.get(N_TO_MANY)))
+            {
+                select.putAttribute("multiple", TRUE);
+            }
+
             HtmlTableCell cell = new HtmlTableCell();
             cell.getChildren().add(select);
 
@@ -220,13 +225,25 @@ public class SpringEntityWidgetBuilder
 
             // TODO: Find a better way to retrieve the controller name.
 
-            int lastIndexOf = attributes.get(TYPE).lastIndexOf(StringUtils.SEPARATOR_DOT_CHAR);
-            String controllerName = Noun.pluralOf(attributes.get(TYPE).substring(lastIndexOf + 1)).toLowerCase();
+            String entityName = new String();
+
+            if (TRUE.equals(attributes.get(N_TO_MANY)))
+            {
+                int lastIndexOf = attributes.get(PARAMETERIZED_TYPE).lastIndexOf(StringUtils.SEPARATOR_DOT_CHAR);
+                entityName = attributes.get(PARAMETERIZED_TYPE).substring(lastIndexOf + 1);
+            }
+            else
+            {
+                int lastIndexOf = attributes.get(TYPE).lastIndexOf(StringUtils.SEPARATOR_DOT_CHAR);
+                entityName = attributes.get(TYPE).substring(lastIndexOf + 1);
+            }
+
+            String controllerName = Noun.pluralOf(entityName).toLowerCase();
             CoreUrl curl = new CoreUrl();
             curl.setValue(getTargetDir() + controllerName + "/create");
 
             HtmlAnchor createLink = new HtmlAnchor();
-            createLink.setTextContent("Create New " + StringUtils.uncamelCase(attributes.get(TYPE).substring(lastIndexOf + 1)));
+            createLink.setTextContent("Create New " + StringUtils.uncamelCase(entityName));
             createLink.putAttribute("href", curl.toString());
             cell.getChildren().add(createLink);
 

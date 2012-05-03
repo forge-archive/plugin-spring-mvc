@@ -66,7 +66,7 @@ public class ForgeInspectorTest
       property = XmlUtils.getNextSiblingElement(property);
       assertEquals(PROPERTY, property.getNodeName());
       assertEquals("manyToMany", property.getAttribute(NAME));
-      assertEquals(TRUE, property.getAttribute(N_TO_MANY));
+      assertEquals(TRUE, property.getAttribute(MANY_TO_MANY));
       assertEquals(2, property.getAttributes().getLength());
 
       property = XmlUtils.getNextSiblingElement(property);
@@ -78,7 +78,7 @@ public class ForgeInspectorTest
       property = XmlUtils.getNextSiblingElement(property);
       assertEquals(PROPERTY, property.getNodeName());
       assertEquals("oneToMany", property.getAttribute(NAME));
-      assertEquals(TRUE, property.getAttribute(N_TO_MANY));
+      assertEquals(TRUE, property.getAttribute(MANY_TO_MANY));
       assertEquals(2, property.getAttributes().getLength());
 
       property = XmlUtils.getNextSiblingElement(property);

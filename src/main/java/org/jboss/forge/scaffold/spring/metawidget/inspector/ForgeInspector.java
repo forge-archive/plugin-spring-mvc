@@ -22,8 +22,7 @@
 
 package org.jboss.forge.scaffold.spring.metawidget.inspector;
 
-import static org.jboss.forge.scaffold.spring.metawidget.inspector.ForgeInspectionResultConstants.N_TO_MANY;
-import static org.jboss.forge.scaffold.spring.metawidget.inspector.ForgeInspectionResultConstants.ONE_TO_ONE;
+import static org.jboss.forge.scaffold.spring.metawidget.inspector.ForgeInspectionResultConstants.*;
 import static org.metawidget.inspector.InspectionResultConstants.*;
 import static org.metawidget.inspector.spring.SpringInspectionResultConstants.SPRING_LOOKUP;
 
