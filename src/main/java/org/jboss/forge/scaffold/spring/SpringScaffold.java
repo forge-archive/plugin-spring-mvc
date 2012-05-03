@@ -76,7 +76,6 @@ import org.metawidget.statically.StaticUtils.IndentedWriter;
 import org.metawidget.statically.javacode.StaticJavaMetawidget;
 import org.metawidget.statically.html.widgetbuilder.HtmlTag;
 import org.metawidget.statically.spring.StaticSpringMetawidget;
-import org.metawidget.util.ClassUtils;
 import org.metawidget.util.CollectionUtils;
 import org.metawidget.util.simple.StringUtils;
 
@@ -1218,8 +1217,21 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
             {
                 String name = field.getName();
                 entityNames.add(name);
-                String clazz = ClassUtils.getSimpleName(field.getType());
-                entityClasses.add(clazz);
+                String clazz = new String();
+
+                if (field.hasAnnotation(OneToMany.class) || field.hasAnnotation(ManyToMany.class))
+                {
+                    clazz = field.getStringInitializer();
+                    int firstIndexOf = clazz.indexOf("<");
+                    int lastIndexOf = clazz.indexOf(">");
+                    clazz = clazz.substring(firstIndexOf + 1, lastIndexOf);
+                    entityClasses.add(clazz);
+                }
+                else
+                {
+                    clazz = field.getType();
+                }
+
                 String ccEntity = StringUtils.camelCase(clazz);
                 ccEntityClasses.add(ccEntity);
             }
