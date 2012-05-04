@@ -65,6 +65,7 @@ import org.jboss.forge.scaffold.spring.metawidget.widgetbuilder.HtmlAnchor;
 import org.jboss.forge.scaffold.util.ScaffoldUtil;
 import org.jboss.forge.shell.ShellPrompt;
 import org.jboss.forge.shell.plugins.Alias;
+import org.jboss.forge.shell.plugins.Help;
 import org.jboss.forge.shell.plugins.RequiresFacet;
 import org.jboss.forge.shell.util.Streams;
 import org.jboss.forge.spec.javaee.PersistenceFacet;
@@ -92,6 +93,7 @@ import org.metawidget.util.simple.StringUtils;
  */
 
 @Alias("spring")
+@Help("Spring MVC scaffolding")
 @RequiresFacet({ DependencyFacet.class,
             WebResourceFacet.class,
             PersistenceFacet.class})
