@@ -166,9 +166,7 @@ public class SpringEntityWidgetBuilder
 
         // Render collection tables with links.
 
-        // Render non-optional ONE_TO_ONE with a button.
-
-        if (TRUE.equals(attributes.get(ONE_TO_ONE)) || TRUE.equals(attributes.get(N_TO_MANY)))
+        if (TRUE.equals(ONE_TO_ONE) && WidgetBuilderUtils.isReadOnly(attributes))
         {
             // (we are about to create a nested metawidget, so we must prevent recursion)
 
@@ -185,14 +183,21 @@ public class SpringEntityWidgetBuilder
             ((StaticJspMetawidget) nestedMetawidget).setValue(valueExpression);
             metawidget.initNestedMetawidget(nestedMetawidget, attributes);
 
-            // If read-only, we're done.
+            return nestedMetawidget;
+        }
 
-            if (WidgetBuilderUtils.isReadOnly(attributes))
+        // Render non-optional ONE_TO_ONE with a button.
+
+        if (TRUE.equals(attributes.get(ONE_TO_ONE)) || TRUE.equals(attributes.get(N_TO_MANY)) && ! WidgetBuilderUtils.isReadOnly(attributes))
+        {
+            // (we are about to create a nested metawidget, so we must prevent recursion)
+
+            if (ENTITY.equals(elementName))
             {
-                return nestedMetawidget;
+                return null;
             }
 
-            // Otherwise, use a dropdown menu with a create button.
+            // Use a dropdown menu with a create button.
 
             FormSelectTag select = new FormSelectTag();
             select.putAttribute("path", attributes.get(NAME) + ".id");
