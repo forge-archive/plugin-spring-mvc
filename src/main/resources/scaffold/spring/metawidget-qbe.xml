@@ -24,7 +24,7 @@
 								</forgePropertyStyle>
 							</propertyStyle>
 						</propertyTypeInspector>
-						<forgeInspector xmlns="java:org.jboss.forge.scaffold.spring.metawidget.inspector" config="org.metawidget.inspector.impl.BaseObjectInspectorConfig">
+						<forgeInspector xmlns="java:org.jboss.forge.scaffold.spring.metawidget.inspector" config="ForgeInspectorConfig">
 							<propertyStyle>
 								<forgePropertyStyle refId="forgePropertyStyle"/>
 							</propertyStyle>
