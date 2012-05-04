@@ -62,9 +62,9 @@ public class ForgePropertyStyle
    // Private members
    //
 
-   private Project project;
+   private final Project project;
 
-   private MessageFormat privateFieldConvention;
+   private final MessageFormat privateFieldConvention;
 
    //
    // Constructor
@@ -402,7 +402,9 @@ public class ForgePropertyStyle
    // Private methods
    //
 
-   /*package private*/ static JavaSource<?> sourceForName(final Project project, final String type)
+   /*package private*/ 
+   
+   static JavaSource<?> sourceForName(final Project project, final String type)
    {
       try
       {
