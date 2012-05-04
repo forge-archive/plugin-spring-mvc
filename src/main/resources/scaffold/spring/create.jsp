@@ -8,6 +8,7 @@
 
 		<br/>
 
-		<input type="submit" value="Create New @{entity.getName()}"/>
+		<input type="submit" value="Save"/>
+		<input type="submit" value="Cancel" onclick="window.location='<c:url value="@{targetDir}@{entityPlural.toLowerCase()}"/>'"/>
 	</form:form>
 </div>
