@@ -4,7 +4,12 @@
 <div class="section">
 	<form:form commandName="search" method="GET">
 		@{metawidget}
+		<br/>
 		<input type="submit" value="Search"/>
+	</form:form>
+
+	<form:form commandName="customer" method="GET">
+		<input type="submit" value="Create New"/>
 	</form:form>
 	
 	<table>
@@ -19,5 +24,4 @@
 
 	<br/>
 
-	<input type="submit" value="Create New @{entityName}" onclick="window.location='<c:url value="@{targetDir}@{entityPlural.toLowerCase()}/create"/>'"/>
 </div>

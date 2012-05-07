@@ -11,9 +11,19 @@
 	<table>
 		<tr>
 			<td>
-				<form:form commandName="@{ccEntity}" action="$${@{ccEntity}.id}/delete" method="POST">
-					<input type="submit" value="Edit" onclick="window.location='<c:url value="@{targetDir}@{entityPlural.toLowerCase()}/$${@{ccEntity}.id}?edit=true"/>'"/>
-					<input type="submit" value="Delete"/>
+				<form:form commandName="@{ccEntity}" action="/@{entityPlural.toLowerCase()}" method="GET">
+					<input type="submit" value="View All"/>
+				</form:form>
+			</td>
+			<td>
+				<form:form commandName="@{ccEntity}" action="$${@{ccEntity}.id}" method="GET">
+					<input type="hidden" name="edit" value="true"/>
+					<input type="submit" value="Edit"/>
+				</form:form>
+			</td>
+			<td>
+				<form:form commandName=@{ccEntity}" action="/create" method="GET">
+					<input type="submit" value="Create New"/>
 				</form:form>
 			</td>
 		</tr>

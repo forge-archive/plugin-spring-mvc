@@ -6,7 +6,12 @@
 
 		@{metawidget}
 
-		<input type="submit" value="Update"/>
-
+		<input type="submit" value="Save"/>
+		<form:form commandName="@{ccEntity}" action="/@{entityPlural.toLowerCase()}" method="GET">
+			<input type="submit" value="Cancel">
+		</form:form>
+		<form:form commandName="@{ccEntity}" action="$${@{ccEntity}.id}/delete" method="POST">
+			<input type="submit" value="Delete"/>
+		</form:form>
 	</form:form>
 </div>
