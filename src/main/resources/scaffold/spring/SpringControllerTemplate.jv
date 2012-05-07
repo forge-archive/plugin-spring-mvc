@@ -8,7 +8,7 @@ import @{daoPackage}.@{entity.getName()}Dao;
 import @{daoPackage}.@{clazz}Dao;
 @end{}
 
-import javax.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.RequestParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -43,10 +43,8 @@ public class @{entity.getName()}Controller
 	}
 
 	@RequestMapping(value="/{id}", method=RequestMethod.GET)
-	public String view@{entity.getName()}(@PathVariable("id") Long id, Model model, HttpServletRequest request)
+	public String view@{entity.getName()}(@PathVariable("id") Long id, Model model, @RequestParam(required=false) String edit)
 	{
-		String edit = request.getParameter("edit");
-
 		@{entity.getName()} @{ccEntity} = @{ccEntity}Dao.getById(id);
 		model.addAttribute("@{ccEntity}", @{ccEntity});
 
