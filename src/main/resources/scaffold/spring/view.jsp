@@ -8,24 +8,19 @@
 
 	</form:form>
 
-	<table>
-		<tr>
-			<td>
-				<form:form commandName="@{ccEntity}" action="/@{entityPlural.toLowerCase()}" method="GET">
-					<input type="submit" value="View All"/>
-				</form:form>
-			</td>
-			<td>
-				<form:form commandName="@{ccEntity}" action="$${@{ccEntity}.id}" method="GET">
-					<input type="hidden" name="edit" value="true"/>
-					<input type="submit" value="Edit"/>
-				</form:form>
-			</td>
-			<td>
-				<form:form commandName=@{ccEntity}" action="/create" method="GET">
-					<input type="submit" value="Create New"/>
-				</form:form>
-			</td>
-		</tr>
-	</table>
+	<div class="buttons">
+		<table>
+			<tr>
+				<td>
+					<a class="button" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}"/>">View All</a>
+				</td>
+				<td>
+					<a class="button" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}/$${@{ccEntity}.id}?edit=true"/>">Edit</a>
+				</td>
+				<td>
+					<a class="button" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}/create"/>">Create New</a>
+				</td>
+			</tr>
+		</table>
+	</div>
 </div>

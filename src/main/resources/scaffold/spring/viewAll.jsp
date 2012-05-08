@@ -5,19 +5,29 @@
 	<form:form commandName="search" method="GET">
 		@{metawidget}
 		<br/>
-		<input type="submit" value="Search"/>
+
+		<div class=" buttons">
+			<table>
+				<tbody>
+					<tr>
+						<td>
+							<input type="submit" value="Search" class="button"/>
+						</td>
+						<td>
+							<a class="button" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}/create"/>">Create New</a>
+						</td>
+					</tr>					
+				</tbody>
+			</table>
+		</div>
 	</form:form>
 
-	<form:form commandName="customer" method="GET">
-		<input type="submit" value="Create New"/>
-	</form:form>
-	
 	<table>
 		<c:forEach items="$${entities}" var="entity">
 			<tr>
 				<td>@{entityName} $${entity.id}</td>
-				<td><input type="submit" value="View" onclick="window.location='<c:url value="@{targetDir}@{entityPlural.toLowerCase()}/$${entity.id}"/>'"/></td>
-				<td><input type="submit" value="Edit" onclick="window.location='<c:url value="@{targetDir}@{entityPlural.toLowerCase()}/$${entity.id}?edit=true"/>'"/></td>
+				<td><a class="button" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}/$${entity.id}"/>">View</a></td>
+				<td><a class="button" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}/$${entity.id}?edit=true"/>">Edit</a></td>
 			</tr>
 		</c:forEach>
 	</table>

@@ -6,12 +6,24 @@
 
 		@{metawidget}
 
-		<input type="submit" value="Save"/>
-		<form:form commandName="@{ccEntity}" action="/@{entityPlural.toLowerCase()}" method="GET">
-			<input type="submit" value="Cancel">
-		</form:form>
-		<form:form commandName="@{ccEntity}" action="$${@{ccEntity}.id}/delete" method="POST">
-			<input type="submit" value="Delete"/>
-		</form:form>
+		<div class="buttons">
+			<table>
+				<tbody>
+					<tr>
+						<td>
+							<input type="submit" value="Save" class="button"/>
+						</td>
+						<td>
+							<a class="button" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}"/>">Cancel</a>
+						</td>
+						<td>
+							<form:form commandName="@{ccEntity}" action="$${@{ccEntity}.id}/delete" method="POST">
+								<input type="submit" value="Delete" class="button"/>
+							</form:form>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
 	</form:form>
 </div>
