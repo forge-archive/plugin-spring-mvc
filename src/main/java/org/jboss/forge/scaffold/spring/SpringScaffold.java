@@ -1239,12 +1239,9 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
             }
         }
 
-        if (!entityNames.isEmpty() && !entityClasses.isEmpty() && !ccEntityClasses.isEmpty())
-        {
-            context.put("entityNames", entityNames);
-            context.put("entityClasses", entityClasses);
-            context.put("ccEntityClasses", ccEntityClasses);
-        }
+        context.put("entityNames", entityNames);
+        context.put("entityClasses", entityClasses);
+        context.put("ccEntityClasses", ccEntityClasses);
 
         return context;
     }
