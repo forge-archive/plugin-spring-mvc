@@ -220,7 +220,7 @@ public class SpringEntityWidgetBuilder
 
             if (TRUE.equals(attributes.get(N_TO_MANY)))
             {
-                select.putAttribute("multiple", TRUE);
+                select.putAttribute("multiple", "multiple");
             }
 
             HtmlTableCell cell = new HtmlTableCell();
