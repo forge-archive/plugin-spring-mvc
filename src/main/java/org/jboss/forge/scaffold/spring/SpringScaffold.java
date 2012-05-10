@@ -263,23 +263,18 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 context.put("entity", entity);
                 String ccEntity = StringUtils.decapitalize(entity.getName());
                 context.put("ccEntity", ccEntity);
+
+                // TODO: Support multiple packages for controllers and DAOs.
+
+                context.put("daoPackage", meta.getTopLevelPackage() + ".repo");
+                context.put("mvcPackage", meta.getTopLevelPackage() + ".mvc");
                 findEntityRelationships(entity, context);
 
                 if (!targetDir.startsWith("/"))
                     targetDir = "/" + targetDir;
 
-                if (targetDir.equals("/"))
-                {
-                    context.put("daoPackage", meta.getTopLevelPackage() + ".repo.root");
-                    context.put("mvcPackage",  meta.getTopLevelPackage() + ".mvc.root");
-                }
-
-                else
-                {
-                    context.put("daoPackage", meta.getTopLevelPackage() + ".repo" + targetDir.replace('/', '.'));
-                    context.put("mvcPackage", meta.getTopLevelPackage() + ".mvc" + targetDir.replace('/', '.'));
+                if (!targetDir.endsWith("/"))
                     targetDir += "/";
-                }
 
                 context.put("targetDir", targetDir);
                 context.put("entityName", StringUtils.uncamelCase(entity.getName()));
@@ -651,18 +646,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
 
         String filename = new String();
-        String mvcPackage = new String();
+        String mvcPackage = meta.getTopLevelPackage() + ".mvc";
 
         if (targetDir.equals("/"))
-        {
             filename = "WEB-INF/" + meta.getProjectName().replace(' ', '-').toLowerCase() + "-mvc-context.xml";
-            mvcPackage = meta.getTopLevelPackage() + ".mvc.root";
-        }
         else
-        {
             filename = "WEB-INF/" + targetDir.substring(1, targetDir.length()-1).replace(' ', '-') + "-mvc-context.xml";
-            mvcPackage = meta.getTopLevelPackage() + ".mvc" + targetDir.replace('/', '.').toLowerCase();
-        }
 
         // Create or update an mvc-context.xml file for the web application.
 
