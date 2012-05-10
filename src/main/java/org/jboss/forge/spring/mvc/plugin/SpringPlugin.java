@@ -22,9 +22,6 @@
 
 package org.jboss.forge.spring.mvc.plugin;
 
-import java.util.List;
-
-import org.hibernate.ejb.criteria.predicate.ExistsPredicate;
 import org.jboss.forge.resources.Resource;
 import org.jboss.forge.shell.plugins.Plugin;
 import org.jboss.forge.shell.plugins.Alias;
@@ -115,7 +112,7 @@ public class SpringPlugin implements Plugin {
 
         // Use the Forge DependencyFacet to add Spring dependencies to the POM
 
-        String springVersion = "3.1.0.RELEASE";
+        String springVersion = "3.1.1.RELEASE";
 
         deps.setProperty("spring.version", springVersion);
 
