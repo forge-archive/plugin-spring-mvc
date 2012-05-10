@@ -1227,13 +1227,13 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                     int firstIndexOf = clazz.indexOf("<");
                     int lastIndexOf = clazz.indexOf(">");
                     clazz = clazz.substring(firstIndexOf + 1, lastIndexOf);
-                    entityClasses.add(clazz);
                 }
                 else
                 {
                     clazz = field.getType();
                 }
 
+                entityClasses.add(clazz);
                 String ccEntity = StringUtils.camelCase(clazz);
                 ccEntityClasses.add(ccEntity);
             }
