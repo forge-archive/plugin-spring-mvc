@@ -24,6 +24,7 @@ package org.jboss.forge.scaffold.spring;
 
 import static org.jvnet.inflector.Noun.pluralOf;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -42,8 +43,10 @@ import javax.persistence.OneToOne;
 import org.jboss.forge.env.Configuration;
 import org.jboss.forge.parser.JavaParser;
 import org.jboss.forge.parser.java.Field;
+import org.jboss.forge.parser.java.Import;
 import org.jboss.forge.parser.java.JavaClass;
 import org.jboss.forge.parser.java.JavaInterface;
+import org.jboss.forge.parser.java.Method;
 import org.jboss.forge.parser.xml.Node;
 import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.project.Project;
@@ -57,6 +60,7 @@ import org.jboss.forge.project.facets.events.InstallFacets;
 import org.jboss.forge.resources.FileResource;
 import org.jboss.forge.resources.Resource;
 import org.jboss.forge.resources.ResourceFilter;
+import org.jboss.forge.resources.java.JavaResource;
 import org.jboss.forge.scaffold.AccessStrategy;
 import org.jboss.forge.scaffold.ScaffoldProvider;
 import org.jboss.forge.scaffold.TemplateStrategy;
@@ -1111,6 +1115,9 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         List<String> entityClasses = new ArrayList<String>();
         List<String> ccEntityClasses = new ArrayList<String>();
 
+        List<String> nToMany = new ArrayList<String>();
+        List<String> nToManyPackages = new ArrayList<String>();
+
         for ( Field<?> field : entity.getFields()) {
             if (field.hasAnnotation(OneToOne.class) || field.hasAnnotation(OneToMany.class) || field.hasAnnotation(ManyToOne.class)
                     || field.hasAnnotation(ManyToMany.class)) {
@@ -1123,6 +1130,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                     int firstIndexOf = clazz.indexOf("<");
                     int lastIndexOf = clazz.indexOf(">");
                     clazz = clazz.substring(firstIndexOf + 1, lastIndexOf);
+                    nToMany.add(clazz);
+                    nToManyPackages.add(findDomainPackage(clazz, entity));
                 }
                 else {
                     clazz = field.getType();
@@ -1148,5 +1157,61 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         if (this.conversionServiceTemplate == null)
             this.compiler.compile(CONVERSION_SERVICE_TEMPLATE);
+    }
+
+    protected String findDomainPackage(String clazz, JavaClass entity) {
+
+        for (Import imp : entity.getImports()) {
+            String simpleName = imp.getSimpleName();
+            if (simpleName.equals(clazz)) {
+                return imp.getPackage();
+            }
+        }
+
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected void addConverters(Map<Object, Object> context) throws FileNotFoundException {
+        MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
+        JavaSourceFacet java = this.project.getFacet(JavaSourceFacet.class);
+
+        String customConversionService = meta.getTopLevelPackage() + ".conversion.CustomConversionService";
+        JavaResource conversion = java.getJavaResource(customConversionService);
+
+        if (!conversion.exists()) {
+            conversion = (JavaResource) JavaParser.parse(this.conversionServiceTemplate.render(context));
+        }
+
+        JavaClass conversionService = (JavaClass) JavaParser.parse(conversion.getResourceInputStream());
+
+        List<String> nToMany = (List<String>) context.get("nToMany");
+        List<String> nToManyPackages = (List<String>) context.get("nToManyPackages");
+
+        for (int i = 0; i < nToMany.size(); i++) {
+            String clazz = nToMany.get(i);
+
+            if (!hasConverter(conversionService, clazz)) {
+                conversionService.addImport(nToManyPackages.get(i));
+
+                Field<?> dao = conversionService.addField("private " + clazz + "Dao " + StringUtils.camelCase(clazz) + "Dao;");
+                dao.addAnnotation("org.springframework.beans.factory.annotation.Autowired");
+
+                Method<?> afterPropertiesSet = conversionService.getMethod("afterPropertiesSet");
+                String body = afterPropertiesSet.getBody();
+                body += "this.addConverter(new " + clazz + "Converter(" + StringUtils.camelCase(clazz) + "Dao));";
+                afterPropertiesSet.setBody(body);
+            }
+        }
+    }
+
+    protected boolean hasConverter(JavaClass conversionService, String clazz) {
+
+        for (Field<?> dao : conversionService.getFields()) {
+            if (dao.getName().equals(StringUtils.camelCase(clazz) + "Dao"));
+                return true;
+        }
+
+        return true;
     }
 }
