@@ -2,7 +2,7 @@ package @{topLevelPackage}.conversion;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.convert.DefaultConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.stereotype.Component;
 
 @Component("conversionService")
