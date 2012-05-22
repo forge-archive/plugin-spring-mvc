@@ -1154,8 +1154,10 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         context.put("entityClasses", entityClasses);
         context.put("ccEntityClasses", ccEntityClasses);
 
-        context.put("nToMany", nToMany);
-        addConverters(context);
+        if (!nToMany.isEmpty()) {
+            context.put("nToMany", nToMany);
+            addConverters(context);
+        }
 
         return context;
     }
