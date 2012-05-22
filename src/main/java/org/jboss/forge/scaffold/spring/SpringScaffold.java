@@ -60,7 +60,6 @@ import org.jboss.forge.project.facets.events.InstallFacets;
 import org.jboss.forge.resources.FileResource;
 import org.jboss.forge.resources.Resource;
 import org.jboss.forge.resources.ResourceFilter;
-import org.jboss.forge.resources.java.JavaResource;
 import org.jboss.forge.scaffold.AccessStrategy;
 import org.jboss.forge.scaffold.ScaffoldProvider;
 import org.jboss.forge.scaffold.TemplateStrategy;
@@ -260,7 +259,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
                 MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
 
-                loadMVCTemplates();
+                loadTemplates();
 
                 // Set context for Java and JSP generation
 
@@ -522,7 +521,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         List<Resource<?>> result = new ArrayList<Resource<?>>();
         WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
 
-        loadMVCTemplates();
+        loadTemplates();
 
 //        generateTemplates(overwrite);
         HashMap<Object, Object> context = getTemplateContext(template);
@@ -857,7 +856,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         return web.getWebResource("WEB-INF/web.xml");
     }
 
-    protected void loadMVCTemplates() {
+    protected void loadTemplates() {
         // Compile the DAO interface Java template.
         
         if (this.daoInterfaceTemplate == null)
@@ -877,6 +876,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         
         if (this.springControllerTemplate == null)
             this.springControllerTemplate = compiler.compile(SPRING_CONTROLLER_TEMPLATE);
+
+        if (this.conversionServiceTemplate == null)
+            this.conversionServiceTemplate = compiler.compile(CONVERSION_SERVICE_TEMPLATE);
+
+        if (this.entityConverterTemplate == null)
+            this.entityConverterTemplate = compiler.compile(ENTITY_CONVERTER_TEMPLATE);
 
         if (this.viewAllTemplate == null)
             this.viewAllTemplate = compiler.compile(VIEW_ALL_TEMPLATE);
@@ -969,7 +974,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         context.put("targetDir", targetDir);
 
         if (this.navigationTemplate == null)
-            loadMVCTemplates();
+            loadTemplates();
 
         if (targetDir.equals("/"))
             return ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/layouts/pageTemplate.jsp"),
@@ -1110,13 +1115,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         return false;
     }
 
-    protected Map<Object, Object> findEntityRelationships(JavaClass entity, Map<Object, Object> context) {
+    protected Map<Object, Object> findEntityRelationships(JavaClass entity, Map<Object, Object> context) throws FileNotFoundException {
         List<String> entityNames = new ArrayList<String>();
         List<String> entityClasses = new ArrayList<String>();
         List<String> ccEntityClasses = new ArrayList<String>();
 
         List<String> nToMany = new ArrayList<String>();
-        List<String> nToManyPackages = new ArrayList<String>();
 
         for ( Field<?> field : entity.getFields()) {
             if (field.hasAnnotation(OneToOne.class) || field.hasAnnotation(OneToMany.class) || field.hasAnnotation(ManyToOne.class)
@@ -1129,9 +1133,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                     clazz = field.getStringInitializer();
                     int firstIndexOf = clazz.indexOf("<");
                     int lastIndexOf = clazz.indexOf(">");
+
                     clazz = clazz.substring(firstIndexOf + 1, lastIndexOf);
+                    String domainPackage = findDomainPackage(clazz, entity);
+
                     nToMany.add(clazz);
-                    nToManyPackages.add(findDomainPackage(clazz, entity));
+                    createConverter(clazz, domainPackage);
                 }
                 else {
                     clazz = field.getType();
@@ -1146,6 +1153,9 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         context.put("entityNames", entityNames);
         context.put("entityClasses", entityClasses);
         context.put("ccEntityClasses", ccEntityClasses);
+
+        context.put("nToMany", nToMany);
+        addConverters(context);
 
         return context;
     }
@@ -1164,7 +1174,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         for (Import imp : entity.getImports()) {
             String simpleName = imp.getSimpleName();
             if (simpleName.equals(clazz)) {
-                return imp.getPackage();
+                return imp.getQualifiedName();
             }
         }
 
@@ -1176,23 +1186,23 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
         JavaSourceFacet java = this.project.getFacet(JavaSourceFacet.class);
 
-        String customConversionService = meta.getTopLevelPackage() + ".conversion.CustomConversionService";
-        JavaResource conversion = java.getJavaResource(customConversionService);
+        loadConversionTemplates();
+        context.put("topLevelPackage", meta.getTopLevelPackage());
 
-        if (!conversion.exists()) {
-            conversion = (JavaResource) JavaParser.parse(this.conversionServiceTemplate.render(context));
+        JavaClass conversionService = JavaParser.parse(JavaClass.class, this.conversionServiceTemplate.render(context));
+        String customConversionService = meta.getTopLevelPackage() + ".conversion.CustomConversionService";
+
+        if (java.getJavaResource(customConversionService).exists()) {
+            conversionService = JavaParser.parse(JavaClass.class, java.getJavaResource(customConversionService).getResourceInputStream());
         }
 
-        JavaClass conversionService = (JavaClass) JavaParser.parse(conversion.getResourceInputStream());
-
         List<String> nToMany = (List<String>) context.get("nToMany");
-        List<String> nToManyPackages = (List<String>) context.get("nToManyPackages");
-
         for (int i = 0; i < nToMany.size(); i++) {
             String clazz = nToMany.get(i);
 
             if (!hasConverter(conversionService, clazz)) {
-                conversionService.addImport(nToManyPackages.get(i));
+                conversionService.addImport(meta.getTopLevelPackage() + ".repo." + clazz + "Dao");
+                conversionService.addImport(meta.getTopLevelPackage() + ".converters." + clazz + "Converter");
 
                 Field<?> dao = conversionService.addField("private " + clazz + "Dao " + StringUtils.camelCase(clazz) + "Dao;");
                 dao.addAnnotation("org.springframework.beans.factory.annotation.Autowired");
@@ -1203,6 +1213,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 afterPropertiesSet.setBody(body);
             }
         }
+
+        java.saveJavaSource(conversionService);
     }
 
     protected boolean hasConverter(JavaClass conversionService, String clazz) {
@@ -1212,6 +1224,21 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 return true;
         }
 
-        return true;
+        return false;
+    }
+
+    protected void createConverter(String clazz, String domainPackage) throws FileNotFoundException {
+        JavaSourceFacet java = this.project.getFacet(JavaSourceFacet.class);
+        MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
+
+        Map<Object, Object> context = CollectionUtils.newHashMap();
+
+        context.put("entityName", clazz);
+        context.put("domainPackage", domainPackage);
+        context.put("ccEntity", StringUtils.camelCase(clazz));
+        context.put("topLevelPackage", meta.getTopLevelPackage());
+
+        JavaClass entityConverter = JavaParser.parse(JavaClass.class, this.entityConverterTemplate.render(context));
+        java.saveJavaSource(entityConverter);
     }
 }
