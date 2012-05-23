@@ -471,7 +471,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
                 // If we have not just generated an IndexController for the '/' directory, create one.
 
-                context.put("mvcPackage", meta.getTopLevelPackage() + ".mvc.root");
+                context.put("mvcPackage", meta.getTopLevelPackage() + ".mvc");
                 context.put("targetDir", "/");
                 JavaClass rootIndexController = JavaParser.parse(JavaClass.class, this.indexControllerTemplate.render(context));
                 java.saveJavaSource(rootIndexController);
@@ -1116,10 +1116,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     }
 
     protected Map<Object, Object> findEntityRelationships(JavaClass entity, Map<Object, Object> context) throws FileNotFoundException {
+        MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
+        WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
+
         List<String> entityNames = new ArrayList<String>();
         List<String> entityClasses = new ArrayList<String>();
         List<String> ccEntityClasses = new ArrayList<String>();
-
         List<String> nToMany = new ArrayList<String>();
 
         for ( Field<?> field : entity.getFields()) {
@@ -1157,6 +1159,23 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         if (!nToMany.isEmpty()) {
             context.put("nToMany", nToMany);
             addConverters(context);
+
+            Node beans = XMLParser.parse(web.getWebResource("META-INF/spring/" + meta.getProjectName().replace(' ', '-') +
+                            "-mvc-context.xml").getResourceInputStream());
+            Node mvcAnnotationDriven = beans.getSingle("mvc:annotation-driven");
+            mvcAnnotationDriven.attribute("conversion-service", "conversionService");
+
+            boolean conversion = false;
+
+            for (Node node : beans.get("context:component-scan")) {
+                if (node.getAttribute("base-package").equals(meta.getTopLevelPackage() + ".conversion"))
+                    conversion = true;
+            }
+
+            if (conversion == false) {
+                Node componentScan = new Node("context:component-scan", beans);
+                componentScan.attribute("base-package", meta.getTopLevelPackage() + ".conversion");
+            }
         }
 
         return context;
