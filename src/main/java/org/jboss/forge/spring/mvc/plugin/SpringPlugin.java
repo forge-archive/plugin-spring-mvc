@@ -235,29 +235,11 @@ public class SpringPlugin implements Plugin {
 
         // Scan the application for any @Repository annotated classes in the repository package.
 
-        if (beans.get("context:component-scan").isEmpty())
-        {
-            Node componentScan = new Node("context:component-scan", beans);
-            componentScan.attribute("base-package", meta.getTopLevelPackage() + ".repo");
-        }
-        else
-        {
-            for(Node node : beans.get("context:component-scan"))
-            {
-                if (node.getAttribute("base-package").equals(meta.getTopLevelPackage() + ".repo"))
-                {
-                    continue;
-                }
+        addContextComponentScan(beans, meta.getTopLevelPackage() + ".repo");
 
-                exists = true;
-            }
+        // Add a SharedEntityManagerBean definition
 
-            if (exists == false)
-            {
-                Node componentScan = new Node("context:component-scan", beans);
-                componentScan.attribute("base-package", meta.getTopLevelPackage() + ".repo");
-            }
-        }
+        addSharedEntityManager(beans);
 
         // Add a JTA Transaction Manager to the web application
 
@@ -333,6 +315,20 @@ public class SpringPlugin implements Plugin {
         out.println("Welcome to the Spring plugin for Forge!  To add dependencies for Spring MVC, execute the command 'spring setup'.");
     }
 
+    private void addContextComponentScan(Node beans, String basePackage)
+    {
+        for (Node scan : beans.get("context:component-scan"))
+        {
+            if (scan.getAttribute("base-package").equals(basePackage))
+            {
+                return;
+            }
+        }
+
+        Node scan = new Node("context:component-scan", beans);
+        scan.attribute("base-package", basePackage);
+    }
+
     private void addEntityManagerFactory(Node beans, String persistenceUnit)
     {
         boolean exists = false;
@@ -353,6 +349,35 @@ public class SpringPlugin implements Plugin {
             entityManagerFactory.attribute("expected-type", "javax.persistence.EntityManagerFactory");
             entityManagerFactory.attribute("jndi-name", "java:jboss/" + persistenceUnit + "/persistence");
         }
+    }
+
+    private void addSharedEntityManager(Node beans)
+    {
+        for (Node bean : beans.get("bean"))
+        {
+            if (bean.getAttribute("class").equals("org.springframework.orm.jpa.support.SharedEntityManagerBean"))
+            {
+                if (bean.getSingle("property").getAttribute("name").equals("entityManagerFactory"))
+                {
+                    return;
+                }
+                else
+                {
+                    Node property = new Node("property", bean);
+                    property.attribute("name", "entityManagerFactory");
+                    property.attribute("ref", "entityManagerFactory");
+                    return;
+                }
+            }
+        }
+
+        Node bean = new Node("bean", beans);
+        bean.attribute("id", "entityManager");
+        bean.attribute("class", "org.springframework.orm.jpa.support.SharedEntityManagerBean");
+
+        Node property = new Node("property", bean);
+        property.attribute("name", "entityManagerFactory");
+        property.attribute("ref", "entityManagerFactory");
     }
 
     private void addOpenEntityManagerInView(Node webapp)
