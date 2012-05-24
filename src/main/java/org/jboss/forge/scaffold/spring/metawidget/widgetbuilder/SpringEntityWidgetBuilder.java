@@ -202,7 +202,7 @@ public class SpringEntityWidgetBuilder
             FormSelectTag select = new FormSelectTag();
             select.putAttribute("path", attributes.get(NAME) + ".id");
 
-            if (!TRUE.equals(attributes.get(REQUIRED)))
+            if (!TRUE.equals(attributes.get(REQUIRED)) && TRUE.equals(attributes.get(ONE_TO_ONE)))
             {
                 FormOptionTag emptyOption = new FormOptionTag();
                 emptyOption.putAttribute("value", "");
