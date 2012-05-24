@@ -660,23 +660,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         // Scan the given package for any classes with MVC annotations.
 
-        if (beans.get("context:component-scan").isEmpty()) {
-            Node componentScan = new Node("context:component-scan", beans);
-            componentScan.attribute("base-package", mvcPackage);
-        }
-        else {
-            boolean exists = false;
-
-            for (Node node : beans.get("context:component-scan")) {
-                if (node.getAttribute("base-package").equals(mvcPackage))
-                    exists = true;
-            }
-
-            if (exists == false) {
-                Node componentScan = new Node("context:component-scan", beans);
-                componentScan.attribute("base-package", mvcPackage);
-            }
-        }
+        addContextComponentScan(beans, mvcPackage);
 
         // Map view names to Tiles Definitions with support for partial re-rendering
 
@@ -1115,10 +1099,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         return false;
     }
 
-    protected Map<Object, Object> findEntityRelationships(JavaClass entity, Map<Object, Object> context) throws FileNotFoundException {
-        MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
-        WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
-
+    protected Map<Object, Object> findEntityRelationships(JavaClass entity, Map<Object, Object> context) throws FileNotFoundException
+    {
         List<String> entityNames = new ArrayList<String>();
         List<String> entityClasses = new ArrayList<String>();
         List<String> ccEntityClasses = new ArrayList<String>();
@@ -1159,26 +1141,35 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         if (!nToMany.isEmpty()) {
             context.put("nToMany", nToMany);
             addConverters(context);
-
-            Node beans = XMLParser.parse(web.getWebResource("WEB-INF/" + meta.getProjectName().replace(' ', '-') +
-                            "-mvc-context.xml").getResourceInputStream());
-            Node mvcAnnotationDriven = beans.getSingle("mvc:annotation-driven");
-            mvcAnnotationDriven.attribute("conversion-service", "conversionService");
-
-            boolean conversion = false;
-
-            for (Node node : beans.get("context:component-scan")) {
-                if (node.getAttribute("base-package").equals(meta.getTopLevelPackage() + ".conversion"))
-                    conversion = true;
-            }
-
-            if (conversion == false) {
-                Node componentScan = new Node("context:component-scan", beans);
-                componentScan.attribute("base-package", meta.getTopLevelPackage() + ".conversion");
-            }
+            addConversionService();
         }
 
         return context;
+    }
+
+    protected void addConversionService()
+    {
+        MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
+        WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
+
+        Node beans = XMLParser.parse(web.getWebResource("WEB-INF/" + meta.getProjectName().replace(' ', '-') + "-mvc-context.xml").getResourceInputStream());
+
+        beans.getSingle("mvc:annotation-driven").attribute("conversion-service", "conversionService");
+        addContextComponentScan(beans, meta.getTopLevelPackage() + ".conversion");
+    }
+
+    protected void addContextComponentScan(Node beans, String basePackage)
+    {
+        for (Node scan : beans.get("context:component-scan"))
+        {
+            if (scan.getAttribute("base-package").equals(basePackage))
+            {
+                return;
+            }
+        }
+
+        Node scan = new Node("context:component-scan", beans);
+        scan.attribute("base-package", basePackage);
     }
 
     protected void loadConversionTemplates() {
