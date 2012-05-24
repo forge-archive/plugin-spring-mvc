@@ -91,8 +91,8 @@ public class SpringPlugin implements Plugin {
     */
 
     @SetupCommand
-    public void setup(PipeOut out)
-    {  
+    public void setup(PipeOut out) {
+
         // Get the required Facets to add dependencies and create web.xml and the business context XML file
 
         DependencyFacet deps = project.getFacet(DependencyFacet.class);
@@ -102,8 +102,7 @@ public class SpringPlugin implements Plugin {
 
         // If the project was not created as a WAR, change the packaging type to 'WAR' and install a WebResourceFacet
 
-        if(packaging.getPackagingType() != PackagingType.WAR)
-        {
+        if(packaging.getPackagingType() != PackagingType.WAR) {
             packaging.setPackagingType(PackagingType.WAR);
             this.install.fire(new InstallFacets(WebResourceFacet.class));
         }
@@ -135,9 +134,7 @@ public class SpringPlugin implements Plugin {
         Node beans = new Node("beans");
         
         if (applicationContext.exists())
-        {
             beans = XMLParser.parse(applicationContext.getResourceInputStream());
-        }
 
         // Add the necessary schema files to the application context
 
@@ -157,9 +154,7 @@ public class SpringPlugin implements Plugin {
         Node webapp = new Node("web-app");
 
         if (webXML.exists())
-        {
             webapp = XMLParser.parse(webXML.getResourceInputStream());
-        }
         
         webapp.attribute("version", "3.0");
         webapp.attribute("xmlns", "http://java.sun.com/xml/ns/javaee");
@@ -169,16 +164,14 @@ public class SpringPlugin implements Plugin {
 
         // Add the project display name to web.xml
 
-        if (webapp.get("display-name").isEmpty())
-        {
+        if (webapp.get("display-name").isEmpty()) {
             Node display = webapp.createChild("display-name");
-            display.text(meta.getProjectName());            
+            display.text(meta.getProjectName());
         }
 
         // Add applicationContext.xml to the web application's context
 
-        if (webapp.get("context-param").isEmpty())
-        {
+        if (webapp.get("context-param").isEmpty()) {
             Node contextParam = new Node("context-param", webapp);
             Node contextConfig = new Node("param-name", contextParam);
             contextConfig.text("contextConfigLocation");
@@ -188,8 +181,7 @@ public class SpringPlugin implements Plugin {
 
         // Define a ContextLoaderListener
 
-        if (webapp.get("listener").isEmpty())
-        {
+        if (webapp.get("listener").isEmpty()) {
             Node listener = new Node("listener", webapp);
             Node cll = new Node("listener-class", listener);
             cll.text("org.springframework.web.context.ContextLoaderListener");            
@@ -209,12 +201,11 @@ public class SpringPlugin implements Plugin {
      */
   
     @Command("persistence")
-    public void springPersistence(PipeOut out)
-    {
-      // First, check to see that a PersistenceFacet has been installed, otherwise, 'persistence setup' may not have been executed.
+    public void springPersistence(PipeOut out) {
 
-        if(!project.hasFacet(PersistenceFacet.class))
-        {
+        // First, check to see that a PersistenceFacet has been installed, otherwise, 'persistence setup' may not have been executed.
+
+        if(!project.hasFacet(PersistenceFacet.class)) {
           out.println("No PersistenceFacet installed, have you executed 'persistence setup' yet?");
           return;
         }
@@ -239,27 +230,21 @@ public class SpringPlugin implements Plugin {
 
         // Scan the application for any @Repository annotated classes in the repository package.
 
-        if (beans.get("context:component-scan").isEmpty())
-        {
+        if (beans.get("context:component-scan").isEmpty()) {
             Node componentScan = new Node("context:component-scan", beans);
             componentScan.attribute("base-package", meta.getTopLevelPackage() + ".repo");
         }
-        else
-        {
+        else {
             boolean exists = false;
 
-            for(Node node : beans.get("context:component-scan"))
-            {
+            for(Node node : beans.get("context:component-scan")) {
                 if (node.getAttribute("base-package").equals(meta.getTopLevelPackage() + ".repo"))
-                {
                     continue;
-                }
 
                 exists = true;
             }
 
-            if (exists == false)
-            {
+            if (exists == false) {
                 Node componentScan = new Node("context:component-scan", beans);
                 componentScan.attribute("base-package", meta.getTopLevelPackage() + ".repo");
             }
@@ -268,43 +253,33 @@ public class SpringPlugin implements Plugin {
         // Add a JTA Transaction Manager to the web application
 
         if (beans.getSingle("tx:jta-transaction-manager") == null)
-        {
             beans.createChild("tx:jta-transaction-manager");
-        }
 
         // Indicate that Spring transactions will be annotation driven (potentially move to 'spring persistence' command?)
 
         if (beans.getSingle("tx:annotation-driven") == null)
-        {
             beans.createChild("tx:annotation-driven");
-        }
         
         // Perform a JNDI lookup to retrieve an EntityManagerFactory, of type javax.persistence.EntityManagerFactory.
 
         PersistenceDescriptor descriptor =  persistence.getConfig();
         PersistenceUnitDef defaultUnit = descriptor.listUnits().get(0);
 
-        if (beans.get("jee:jndi-lookup").isEmpty())
-        {
+        if (beans.get("jee:jndi-lookup").isEmpty()) {
             Node entityManager = new Node("jee:jndi-lookup", beans);
             entityManager.attribute("id", "entityManager");
             entityManager.attribute("jndi-name", "java:comp/env/persistence/" + defaultUnit.getName() + "/entityManager");
             entityManager.attribute("expected-type", "javax.persistence.EntityManager");           
         }
-        else
-        {
+        else {
             boolean exists = false;
 
-            for (Node node : beans.get("jee:jndi-lookup"))
-            {
+            for (Node node : beans.get("jee:jndi-lookup")) {
                 if (node.getAttribute("expected-type").equals("javax.persistence.EntityManager"))
-                {
                     exists = true;
-                }
             }
 
-            if (exists == false)
-            {
+            if (exists == false) {
                 Node entityManager = new Node("jee:jndi-lookup", beans);
                 entityManager.attribute("id", entityManager);
                 entityManager.attribute("jndi-name", "java:comp/env/persistence/" + defaultUnit.getName() + "/entityManager");
@@ -323,8 +298,7 @@ public class SpringPlugin implements Plugin {
 
         // Define a persistence unit to be referenced in the application context.
 
-        if (webapp.getSingle("persistence-context-ref") == null)
-        {
+        if (webapp.getSingle("persistence-context-ref") == null) {
             Node persistenceContextRef = new Node("persistence-context-ref", webapp);
             Node persistenceContextRefName = new Node("persistence-context-ref-name", persistenceContextRef);
             persistenceContextRefName.text("persistence/" + defaultUnit.getName() + "/entityManager");
@@ -340,8 +314,8 @@ public class SpringPlugin implements Plugin {
 
     @DefaultCommand
     @Command("help")
-    public void help(PipeOut out)
-    {
+    public void help(PipeOut out) {
+
         out.println("Welcome to the Spring plugin for Forge!  To add dependencies for Spring MVC, execute the command 'spring setup'.");
     }
 }
