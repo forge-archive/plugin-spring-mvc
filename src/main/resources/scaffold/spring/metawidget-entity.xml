@@ -70,7 +70,7 @@
 		</widgetProcessors>
 
 		<layout>
-			<springTableLayout xmlns="java:org.metawidget.statically.spring.layout" config="org.metawidget.statically.html.layout.HtmlTableLayoutConfig"/>
+			<scaffoldTableLayout xmlns="java:org.jboss.forge.scaffold.spring.metawidget.layout" config="org.metawidget.statically.html.layout.HtmlTableLayoutConfig"/>
 		</layout>
 		
 	</staticSpringMetawidget>
