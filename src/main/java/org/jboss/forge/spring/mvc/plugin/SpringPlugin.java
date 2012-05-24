@@ -208,7 +208,8 @@ public class SpringPlugin implements Plugin {
      */
   
     @Command("persistence")
-    public void springPersistence(PipeOut out) {
+    public void springPersistence(PipeOut out)
+    {
 
         // First, check to see that a PersistenceFacet has been installed, otherwise, 'persistence setup' may not have been executed.
 
@@ -284,7 +285,8 @@ public class SpringPlugin implements Plugin {
 
         // Define a persistence unit to be referenced in the application context.
 
-        if (webapp.getSingle("persistence-context-ref") == null) {
+        if (webapp.getSingle("persistence-context-ref") == null)
+        {
             Node persistenceContextRef = new Node("persistence-context-ref", webapp);
             Node persistenceContextRefName = new Node("persistence-context-ref-name", persistenceContextRef);
             persistenceContextRefName.text("persistence/" + defaultUnit.getName() + "/entityManager");
