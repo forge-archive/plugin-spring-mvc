@@ -252,7 +252,7 @@ public class SpringPlugin implements Plugin {
             beans.createChild("tx:jta-transaction-manager");
         }
 
-        // Indicate that Spring transactions will be annotation driven (potentially move to 'spring persistence' command?)
+        // Indicate that Spring transactions will be annotation driven
 
         if (beans.getSingle("tx:annotation-driven") == null)
         {
@@ -265,6 +265,7 @@ public class SpringPlugin implements Plugin {
         PersistenceUnitDef defaultUnit = descriptor.listUnits().get(0);
 
         defaultUnit.property("jboss.entity.manager.factory.jndi.name", "java:jboss/" + defaultUnit.getName() + "/persistence");
+        persistence.saveConfig(descriptor);
 
         // Perform a JNDI lookup to retrieve an EntityManagerFactory, of type javax.persistence.EntityManagerFactory.
 
@@ -388,6 +389,6 @@ public class SpringPlugin implements Plugin {
 
         Node filterMapping = new Node("filter-mapping", webapp);
         filterMapping.createChild("filter-name").text("openEntityManagerInViewFilter");
-        filter.createChild("url-pattern").text("/*");
+        filterMapping.createChild("url-pattern").text("/*");
     }
 }
