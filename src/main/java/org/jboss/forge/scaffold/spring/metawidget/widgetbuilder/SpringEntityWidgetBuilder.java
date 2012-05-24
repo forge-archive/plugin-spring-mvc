@@ -214,7 +214,9 @@ public class SpringEntityWidgetBuilder
             }
             else
             {
-                select.putAttribute("items", StaticJspUtils.wrapExpression(Noun.pluralOf(attributes.get(NAME))));
+                int lastIndexOf = attributes.get(PARAMETERIZED_TYPE).lastIndexOf(StringUtils.SEPARATOR_DOT_CHAR);
+                String expression = attributes.get(PARAMETERIZED_TYPE).substring(lastIndexOf + 1);
+                select.putAttribute("items", StaticJspUtils.wrapExpression(Noun.pluralOf(expression).toLowerCase()));
                 select.putAttribute("itemValue", "id");
             }
 
