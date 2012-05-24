@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.metawidget.statically.StaticXmlWidget;
 import org.metawidget.statically.jsp.StaticJspMetawidget;
+import org.metawidget.statically.spring.widgetbuilder.SpringTag;
 import org.metawidget.statically.spring.widgetprocessor.PathProcessor;
 
 public class OneToOnePathProcessor extends PathProcessor
@@ -22,7 +23,7 @@ public class OneToOnePathProcessor extends PathProcessor
 
         // Only override the processed widget if there is a ONE_TO_ONE relationship
 
-        if (TRUE.equals( attributes.get(ONE_TO_ONE)))
+        if (TRUE.equals( attributes.get(ONE_TO_ONE)) && widget instanceof SpringTag)
         {
             widget.putAttribute("path", attributes.get(NAME) + ".id");
         }
