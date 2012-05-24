@@ -23,6 +23,7 @@
 package org.jboss.forge.spring.mvc.plugin;
 
 import org.jboss.forge.resources.Resource;
+import org.jboss.forge.shell.ShellPrompt;
 import org.jboss.forge.shell.plugins.Plugin;
 import org.jboss.forge.shell.plugins.Alias;
 
@@ -42,7 +43,6 @@ import org.jboss.forge.parser.xml.Node;
 import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.project.dependencies.DependencyBuilder;
 import org.jboss.forge.project.facets.DependencyFacet;
-import org.jboss.forge.project.facets.JavaSourceFacet;
 import org.jboss.forge.project.facets.MetadataFacet;
 import org.jboss.forge.project.facets.PackagingFacet;
 import org.jboss.forge.project.facets.ResourceFacet;
@@ -64,13 +64,9 @@ import org.jboss.shrinkwrap.descriptor.api.spec.jpa.persistence.PersistenceUnitD
 @Topic("Web Application Setup")
 @Help("Spring MVC applications")
 @RequiresProject
-@RequiresFacet({ DependencyFacet.class,
-        PackagingFacet.class,
-        ResourceFacet.class,
+@RequiresFacet({
         WebResourceFacet.class,
-        MetadataFacet.class,
-        PersistenceFacet.class,
-        JavaSourceFacet.class })
+        PersistenceFacet.class })
 public class SpringPlugin implements Plugin {
 
     //
@@ -79,6 +75,9 @@ public class SpringPlugin implements Plugin {
     
     @Inject
     private Project project;
+
+    @Inject
+    private ShellPrompt prompt;
 
     @Inject
     private Event<InstallFacets> install;
@@ -91,7 +90,8 @@ public class SpringPlugin implements Plugin {
     */
 
     @SetupCommand
-    public void setup(PipeOut out) {
+    public void setup(PipeOut out)
+    {
 
         // Get the required Facets to add dependencies and create web.xml and the business context XML file
 
@@ -102,9 +102,14 @@ public class SpringPlugin implements Plugin {
 
         // If the project was not created as a WAR, change the packaging type to 'WAR' and install a WebResourceFacet
 
-        if(packaging.getPackagingType() != PackagingType.WAR) {
-            packaging.setPackagingType(PackagingType.WAR);
-            this.install.fire(new InstallFacets(WebResourceFacet.class));
+        if(packaging.getPackagingType() != PackagingType.WAR)
+        {
+            if (this.prompt.promptBoolean("Facet [forge.maven.WebResourceFacet] requires packaging type(s) [war], but is currently [" +
+            		packaging.getPackagingType().toString() + "]. Update packaging? (Note: this could deactivate other plugins in your project.)"))
+            {
+                packaging.setPackagingType(PackagingType.WAR);
+                this.install.fire(new InstallFacets(WebResourceFacet.class));               
+            }
         }
 
         WebResourceFacet web = project.getFacet(WebResourceFacet.class);
@@ -171,7 +176,7 @@ public class SpringPlugin implements Plugin {
 
         // Add applicationContext.xml to the web application's context
 
-        if (webapp.get("context-param").isEmpty())
+        if (webapp.getSingle("context-param") == null)
         {
             Node contextParam = new Node("context-param", webapp);
             Node contextConfig = new Node("param-name", contextParam);
@@ -182,7 +187,7 @@ public class SpringPlugin implements Plugin {
 
         // Define a ContextLoaderListener
 
-        if (webapp.get("listener").isEmpty())
+        if (webapp.getSingle("listener") == null)
         {
             Node listener = new Node("listener", webapp);
             Node cll = new Node("listener-class", listener);
@@ -219,8 +224,6 @@ public class SpringPlugin implements Plugin {
         WebResourceFacet web = project.getFacet(WebResourceFacet.class);
         PersistenceFacet persistence = project.getFacet(PersistenceFacet.class);
         MetadataFacet meta = project.getFacet(MetadataFacet.class);
-
-        boolean exists = false;
 
         Node beans = XMLParser.parse(resources.getResource("META-INF/spring/applicationContext.xml").getResourceInputStream());
         beans.attribute(XMLNS_PREFIX + "jee", "http://www.springframework.org/schema/jee");
@@ -277,20 +280,7 @@ public class SpringPlugin implements Plugin {
 
         // Add an OpenEntityManagerInView filter to web.xml
 
-        for (Node filter : webapp.get("filter"))
-        {
-            exists = false;
-
-            if (filter.getSingle("filter-class").getText().equals("org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter"))
-            {
-                exists = true;
-            }
-        }
-
-        if (exists == false)
-        {
-            addOpenEntityManagerInView(webapp);
-        }
+        addOpenEntityManagerInView(webapp);
 
         // Define a persistence unit to be referenced in the application context.
 
