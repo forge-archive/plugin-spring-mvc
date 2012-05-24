@@ -171,7 +171,8 @@ public class SpringPlugin implements Plugin {
 
         // Add applicationContext.xml to the web application's context
 
-        if (webapp.get("context-param").isEmpty()) {
+        if (webapp.get("context-param").isEmpty())
+        {
             Node contextParam = new Node("context-param", webapp);
             Node contextConfig = new Node("param-name", contextParam);
             contextConfig.text("contextConfigLocation");
@@ -181,7 +182,8 @@ public class SpringPlugin implements Plugin {
 
         // Define a ContextLoaderListener
 
-        if (webapp.get("listener").isEmpty()) {
+        if (webapp.get("listener").isEmpty())
+        {
             Node listener = new Node("listener", webapp);
             Node cll = new Node("listener-class", listener);
             cll.text("org.springframework.web.context.ContextLoaderListener");            
@@ -205,7 +207,8 @@ public class SpringPlugin implements Plugin {
 
         // First, check to see that a PersistenceFacet has been installed, otherwise, 'persistence setup' may not have been executed.
 
-        if(!project.hasFacet(PersistenceFacet.class)) {
+        if(!project.hasFacet(PersistenceFacet.class))
+        {
           out.println("No PersistenceFacet installed, have you executed 'persistence setup' yet?");
           return;
         }
@@ -216,6 +219,8 @@ public class SpringPlugin implements Plugin {
         WebResourceFacet web = project.getFacet(WebResourceFacet.class);
         PersistenceFacet persistence = project.getFacet(PersistenceFacet.class);
         MetadataFacet meta = project.getFacet(MetadataFacet.class);
+
+        boolean exists = false;
 
         Node beans = XMLParser.parse(resources.getResource("META-INF/spring/applicationContext.xml").getResourceInputStream());
         beans.attribute(XMLNS_PREFIX + "jee", "http://www.springframework.org/schema/jee");
@@ -230,21 +235,25 @@ public class SpringPlugin implements Plugin {
 
         // Scan the application for any @Repository annotated classes in the repository package.
 
-        if (beans.get("context:component-scan").isEmpty()) {
+        if (beans.get("context:component-scan").isEmpty())
+        {
             Node componentScan = new Node("context:component-scan", beans);
             componentScan.attribute("base-package", meta.getTopLevelPackage() + ".repo");
         }
-        else {
-            boolean exists = false;
-
-            for(Node node : beans.get("context:component-scan")) {
+        else
+        {
+            for(Node node : beans.get("context:component-scan"))
+            {
                 if (node.getAttribute("base-package").equals(meta.getTopLevelPackage() + ".repo"))
+                {
                     continue;
+                }
 
                 exists = true;
             }
 
-            if (exists == false) {
+            if (exists == false)
+            {
                 Node componentScan = new Node("context:component-scan", beans);
                 componentScan.attribute("base-package", meta.getTopLevelPackage() + ".repo");
             }
@@ -253,48 +262,53 @@ public class SpringPlugin implements Plugin {
         // Add a JTA Transaction Manager to the web application
 
         if (beans.getSingle("tx:jta-transaction-manager") == null)
+        {
             beans.createChild("tx:jta-transaction-manager");
+        }
 
         // Indicate that Spring transactions will be annotation driven (potentially move to 'spring persistence' command?)
 
         if (beans.getSingle("tx:annotation-driven") == null)
+        {
             beans.createChild("tx:annotation-driven");
+        }
         
-        // Perform a JNDI lookup to retrieve an EntityManagerFactory, of type javax.persistence.EntityManagerFactory.
+        // Add the JNDI name of the EntityManagerFactory to the application's persistence.xml file
 
         PersistenceDescriptor descriptor =  persistence.getConfig();
         PersistenceUnitDef defaultUnit = descriptor.listUnits().get(0);
 
-        if (beans.get("jee:jndi-lookup").isEmpty()) {
-            Node entityManager = new Node("jee:jndi-lookup", beans);
-            entityManager.attribute("id", "entityManager");
-            entityManager.attribute("jndi-name", "java:comp/env/persistence/" + defaultUnit.getName() + "/entityManager");
-            entityManager.attribute("expected-type", "javax.persistence.EntityManager");           
-        }
-        else {
-            boolean exists = false;
+        defaultUnit.property("jboss.entity.manager.factory.jndi.name", "java:jboss/" + defaultUnit.getName() + "/persistence");
 
-            for (Node node : beans.get("jee:jndi-lookup")) {
-                if (node.getAttribute("expected-type").equals("javax.persistence.EntityManager"))
-                    exists = true;
-            }
+        // Perform a JNDI lookup to retrieve an EntityManagerFactory, of type javax.persistence.EntityManagerFactory.
 
-            if (exists == false) {
-                Node entityManager = new Node("jee:jndi-lookup", beans);
-                entityManager.attribute("id", entityManager);
-                entityManager.attribute("jndi-name", "java:comp/env/persistence/" + defaultUnit.getName() + "/entityManager");
-                entityManager.attribute("expected-type", "javax.persistence.EntityManager");
-            }
-        }
+        addEntityManagerFactory(beans, defaultUnit.getName());
 
         // Write the XML tree to a file, using the <beans> root node.
     
         String file = XMLParser.toXMLString(beans);
         resources.createResource(file.toCharArray(), "META-INF/spring/applicationContext.xml");
-          
+
         // Add a persistence unit definition in web.xml.
 
         Node webapp = XMLParser.parse(web.getWebResource("WEB-INF/web.xml").getResourceInputStream());
+
+        // Add an OpenEntityManagerInView filter to web.xml
+
+        for (Node filter : webapp.get("filter"))
+        {
+            exists = false;
+
+            if (filter.getSingle("filter-class").getText().equals("org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter"))
+            {
+                exists = true;
+            }
+        }
+
+        if (exists == false)
+        {
+            addOpenEntityManagerInView(webapp);
+        }
 
         // Define a persistence unit to be referenced in the application context.
 
@@ -314,8 +328,49 @@ public class SpringPlugin implements Plugin {
 
     @DefaultCommand
     @Command("help")
-    public void help(PipeOut out) {
-
+    public void help(PipeOut out)
+    {
         out.println("Welcome to the Spring plugin for Forge!  To add dependencies for Spring MVC, execute the command 'spring setup'.");
+    }
+
+    private void addEntityManagerFactory(Node beans, String persistenceUnit)
+    {
+        boolean exists = false;
+
+        for (Node bean : beans.get("jee:jndi-lookup"))
+        {
+            if (bean.getAttribute("expected-type").equals("javax.persistence.EntityManagerFactory"))
+            {
+                exists = true;
+            }
+        }
+
+        if (exists == false)
+        {
+            Node entityManagerFactory = new Node("jee:jndi-lookup", beans);
+    
+            entityManagerFactory.attribute("id", entityManagerFactory);
+            entityManagerFactory.attribute("expected-type", "javax.persistence.EntityManagerFactory");
+            entityManagerFactory.attribute("jndi-name", "java:jboss/" + persistenceUnit + "/persistence");
+        }
+    }
+
+    private void addOpenEntityManagerInView(Node webapp)
+    {
+        for (Node filter : webapp.get("filter"))
+        {
+            if (filter.getSingle("filter-class").getText().equals("org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter"))
+            {
+                return;
+            }
+        }
+
+        Node filter = new Node("filter", webapp);
+        filter.createChild("filter-name").text("openEntityManagerInViewFilter");
+        filter.createChild("filter-class").text("org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter");
+
+        Node filterMapping = new Node("filter-mapping", webapp);
+        filterMapping.createChild("filter-name").text("openEntityManagerInViewFilter");
+        filter.createChild("url-pattern").text("/*");
     }
 }
