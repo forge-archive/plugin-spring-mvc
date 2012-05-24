@@ -125,6 +125,7 @@ public class SpringPlugin implements Plugin {
         deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-tx:${spring.version}"));
         deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-web:${spring.version}"));
         deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-webmvc:${spring.version}"));
+        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-orm:${spring.version}"));
  
         out.println("Added Spring " + springVersion + " dependencies to pom.xml.");
 
@@ -204,7 +205,7 @@ public class SpringPlugin implements Plugin {
      * The 'persistence' command is used to configure the persistence layer for the application.
      * Before executing 'spring persistence', the Forge provided command 'persistence setup' should have been executed.
      * Thus, the application's persistence layer should already be mostly configured in META-INF/persistence.xml.
-     * This command should perform the necessary steps to configure Spring persistence, e.g. an EntityManager JNDI look-up.
+     * This command should perform the necessary steps to configure Spring persistence, e.g. an EntityManagerFactory JNDI look-up.
      */
   
     @Command("persistence")
