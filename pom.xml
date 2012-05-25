@@ -6,7 +6,7 @@
   <artifactId>forge-scaffold-spring</artifactId>
   <version>1.0.4-SNAPSHOT</version>
   <properties>
-    <metawidget.version>2.2-SNAPSHOT</metawidget.version>
+    <metawidget.version>2.3-SNAPSHOT</metawidget.version>
     <forge.api.version>1.0.4-SNAPSHOT</forge.api.version>
     <forge.test.version>1.0.4-SNAPSHOT</forge.test.version>
     <mvel.version>2.1.Beta7</mvel.version>

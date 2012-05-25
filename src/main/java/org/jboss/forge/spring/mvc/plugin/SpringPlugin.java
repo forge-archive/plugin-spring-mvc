@@ -23,6 +23,7 @@
 package org.jboss.forge.spring.mvc.plugin;
 
 import org.jboss.forge.resources.Resource;
+import org.jboss.forge.shell.ShellPrompt;
 import org.jboss.forge.shell.plugins.Plugin;
 import org.jboss.forge.shell.plugins.Alias;
 
@@ -42,7 +43,6 @@ import org.jboss.forge.parser.xml.Node;
 import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.project.dependencies.DependencyBuilder;
 import org.jboss.forge.project.facets.DependencyFacet;
-import org.jboss.forge.project.facets.JavaSourceFacet;
 import org.jboss.forge.project.facets.MetadataFacet;
 import org.jboss.forge.project.facets.PackagingFacet;
 import org.jboss.forge.project.facets.ResourceFacet;
@@ -64,13 +64,9 @@ import org.jboss.shrinkwrap.descriptor.api.spec.jpa.persistence.PersistenceUnitD
 @Topic("Web Application Setup")
 @Help("Spring MVC applications")
 @RequiresProject
-@RequiresFacet({ DependencyFacet.class,
-        PackagingFacet.class,
-        ResourceFacet.class,
+@RequiresFacet({
         WebResourceFacet.class,
-        MetadataFacet.class,
-        PersistenceFacet.class,
-        JavaSourceFacet.class })
+        PersistenceFacet.class })
 public class SpringPlugin implements Plugin {
 
     //
@@ -79,6 +75,9 @@ public class SpringPlugin implements Plugin {
     
     @Inject
     private Project project;
+
+    @Inject
+    private ShellPrompt prompt;
 
     @Inject
     private Event<InstallFacets> install;
@@ -92,7 +91,8 @@ public class SpringPlugin implements Plugin {
 
     @SetupCommand
     public void setup(PipeOut out)
-    {  
+    {
+
         // Get the required Facets to add dependencies and create web.xml and the business context XML file
 
         DependencyFacet deps = project.getFacet(DependencyFacet.class);
@@ -104,8 +104,12 @@ public class SpringPlugin implements Plugin {
 
         if(packaging.getPackagingType() != PackagingType.WAR)
         {
-            packaging.setPackagingType(PackagingType.WAR);
-            this.install.fire(new InstallFacets(WebResourceFacet.class));
+            if (this.prompt.promptBoolean("Facet [forge.maven.WebResourceFacet] requires packaging type(s) [war], but is currently [" +
+            		packaging.getPackagingType().toString() + "]. Update packaging? (Note: this could deactivate other plugins in your project.)"))
+            {
+                packaging.setPackagingType(PackagingType.WAR);
+                this.install.fire(new InstallFacets(WebResourceFacet.class));               
+            }
         }
 
         WebResourceFacet web = project.getFacet(WebResourceFacet.class);
@@ -125,6 +129,7 @@ public class SpringPlugin implements Plugin {
         deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-tx:${spring.version}"));
         deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-web:${spring.version}"));
         deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-webmvc:${spring.version}"));
+        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-orm:${spring.version}"));
  
         out.println("Added Spring " + springVersion + " dependencies to pom.xml.");
 
@@ -134,9 +139,7 @@ public class SpringPlugin implements Plugin {
         Node beans = new Node("beans");
         
         if (applicationContext.exists())
-        {
             beans = XMLParser.parse(applicationContext.getResourceInputStream());
-        }
 
         // Add the necessary schema files to the application context
 
@@ -156,9 +159,7 @@ public class SpringPlugin implements Plugin {
         Node webapp = new Node("web-app");
 
         if (webXML.exists())
-        {
             webapp = XMLParser.parse(webXML.getResourceInputStream());
-        }
         
         webapp.attribute("version", "3.0");
         webapp.attribute("xmlns", "http://java.sun.com/xml/ns/javaee");
@@ -168,15 +169,14 @@ public class SpringPlugin implements Plugin {
 
         // Add the project display name to web.xml
 
-        if (webapp.get("display-name").isEmpty())
-        {
+        if (webapp.get("display-name").isEmpty()) {
             Node display = webapp.createChild("display-name");
-            display.text(meta.getProjectName());            
+            display.text(meta.getProjectName());
         }
 
         // Add applicationContext.xml to the web application's context
 
-        if (webapp.get("context-param").isEmpty())
+        if (webapp.getSingle("context-param") == null)
         {
             Node contextParam = new Node("context-param", webapp);
             Node contextConfig = new Node("param-name", contextParam);
@@ -187,7 +187,7 @@ public class SpringPlugin implements Plugin {
 
         // Define a ContextLoaderListener
 
-        if (webapp.get("listener").isEmpty())
+        if (webapp.getSingle("listener") == null)
         {
             Node listener = new Node("listener", webapp);
             Node cll = new Node("listener-class", listener);
@@ -204,13 +204,14 @@ public class SpringPlugin implements Plugin {
      * The 'persistence' command is used to configure the persistence layer for the application.
      * Before executing 'spring persistence', the Forge provided command 'persistence setup' should have been executed.
      * Thus, the application's persistence layer should already be mostly configured in META-INF/persistence.xml.
-     * This command should perform the necessary steps to configure Spring persistence, e.g. an EntityManager JNDI look-up.
+     * This command should perform the necessary steps to configure Spring persistence, e.g. an EntityManagerFactory JNDI look-up.
      */
   
     @Command("persistence")
     public void springPersistence(PipeOut out)
     {
-      // First, check to see that a PersistenceFacet has been installed, otherwise, 'persistence setup' may not have been executed.
+
+        // First, check to see that a PersistenceFacet has been installed, otherwise, 'persistence setup' may not have been executed.
 
         if(!project.hasFacet(PersistenceFacet.class))
         {
@@ -238,31 +239,11 @@ public class SpringPlugin implements Plugin {
 
         // Scan the application for any @Repository annotated classes in the repository package.
 
-        if (beans.get("context:component-scan").isEmpty())
-        {
-            Node componentScan = new Node("context:component-scan", beans);
-            componentScan.attribute("base-package", meta.getTopLevelPackage() + ".repo");
-        }
-        else
-        {
-            boolean exists = false;
+        addContextComponentScan(beans, meta.getTopLevelPackage() + ".repo");
 
-            for(Node node : beans.get("context:component-scan"))
-            {
-                if (node.getAttribute("base-package").equals(meta.getTopLevelPackage() + ".repo"))
-                {
-                    continue;
-                }
+        // Add a SharedEntityManagerBean definition
 
-                exists = true;
-            }
-
-            if (exists == false)
-            {
-                Node componentScan = new Node("context:component-scan", beans);
-                componentScan.attribute("base-package", meta.getTopLevelPackage() + ".repo");
-            }
-        }
+        addSharedEntityManager(beans);
 
         // Add a JTA Transaction Manager to the web application
 
@@ -271,54 +252,37 @@ public class SpringPlugin implements Plugin {
             beans.createChild("tx:jta-transaction-manager");
         }
 
-        // Indicate that Spring transactions will be annotation driven (potentially move to 'spring persistence' command?)
+        // Indicate that Spring transactions will be annotation driven
 
         if (beans.getSingle("tx:annotation-driven") == null)
         {
             beans.createChild("tx:annotation-driven");
         }
         
-        // Perform a JNDI lookup to retrieve an EntityManagerFactory, of type javax.persistence.EntityManagerFactory.
+        // Add the JNDI name of the EntityManagerFactory to the application's persistence.xml file
 
         PersistenceDescriptor descriptor =  persistence.getConfig();
         PersistenceUnitDef defaultUnit = descriptor.listUnits().get(0);
 
-        if (beans.get("jee:jndi-lookup").isEmpty())
-        {
-            Node entityManager = new Node("jee:jndi-lookup", beans);
-            entityManager.attribute("id", "entityManager");
-            entityManager.attribute("jndi-name", "java:comp/env/persistence/" + defaultUnit.getName() + "/entityManager");
-            entityManager.attribute("expected-type", "javax.persistence.EntityManager");           
-        }
-        else
-        {
-            boolean exists = false;
+        defaultUnit.property("jboss.entity.manager.factory.jndi.name", "java:jboss/" + defaultUnit.getName() + "/persistence");
+        persistence.saveConfig(descriptor);
 
-            for (Node node : beans.get("jee:jndi-lookup"))
-            {
-                if (node.getAttribute("expected-type").equals("javax.persistence.EntityManager"))
-                {
-                    exists = true;
-                }
-            }
+        // Perform a JNDI lookup to retrieve an EntityManagerFactory, of type javax.persistence.EntityManagerFactory.
 
-            if (exists == false)
-            {
-                Node entityManager = new Node("jee:jndi-lookup", beans);
-                entityManager.attribute("id", entityManager);
-                entityManager.attribute("jndi-name", "java:comp/env/persistence/" + defaultUnit.getName() + "/entityManager");
-                entityManager.attribute("expected-type", "javax.persistence.EntityManager");
-            }
-        }
+        addEntityManagerFactory(beans, defaultUnit.getName());
 
         // Write the XML tree to a file, using the <beans> root node.
     
         String file = XMLParser.toXMLString(beans);
         resources.createResource(file.toCharArray(), "META-INF/spring/applicationContext.xml");
-          
+
         // Add a persistence unit definition in web.xml.
 
         Node webapp = XMLParser.parse(web.getWebResource("WEB-INF/web.xml").getResourceInputStream());
+
+        // Add an OpenEntityManagerInView filter to web.xml
+
+        addOpenEntityManagerInView(webapp);
 
         // Define a persistence unit to be referenced in the application context.
 
@@ -342,5 +306,89 @@ public class SpringPlugin implements Plugin {
     public void help(PipeOut out)
     {
         out.println("Welcome to the Spring plugin for Forge!  To add dependencies for Spring MVC, execute the command 'spring setup'.");
+    }
+
+    private void addContextComponentScan(Node beans, String basePackage)
+    {
+        for (Node scan : beans.get("context:component-scan"))
+        {
+            if (scan.getAttribute("base-package").equals(basePackage))
+            {
+                return;
+            }
+        }
+
+        Node scan = new Node("context:component-scan", beans);
+        scan.attribute("base-package", basePackage);
+    }
+
+    private void addEntityManagerFactory(Node beans, String persistenceUnit)
+    {
+        boolean exists = false;
+
+        for (Node bean : beans.get("jee:jndi-lookup"))
+        {
+            if (bean.getAttribute("expected-type").equals("javax.persistence.EntityManagerFactory"))
+            {
+                exists = true;
+            }
+        }
+
+        if (exists == false)
+        {
+            Node entityManagerFactory = new Node("jee:jndi-lookup", beans);
+    
+            entityManagerFactory.attribute("id", entityManagerFactory);
+            entityManagerFactory.attribute("expected-type", "javax.persistence.EntityManagerFactory");
+            entityManagerFactory.attribute("jndi-name", "java:jboss/" + persistenceUnit + "/persistence");
+        }
+    }
+
+    private void addSharedEntityManager(Node beans)
+    {
+        for (Node bean : beans.get("bean"))
+        {
+            if (bean.getAttribute("class").equals("org.springframework.orm.jpa.support.SharedEntityManagerBean"))
+            {
+                if (bean.getSingle("property").getAttribute("name").equals("entityManagerFactory"))
+                {
+                    return;
+                }
+                else
+                {
+                    Node property = new Node("property", bean);
+                    property.attribute("name", "entityManagerFactory");
+                    property.attribute("ref", "entityManagerFactory");
+                    return;
+                }
+            }
+        }
+
+        Node bean = new Node("bean", beans);
+        bean.attribute("id", "entityManager");
+        bean.attribute("class", "org.springframework.orm.jpa.support.SharedEntityManagerBean");
+
+        Node property = new Node("property", bean);
+        property.attribute("name", "entityManagerFactory");
+        property.attribute("ref", "entityManagerFactory");
+    }
+
+    private void addOpenEntityManagerInView(Node webapp)
+    {
+        for (Node filter : webapp.get("filter"))
+        {
+            if (filter.getSingle("filter-class").getText().equals("org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter"))
+            {
+                return;
+            }
+        }
+
+        Node filter = new Node("filter", webapp);
+        filter.createChild("filter-name").text("openEntityManagerInViewFilter");
+        filter.createChild("filter-class").text("org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter");
+
+        Node filterMapping = new Node("filter-mapping", webapp);
+        filterMapping.createChild("filter-name").text("openEntityManagerInViewFilter");
+        filterMapping.createChild("url-pattern").text("/*");
     }
 }
