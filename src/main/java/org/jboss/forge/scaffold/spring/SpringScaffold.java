@@ -165,7 +165,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     private TemplateCompiler compiler;
     private Event<InstallFacets> install;
     private StaticSpringMetawidget entityMetawidget;
-    private StaticJspMetawidget beanMetawidget;
+    private StaticJspMetawidget headerMetawidget;
+    private StaticJspMetawidget searchMetawidget;
     private StaticJavaMetawidget qbeMetawidget;
 
     private Configuration config;
@@ -235,9 +236,13 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         this.entityMetawidget.setConfigReader(configReader);
         this.entityMetawidget.setConfig("scaffold/spring/metawidget-entity.xml");
 
-        this.beanMetawidget = new StaticJspMetawidget();
-        this.beanMetawidget.setConfigReader(configReader);
-        this.beanMetawidget.setConfig("scaffold/spring/metawidget-bean.xml");
+        this.headerMetawidget = new StaticJspMetawidget();
+        this.headerMetawidget.setConfigReader(configReader);
+        this.headerMetawidget.setConfig("scaffold/spring/metawidget-header.xml");
+
+        this.searchMetawidget = new StaticJspMetawidget();
+        this.searchMetawidget.setConfigReader(configReader);
+        this.searchMetawidget.setConfig("scaffold/spring/metawidget-search.xml");
 
         this.qbeMetawidget = new StaticJavaMetawidget();
         this.qbeMetawidget.setConfigReader(configReader);
@@ -378,12 +383,15 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
                 // Generate search/view (all)
 
-                String daoName = StringUtils.decapitalize(entity.getName() + "Dao");
-                this.beanMetawidget.setValue(StaticJspUtils.wrapExpression(daoName + ".getAll"));
-                this.beanMetawidget.setPath(meta.getTopLevelPackage() + ".repo." + daoName + "/getAll");
+                this.headerMetawidget.setValue(StaticJspUtils.wrapExpression(entity.getName()));
+                this.headerMetawidget.setPath(entity.getQualifiedName());
+                this.headerMetawidget.setReadOnly(true);
+                this.searchMetawidget.setValue(StaticJspUtils.wrapExpression(entity.getName()));
+                this.searchMetawidget.setPath(entity.getQualifiedName());
+                this.searchMetawidget.setReadOnly(true);
 
                 writeEntityMetawidget(context, this.viewTemplateMetawidgetIndent, null);
-                writeBeanMetawidget(context, this.viewTemplateMetawidgetIndent, null);
+                writeHeaderAndSearchMetawidgets(context, this.viewTemplateMetawidgetIndent, null);
 
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + entity.getName()
                         + "/" + entityPlural.toLowerCase() + ".jsp"), this.viewAllTemplate.render(context), overwrite));
@@ -1024,12 +1032,16 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
      * Writes the bean Metawidget for displaying the existing entities in the database on the view all page.
      */
 
-    protected void writeBeanMetawidget(final Map<Object, Object> context, final int beanMetawidgetIndent,
+    protected void writeHeaderAndSearchMetawidgets(final Map<Object, Object> context, final int indent,
             final Map<String, String> namespaces)
     {
         StringWriter stringWriter = new StringWriter();
-        this.beanMetawidget.write(stringWriter, beanMetawidgetIndent);
-        context.put("beanMetawidget", stringWriter.toString().trim());
+        this.headerMetawidget.write(stringWriter, indent);
+        context.put("headerMetawidget", stringWriter.toString().trim());
+
+        stringWriter = new StringWriter();
+        this.searchMetawidget.write(stringWriter, indent);
+        context.put("searchMetawidget", stringWriter.toString().trim());
     }
 
     /**
