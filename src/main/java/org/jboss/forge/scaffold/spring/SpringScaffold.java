@@ -78,6 +78,8 @@ import org.jboss.seam.render.template.CompiledTemplateResource;
 import org.jboss.seam.render.template.resolver.ClassLoaderTemplateResolver;
 import org.metawidget.statically.StaticUtils.IndentedWriter;
 import org.metawidget.statically.javacode.StaticJavaMetawidget;
+import org.metawidget.statically.jsp.StaticJspMetawidget;
+import org.metawidget.statically.jsp.StaticJspUtils;
 import org.metawidget.statically.html.widgetbuilder.HtmlTag;
 import org.metawidget.statically.spring.StaticSpringMetawidget;
 import org.metawidget.util.CollectionUtils;
@@ -142,7 +144,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     protected CompiledTemplateResource viewAllTemplate;
     protected CompiledTemplateResource viewTemplate;
     protected Map<String, String> viewTemplateNamespaces;
-    protected int viewTemplateEntityMetawidgetIndent;
+    protected int viewTemplateMetawidgetIndent;
 
     protected CompiledTemplateResource updateTemplate;
     protected Map<String, String> updateTemplateNamespaces;
@@ -163,6 +165,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     private TemplateCompiler compiler;
     private Event<InstallFacets> install;
     private StaticSpringMetawidget entityMetawidget;
+    private StaticJspMetawidget beanMetawidget;
     private StaticJavaMetawidget qbeMetawidget;
 
     private Configuration config;
@@ -231,7 +234,11 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         this.entityMetawidget = new StaticSpringMetawidget();
         this.entityMetawidget.setConfigReader(configReader);
         this.entityMetawidget.setConfig("scaffold/spring/metawidget-entity.xml");
-        
+
+        this.beanMetawidget = new StaticJspMetawidget();
+        this.beanMetawidget.setConfigReader(configReader);
+        this.beanMetawidget.setConfig("scaffold/spring/metawidget-bean.xml");
+
         this.qbeMetawidget = new StaticJavaMetawidget();
         this.qbeMetawidget.setConfigReader(configReader);
         this.qbeMetawidget.setConfig("scaffold/spring/metawidget-qbe.xml");
@@ -371,7 +378,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
                 // Generate search/view (all)
 
-                writeEntityMetawidget(context, this.viewTemplateEntityMetawidgetIndent, this.viewTemplateNamespaces);
+                String daoName = StringUtils.decapitalize(entity.getName() + "Dao");
+                this.beanMetawidget.setValue(StaticJspUtils.wrapExpression(daoName + ".getAll"));
+                this.beanMetawidget.setPath(meta.getTopLevelPackage() + ".repo." + daoName + "/getAll");
+
+                writeEntityMetawidget(context, this.viewTemplateMetawidgetIndent, null);
+                writeBeanMetawidget(context, this.viewTemplateMetawidgetIndent, null);
 
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + entity.getName()
                         + "/" + entityPlural.toLowerCase() + ".jsp"), this.viewAllTemplate.render(context), overwrite));
@@ -392,7 +404,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 // Generate view (single)
 
                 this.entityMetawidget.setReadOnly(true);
-                writeEntityMetawidget(context, this.viewTemplateEntityMetawidgetIndent, this.viewTemplateNamespaces);
+                writeEntityMetawidget(context, this.viewTemplateMetawidgetIndent, this.viewTemplateNamespaces);
     
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + entity.getName()
                         + "/view" + entity.getName() + ".jsp"), this.viewTemplate.render(context), overwrite));
@@ -873,7 +885,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         if (this.viewTemplate == null) {
             this.viewTemplate = compiler.compile(VIEW_TEMPLATE);
             String template = Streams.toString(this.viewTemplate.getSourceTemplateResource().getInputStream());
-            this.viewTemplateEntityMetawidgetIndent = parseIndent(template, "@{metawidget}");
+            this.viewTemplateMetawidgetIndent = parseIndent(template, "@{metawidget}");
         }
 
         if (this.updateTemplate == null) {
@@ -989,20 +1001,35 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         return indent;
     }
 
+    // TODO: Manage import of namespaces in writeMetawidget methods.
+
     /**
-     * Writes the entity Metawidget and its namespaces into the given context.
+     * Writes the entity Metawidget into the given context.
      */
 
     protected void writeEntityMetawidget(final Map<Object, Object> context, final int entityMetawidgetIndent,
-            final Map<String, String> existingNamespaces) {
+            final Map<String, String> existingNamespaces)
+    {
         StringWriter writer = new StringWriter();
         this.entityMetawidget.write(writer, entityMetawidgetIndent);
         context.put("metawidget", writer.toString().trim());
 
-        Map<String, String> namespaces = this.entityMetawidget.getNamespaces();
+/*        Map<String, String> namespaces = this.entityMetawidget.getNamespaces();
 
         if (namespaces.keySet() != null && existingNamespaces != null)
-            namespaces.keySet().removeAll(existingNamespaces.keySet());
+            namespaces.keySet().removeAll(existingNamespaces.keySet());*/
+    }
+
+    /**
+     * Writes the bean Metawidget for displaying the existing entities in the database on the view all page.
+     */
+
+    protected void writeBeanMetawidget(final Map<Object, Object> context, final int beanMetawidgetIndent,
+            final Map<String, String> namespaces)
+    {
+        StringWriter stringWriter = new StringWriter();
+        this.beanMetawidget.write(stringWriter, beanMetawidgetIndent);
+        context.put("beanMetawidget", stringWriter.toString().trim());
     }
 
     /**
