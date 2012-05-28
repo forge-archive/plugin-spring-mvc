@@ -22,6 +22,12 @@
 		</div>
 	</form:form>
 
+	<p>Bean Metawidget</p>
+
+	@{beanMetawidget}
+
+	<p>Table</p>
+
 	<table>
 		<c:forEach items="$${entities}" var="entity">
 			<tr>
