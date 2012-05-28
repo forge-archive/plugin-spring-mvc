@@ -24,7 +24,16 @@
 
 	<p>Bean Metawidget</p>
 
-	@{beanMetawidget}
+	<table>
+		<thead>
+			@{headerMetawidget}
+		</thead>
+		<tbody>
+			<c:forEach items="$${@{entityPlural.toLowerCase()}}" var="@{entity.getName().toLowerCase()}">
+				@{searchMetawidget}
+			</c:forEach>
+		</tbody>
+	</table>
 
 	<p>Table</p>
 
