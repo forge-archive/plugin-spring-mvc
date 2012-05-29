@@ -68,7 +68,6 @@
 
 		<widgetProcessors>
 			<array>
-				<hiddenFieldProcessor xmlns="java:org.metawidget.statically.html.widgetprocessor"/>
 				<standardBindingProcessor xmlns="java:org.metawidget.statically.jsp.widgetprocessor"/>
 				<cssStyleProcessor xmlns="java:org.metawidget.statically.html.widgetprocessor"/>
 			</array>
