@@ -24,6 +24,7 @@ package org.jboss.forge.scaffold.spring.metawidget.layout;
 
 import java.util.Map;
 
+import org.metawidget.statically.StaticXmlStub;
 import org.metawidget.statically.StaticXmlWidget;
 import org.metawidget.statically.html.StaticHtmlMetawidget;
 import org.metawidget.statically.html.layout.HtmlLayout;
@@ -45,6 +46,13 @@ public class TableCellLayout
         if (widget instanceof HtmlTableHeader)
         {
             container.getChildren().add(widget);
+            return;
+        }
+
+        // Do not layout StaticXmlStubs
+
+        if (widget instanceof StaticXmlStub)
+        {
             return;
         }
 
