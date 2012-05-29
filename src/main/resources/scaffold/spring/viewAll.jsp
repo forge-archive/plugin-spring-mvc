@@ -22,29 +22,17 @@
 		</div>
 	</form:form>
 
-	<p>Bean Metawidget</p>
-
-	<table>
+	<table class="data-table">
 		<thead>
 			@{headerMetawidget}
 		</thead>
 		<tbody>
-			<c:forEach items="$${@{entityPlural.toLowerCase()}}" var="@{entity.getName().toLowerCase()}">
-				@{searchMetawidget}
+			<c:forEach items="$${@{entityPlural.toLowerCase()}}" var="@{entity.getName()}">
+				<tr>
+					@{searchMetawidget}
+				</tr>
 			</c:forEach>
 		</tbody>
-	</table>
-
-	<p>Table</p>
-
-	<table>
-		<c:forEach items="$${entities}" var="entity">
-			<tr>
-				<td>@{entityName} $${entity.id}</td>
-				<td><a class="button" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}/$${entity.id}"/>">View</a></td>
-				<td><a class="button" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}/$${entity.id}?edit=true"/>">Edit</a></td>
-			</tr>
-		</c:forEach>
 	</table>
 
 	<br/>
