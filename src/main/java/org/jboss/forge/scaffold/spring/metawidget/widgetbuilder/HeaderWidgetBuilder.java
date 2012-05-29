@@ -27,6 +27,7 @@ import static org.metawidget.inspector.InspectionResultConstants.*;
 import java.util.Map;
 
 import org.metawidget.statically.StaticXmlMetawidget;
+import org.metawidget.statically.StaticXmlStub;
 import org.metawidget.statically.StaticXmlWidget;
 import org.metawidget.statically.html.widgetbuilder.HtmlTableHeader;
 import org.metawidget.widgetbuilder.iface.WidgetBuilder;
@@ -40,7 +41,7 @@ public class HeaderWidgetBuilder
     {
         if (TRUE.equals(attributes.get(HIDDEN)))
         {
-            return null;
+            return new StaticXmlStub();
         }
 
         if (ACTION.equals(elementName))
@@ -48,9 +49,14 @@ public class HeaderWidgetBuilder
             return null;
         }
 
-        HtmlTableHeader header = new HtmlTableHeader();
-        header.setTextContent(metawidget.getLabelString(attributes));
+        if (attributes.get(NAME) != null)
+        {
+            HtmlTableHeader header = new HtmlTableHeader();
+            header.setTextContent(metawidget.getLabelString(attributes));
 
-        return header;
+            return header;           
+        }
+
+        return null;
     }
 }
