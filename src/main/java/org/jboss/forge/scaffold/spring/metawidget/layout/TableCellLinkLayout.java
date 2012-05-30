@@ -24,12 +24,16 @@ package org.jboss.forge.scaffold.spring.metawidget.layout;
 
 import java.util.Map;
 
+import org.jboss.forge.scaffold.spring.metawidget.widgetbuilder.CoreUrl;
+import org.jboss.forge.scaffold.spring.metawidget.widgetbuilder.HtmlAnchor;
+import org.jvnet.inflector.Noun;
 import org.metawidget.statically.StaticXmlStub;
 import org.metawidget.statically.StaticXmlWidget;
 import org.metawidget.statically.html.StaticHtmlMetawidget;
 import org.metawidget.statically.html.layout.HtmlLayout;
 import org.metawidget.statically.html.widgetbuilder.HtmlTableCell;
 import org.metawidget.statically.html.widgetbuilder.HtmlTableHeader;
+import org.metawidget.statically.jsp.StaticJspUtils;
 
 /**
  * Layout widgets wrapped in a HtmlTableCell, <td/>, surrounded by an HtmlTableRow, <tr/>
@@ -37,7 +41,7 @@ import org.metawidget.statically.html.widgetbuilder.HtmlTableHeader;
  * @author <a href="mailto:ryan.k.bradley@gmail.com">Ryan Bradley</a>
  */
 
-public class TableCellLayout
+public class TableCellLinkLayout
     extends HtmlLayout
 {
     @Override
@@ -56,8 +60,16 @@ public class TableCellLayout
             return;
         }
 
+        HtmlAnchor link = new HtmlAnchor();
+        CoreUrl curl = new CoreUrl();
+
+        String entityPlural = Noun.pluralOf(StaticJspUtils.unwrapExpression(metawidget.getAttribute("value").toLowerCase()));
+        curl.setValue("/" + entityPlural + "/${" + StaticJspUtils.unwrapExpression(metawidget.getAttribute("value")) + ".id}");
+        link.putAttribute("href", curl.toString());
+        link.getChildren().add(widget);
+
         HtmlTableCell cell = new HtmlTableCell();
-        cell.getChildren().add(widget);
+        cell.getChildren().add(link);
         container.getChildren().add(cell);
     }
 }
