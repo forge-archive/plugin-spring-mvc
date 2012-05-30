@@ -36,9 +36,20 @@ public class @{entity.getName()}Controller
 	@end{}
 	@RequestMapping(method=RequestMethod.GET)
 	public @ModelAttribute("@{entityPlural.toLowerCase()}")
-	List<@{entity.getName()}> view@{entityPlural}(@ModelAttribute("search") @{entity.getName()} search)
+	List<@{entity.getName()}> view@{entityPlural}(@ModelAttribute("search") @{entity.getName()} search, @RequestParam(required=false) Long first
+			@RequestParam(required=false) int pageSize)
 	{
-		List<@{entity.getName()}> @{entityPlural.toLowerCase()} = @{ccEntity}Dao.search(search);
+		if (pageSize == null || maxItems < 0)
+		{
+			pageSize = 10;
+		}
+
+		if (first == null || first < 0)
+		{
+			first = 1l;
+		}
+
+		List<@{entity.getName()}> @{entityPlural.toLowerCase()} = @{ccEntity}Dao.search(search, first, pageSize);
 		return @{entityPlural.toLowerCase()};
 	}
 

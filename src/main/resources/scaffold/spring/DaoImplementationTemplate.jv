@@ -55,7 +55,7 @@ public class @{entity.getName()}DaoImpl implements @{entity.getName()}Dao
 		return;
 	}
 	
-	public List<@{entity.getName()}> search(@{entity.getName()} search, Long firstItem, Integer pageSize)
+	public List<@{entity.getName()}> search(@{entity.getName()} search, Long first, int pageSize)
 	{
 		CriteriaBuilder builder = this.entityManager.getCriteriaBuilder();
 

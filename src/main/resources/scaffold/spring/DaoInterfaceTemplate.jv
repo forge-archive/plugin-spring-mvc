@@ -16,5 +16,5 @@ public interface @{entity.getName()}Dao
 	
 	public void delete(Long id);
 
-	public List<@{entity.getName()}> search(@{entity.getName()} search, Long firstItem, Integer pageSize);
+	public List<@{entity.getName()}> search(@{entity.getName()} search, Long first, int pageSize);
 }
