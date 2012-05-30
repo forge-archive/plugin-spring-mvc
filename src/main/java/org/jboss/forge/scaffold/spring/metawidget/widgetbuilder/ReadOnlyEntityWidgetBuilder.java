@@ -26,7 +26,7 @@ public class ReadOnlyEntityWidgetBuilder extends ReadOnlyWidgetBuilder
             return null;
         }
 
-        if (Collection.class.isAssignableFrom(clazz))
+        if (clazz != null && Collection.class.isAssignableFrom(clazz))
         {
             return null;
         }
