@@ -21,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class @{entity.getName()}DaoImpl implements @{entity.getName()}Dao
 {
-
 	@Autowired
 	private EntityManager entityManager;
 
@@ -56,15 +55,21 @@ public class @{entity.getName()}DaoImpl implements @{entity.getName()}Dao
 		return;
 	}
 	
-	public List<@{entity.getName()}> search(@{entity.getName()} search)
+	public List<@{entity.getName()}> search(@{entity.getName()} search, Long firstItem, Integer pageSize)
 	{
 		CriteriaBuilder builder = this.entityManager.getCriteriaBuilder();
+
+		CriteriaQuery<Long> countCriteria = builder.createQuery(Long.class);
+		Root<@{entity.getName()}> root = countCriteria.from(@{entity.getName()});
+		countCriteria = countCriteria.select(builder.count(root)).where(getSearchPredicates(root));
+		this.count = this.entityManager.createQuery(countCriteria).getSingleResult();
 
 		// Create and populate a query for the search
 
 		CriteriaQuery<@{entity.getName()}> criteria = builder.createQuery(@{entity.getName()}.class);
-		Root<@{entity.getName()}> root = criteria.from(@{entity.getName()}.class);
+		root = criteria.from(@{entity.getName()}.class);
 		TypedQuery<@{entity.getName()}> query = this.entityManager.createQuery(criteria.select(root).where(getSearchPredicates(root, search)));
+		query.setFirstResult(this.getpage() * getPageSize()).setMaxResults(getPageSize());
 
 		return query.getResultList();
 	}
