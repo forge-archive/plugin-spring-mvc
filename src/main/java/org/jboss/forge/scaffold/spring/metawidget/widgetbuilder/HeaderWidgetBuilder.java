@@ -23,6 +23,7 @@
 package org.jboss.forge.scaffold.spring.metawidget.widgetbuilder;
 
 import static org.metawidget.inspector.InspectionResultConstants.*;
+import static org.jboss.forge.scaffold.spring.metawidget.inspector.ForgeInspectionResultConstants.*;
 
 import java.util.Map;
 
@@ -39,7 +40,7 @@ public class HeaderWidgetBuilder
     @Override
     public StaticXmlWidget buildWidget(String elementName, Map<String, String> attributes, StaticXmlMetawidget metawidget)
     {
-        if (TRUE.equals(attributes.get(HIDDEN)))
+        if (TRUE.equals(attributes.get(HIDDEN)) || TRUE.equals(attributes.get(N_TO_MANY)))
         {
             return new StaticXmlStub();
         }

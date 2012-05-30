@@ -1,11 +1,13 @@
 package org.jboss.forge.scaffold.spring.metawidget.widgetbuilder;
 
 import static org.metawidget.inspector.InspectionResultConstants.*;
+import static org.jboss.forge.scaffold.spring.metawidget.inspector.ForgeInspectionResultConstants.*;
 
 import java.util.Collection;
 import java.util.Map;
 
 import org.metawidget.statically.StaticXmlMetawidget;
+import org.metawidget.statically.StaticXmlStub;
 import org.metawidget.statically.StaticXmlWidget;
 import org.metawidget.statically.jsp.widgetbuilder.CoreOut;
 import org.metawidget.statically.jsp.widgetbuilder.ReadOnlyWidgetBuilder;
@@ -19,6 +21,11 @@ public class ReadOnlyEntityWidgetBuilder extends ReadOnlyWidgetBuilder
         StaticXmlWidget widget = super.buildWidget(elementName, attributes, metawidget);
 
         Class<?> clazz = WidgetBuilderUtils.getActualClassOrType(attributes, null);
+
+        if (TRUE.equals(attributes.get(N_TO_MANY)))
+        {
+            return new StaticXmlStub();
+        }
 
         if (clazz != null && Collection.class.isAssignableFrom(clazz))
         {
