@@ -49,7 +49,7 @@
 			<compositeWidgetBuilder xmlns="java:org.metawidget.widgetbuilder.composite" config="CompositeWidgetBuilderConfig">
 				<widgetBuilders>
 					<array>
-						<readOnlyWidgetBuilder xmlns="java:org.metawidget.statically.jsp.widgetbuilder"/>
+						<readOnlyEntityWidgetBuilder xmlns="java:org.jboss.forge.scaffold.spring.metawidget.widgetbuilder"/>
 						<springEntityWidgetBuilder xmlns="java:org.jboss.forge.scaffold.spring.metawidget.widgetbuilder" config="EntityWidgetBuilderConfig">
 							<config>
 								<forgeConfig/>
