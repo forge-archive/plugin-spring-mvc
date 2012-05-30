@@ -21,11 +21,6 @@ public class ReadOnlyEntityWidgetBuilder extends ReadOnlyWidgetBuilder
 
         Class<?> clazz = WidgetBuilderUtils.getActualClassOrType(attributes, null);
 
-        if (widget instanceof StaticXmlStub)
-        {
-            return null;
-        }
-
         if (clazz != null && Collection.class.isAssignableFrom(clazz))
         {
             return null;
