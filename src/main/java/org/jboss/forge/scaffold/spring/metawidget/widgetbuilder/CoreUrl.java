@@ -33,7 +33,7 @@ public class CoreUrl
     // Constructor
     //
 
-    protected CoreUrl()
+    public CoreUrl()
     {
         super("url");
     }
