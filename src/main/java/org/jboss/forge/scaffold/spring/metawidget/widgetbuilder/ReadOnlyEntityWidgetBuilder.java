@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.metawidget.statically.StaticXmlMetawidget;
-import org.metawidget.statically.StaticXmlStub;
 import org.metawidget.statically.StaticXmlWidget;
 import org.metawidget.statically.jsp.widgetbuilder.CoreOut;
 import org.metawidget.statically.jsp.widgetbuilder.ReadOnlyWidgetBuilder;
