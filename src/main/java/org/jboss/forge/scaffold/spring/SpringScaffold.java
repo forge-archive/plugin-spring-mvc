@@ -1191,7 +1191,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
         WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
 
-        Node beans = XMLParser.parse(web.getWebResource("WEB-INF/" + meta.getProjectName().replace(' ', '-') + "-mvc-context.xml").getResourceInputStream());
+        Node beans = XMLParser.parse(web.getWebResource("WEB-INF/" + meta.getProjectName().replace(' ', '-').toLowerCase()
+                + "-mvc-context.xml").getResourceInputStream());
 
         beans.getSingle("mvc:annotation-driven").attribute("conversion-service", "conversionService");
         addContextComponentScan(beans, meta.getTopLevelPackage() + ".conversion");
