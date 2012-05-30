@@ -74,7 +74,7 @@
 		</widgetProcessors>
 
 		<layout>
-			<tableCellLayout xmlns="java:org.jboss.forge.scaffold.spring.metawidget.layout"/>
+			<tableCellLinkLayout xmlns="java:org.jboss.forge.scaffold.spring.metawidget.layout"/>
 		</layout>
 
 	</staticJspMetawidget>
