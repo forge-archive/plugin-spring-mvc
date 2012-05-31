@@ -55,23 +55,31 @@ public class @{entity.getName()}DaoImpl implements @{entity.getName()}Dao
 		return;
 	}
 	
-	public List<@{entity.getName()}> search(@{entity.getName()} search, Long first, int maxItems)
+	public List<@{entity.getName()}> search(@{entity.getName()} search, Long first, Integer maxItems)
 	{
 		CriteriaBuilder builder = this.entityManager.getCriteriaBuilder();
-
-		CriteriaQuery<Long> countCriteria = builder.createQuery(Long.class);
-		Root<@{entity.getName()}> root = countCriteria.from(@{entity.getName()}.class);
-		countCriteria = countCriteria.select(builder.count(root)).where(getSearchPredicates(root));
-		count = this.entityManager.createQuery(countCriteria).getSingleResult();
 
 		// Create and populate a query for the search
 
 		CriteriaQuery<@{entity.getName()}> criteria = builder.createQuery(@{entity.getName()}.class);
-		root = criteria.from(@{entity.getName()}.class);
+		Root<@{entity.getName()}> root = criteria.from(@{entity.getName()}.class);
 		TypedQuery<@{entity.getName()}> query = this.entityManager.createQuery(criteria.select(root).where(getSearchPredicates(root, search)));
-		query.setFirstResult(first).setMaxResults(maxItems);
+		query.setFirstResult(first.intValue()).setMaxResults(maxItems);
 
 		return query.getResultList();
+	}
+
+	public Long getCount(@{entity.getName()} search)
+	{
+		CriteriaBuilder builder = this.entityManager.getCriteriaBuilder();
+
+		// Create and populate a query for the number of entities in the database
+
+		CriteriaQuery<Long> countCriteria = builder.createQuery(Long.class);
+		Root<@{entity.getName()}> root = countCriteria.from(@{entity.getName()}.class);
+		countCriteria = countCriteria.select(builder.count(root)).where(getSearchPredicates(root, search));
+
+		return this.entityManager.createQuery(countCriteria).getSingleResult();
 	}
 
 	private Predicate[] getSearchPredicates(Root<@{entity.getName()}> root, @{entity.getName()} search)
