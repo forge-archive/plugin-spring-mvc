@@ -32,7 +32,7 @@ public class ReadOnlyEntityWidgetBuilder extends ReadOnlyWidgetBuilder
             return null;
         }
 
-        if (widget == null)
+        if (widget == null && WidgetBuilderUtils.isReadOnly(attributes))
         {
             if (attributes.get(NAME) != null)
             {
