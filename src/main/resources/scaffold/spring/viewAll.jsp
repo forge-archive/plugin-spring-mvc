@@ -34,7 +34,13 @@
 			</c:forEach>
 		</tbody>
 	</table>
-
-	<br/>
-
+	<span class="paginator">
+		<c:if test="$${current > 1}">
+			<a class="button" href="<c:url value="/@{entityPlural.toLowerCase()}?first=$${(current-2)*max}&max=$${max}"/>">Previous</a>
+		</c:if>
+		<span>$${first} to $${last} (of $${last})</span>
+		<c:if test="$${count > current*max}">
+			<a class="button" href="<c:url value="/@{entityPlural.toLowerCase()}?first=$${current*max}&max=$${max}"/>">Next</a>
+		</c:if>
+	</span>
 </div>
