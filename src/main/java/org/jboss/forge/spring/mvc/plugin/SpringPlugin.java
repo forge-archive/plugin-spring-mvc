@@ -338,7 +338,7 @@ public class SpringPlugin implements Plugin {
         {
             Node entityManagerFactory = new Node("jee:jndi-lookup", beans);
     
-            entityManagerFactory.attribute("id", entityManagerFactory);
+            entityManagerFactory.attribute("id", "entityManagerFactory");
             entityManagerFactory.attribute("expected-type", "javax.persistence.EntityManagerFactory");
             entityManagerFactory.attribute("jndi-name", "java:jboss/" + persistenceUnit + "/persistence");
         }
