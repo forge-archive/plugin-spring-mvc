@@ -24,15 +24,13 @@
 
 			<div id="content">
 				<tiles:insertAttribute name="body"/>
-			</div>
 
-			<div id="footer">
-				Powered by <a href="http://jboss.org/forge">Forge</a>.  Icons by the <a href="http://everaldo.com/crystal">Crystal Project</a>
+				<div id="footer">
+					Powered by <a href="http://jboss.org/forge">Forge</a>.  Icons by the <a href="http://everaldo.com/crystal">Crystal Project</a>
+				</div>
 			</div>
 		</div>
-
 	</body>
-
 </html>
 
 
