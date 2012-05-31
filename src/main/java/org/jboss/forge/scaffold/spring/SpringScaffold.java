@@ -55,6 +55,7 @@ import org.jboss.forge.project.facets.BaseFacet;
 import org.jboss.forge.project.facets.DependencyFacet;
 import org.jboss.forge.project.facets.JavaSourceFacet;
 import org.jboss.forge.project.facets.MetadataFacet;
+import org.jboss.forge.project.facets.ResourceFacet;
 import org.jboss.forge.project.facets.WebResourceFacet;
 import org.jboss.forge.project.facets.events.InstallFacets;
 import org.jboss.forge.resources.FileResource;
@@ -1191,11 +1192,13 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
         WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
 
-        Node beans = XMLParser.parse(web.getWebResource("WEB-INF/" + meta.getProjectName().replace(' ', '-').toLowerCase()
-                + "-mvc-context.xml").getResourceInputStream());
+        String filename = "WEB-INF/" + meta.getProjectName().replace(' ', '-').toLowerCase() + "-mvc-context.xml";
+        Node beans = XMLParser.parse(web.getWebResource(filename).getResourceInputStream());
 
         beans.getSingle("mvc:annotation-driven").attribute("conversion-service", "conversionService");
         addContextComponentScan(beans, meta.getTopLevelPackage() + ".conversion");
+
+        web.createWebResource(XMLParser.toXMLString(beans), filename);
     }
 
     protected void addContextComponentScan(Node beans, String basePackage)
