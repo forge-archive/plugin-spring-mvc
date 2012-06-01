@@ -426,7 +426,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                     searchDefinition.attribute("extends", tilesName);
                     Node searchTitleAttribute = new Node("put-attribute", searchDefinition);
                     searchTitleAttribute.attribute("name", "title");
-                    searchTitleAttribute.attribute( "value", "View All " + pluralOf(StringUtils.uncamelCase(entity.getName())));
+                    searchTitleAttribute.attribute( "value", "Search " + StringUtils.uncamelCase(entity.getName()) + " entities");
                     Node searchHeader = new Node("put-attribute", searchDefinition);
                     searchHeader.attribute("name", "header");
                     searchHeader.attribute("value", StringUtils.uncamelCase(entity.getName()));
