@@ -37,7 +37,7 @@ public class @{entity.getName()}Controller
 	@RequestMapping(method=RequestMethod.GET)
 	public @ModelAttribute("@{entityPlural.toLowerCase()}")
 	List<@{entity.getName()}> view@{entityPlural}(@ModelAttribute("search") @{entity.getName()} search, @RequestParam(required=false) Long first, 
-			@RequestParam(required=false) Integer max)
+			@RequestParam(required=false) Integer max, Model model)
 	{
 		if (max == null || max <= 0)
 		{
