@@ -23,6 +23,9 @@
 			</div>
 
 			<div id="content">
+				<h1><tiles:insertAttribute name="header"/></h1>
+				<h2><tiles:insertAttribute name="subheader"/></h2>
+
 				<tiles:insertAttribute name="body"/>
 
 				<div id="footer">
