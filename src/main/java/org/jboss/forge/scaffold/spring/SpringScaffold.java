@@ -331,6 +331,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                     Node indexTitleAttribute = new Node("put-attribute", indexDefinition);
                     indexTitleAttribute.attribute("name", "title");
                     indexTitleAttribute.attribute("value", "Welcome to Forge");
+                    Node indexHeader = new Node("put-attribute", indexDefinition);
+                    indexHeader.attribute("name", "header");
+                    indexHeader.attribute("value", "Welcome to Forge");
+                    Node indexSubheader = new Node("put-attribute", indexDefinition);
+                    indexSubheader.attribute("name", "subheader");
+                    indexSubheader.attribute("value", "Your application is running.");
                     Node indexBodyAttribute = new Node("put-attribute", indexDefinition);
                     indexBodyAttribute.attribute("name", "body");
                     indexBodyAttribute.attribute("value", "/WEB-INF/views" + targetDir + "index.jsp");
@@ -343,6 +349,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                     Node rootIndexTitleAttribute = new Node("put-attribute", rootIndexDefinition);
                     rootIndexTitleAttribute.attribute("name", "title");
                     rootIndexTitleAttribute.attribute("value", "Welcome to Forge");
+                    Node rootIndexHeader = new Node("put-attribute", rootIndexDefinition);
+                    rootIndexHeader.attribute("name", "header");
+                    rootIndexHeader.attribute("value", "Welcome to Forge");
+                    Node rootIndexSubheader = new Node("put-attribute", rootIndexDefinition);
+                    rootIndexSubheader.attribute("name", "subheader");
+                    rootIndexSubheader.attribute("value", "Your application is running.");
                     Node rootIndexBodyAttribute = new Node("put-attribute", rootIndexDefinition);
                     rootIndexBodyAttribute.attribute("name", "body");
                     rootIndexBodyAttribute.attribute("value", "/WEB-INF/views/index.jsp");
@@ -355,6 +367,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                     Node createTitleAttribute = new Node("put-attribute", createDefinition);
                     createTitleAttribute.attribute("name", "title");
                     createTitleAttribute.attribute("value", "Create New " + StringUtils.uncamelCase(entity.getName()));
+                    Node createHeader = new Node("put-attribute", createDefinition);
+                    createHeader.attribute("name", "header");
+                    createHeader.attribute("value", StringUtils.uncamelCase(entity.getName()));
+                    Node createSubheader = new Node("put-attribute", createDefinition);
+                    createSubheader.attribute("name", "subheader");
+                    createSubheader.attribute("value", "Create a new " + StringUtils.uncamelCase(entity.getName()));
                     Node createBodyAttribute = new Node("put-attribute", createDefinition);
                     createBodyAttribute.attribute("name", "body");
                     createBodyAttribute.attribute("value", "/WEB-INF/views" + targetDir + entity.getName() + "/create"
@@ -375,6 +393,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                     Node updateTitleAttribute = new Node("put-attribute", updateDefinition);
                     updateTitleAttribute.attribute("name", "title");
                     updateTitleAttribute.attribute("value", "Update " + StringUtils.uncamelCase(entity.getName()));
+                    Node updateHeader = new Node("put-attribute", updateDefinition);
+                    updateHeader.attribute("name", "header");
+                    updateHeader.attribute("value", StringUtils.uncamelCase(entity.getName()));
+                    Node updateSubheader = new Node("put-attribute", updateDefinition);
+                    updateSubheader.attribute("name", "subheader");
+                    updateSubheader.attribute("value", "Edit existing " + StringUtils.uncamelCase(entity.getName()));
                     Node updateBodyAttribute = new Node("put-attribute", updateDefinition);
                     updateBodyAttribute.attribute("name", "body");
                     updateBodyAttribute.attribute("value", "/WEB-INF/views" + targetDir + entity.getName() + "/update"
@@ -397,15 +421,21 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                         + "/" + entityPlural.toLowerCase() + ".jsp"), this.viewAllTemplate.render(context), overwrite));
 
                 if (!tilesDefinitionExists(entityPlural.toLowerCase(), tilesDefinitions)) {
-                    Node viewAllDefinition = new Node("definition", tilesDefinitions);
-                    viewAllDefinition.attribute("name", entityPlural.toLowerCase());
-                    viewAllDefinition.attribute("extends", tilesName);
-                    Node viewAllTitleAttribute = new Node("put-attribute", viewAllDefinition);
-                    viewAllTitleAttribute.attribute("name", "title");
-                    viewAllTitleAttribute.attribute( "value", "View All " + pluralOf(StringUtils.uncamelCase(entity.getName())));
-                    Node viewAllBodyAttribute = new Node("put-attribute", viewAllDefinition);
-                    viewAllBodyAttribute.attribute("name", "body");
-                    viewAllBodyAttribute.attribute("value", "/WEB-INF/views" + targetDir + entity.getName() + "/"
+                    Node searchDefinition = new Node("definition", tilesDefinitions);
+                    searchDefinition.attribute("name", entityPlural.toLowerCase());
+                    searchDefinition.attribute("extends", tilesName);
+                    Node searchTitleAttribute = new Node("put-attribute", searchDefinition);
+                    searchTitleAttribute.attribute("name", "title");
+                    searchTitleAttribute.attribute( "value", "View All " + pluralOf(StringUtils.uncamelCase(entity.getName())));
+                    Node searchHeader = new Node("put-attribute", searchDefinition);
+                    searchHeader.attribute("name", "header");
+                    searchHeader.attribute("value", StringUtils.uncamelCase(entity.getName()));
+                    Node searchSubheader = new Node("put-attribute", searchDefinition);
+                    searchSubheader.attribute("name", "subheader");
+                    searchSubheader.attribute("value", "Search " + StringUtils.uncamelCase(entity.getName()) + " entities");
+                    Node searchBodyAttribute = new Node("put-attribute", searchDefinition);
+                    searchBodyAttribute.attribute("name", "body");
+                    searchBodyAttribute.attribute("value", "/WEB-INF/views" + targetDir + entity.getName() + "/"
                             + entityPlural.toLowerCase() + ".jsp");
                 }
 
@@ -424,6 +454,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                     Node viewTitleAttribute = new Node("put-attribute", viewDefinition);
                     viewTitleAttribute.attribute("name", "title");
                     viewTitleAttribute.attribute("value", "View " + StringUtils.uncamelCase(entity.getName()));
+                    Node viewHeader = new Node("put-attribute", viewDefinition);
+                    viewHeader.attribute("name", "header");
+                    viewHeader.attribute("value", StringUtils.uncamelCase(entity.getName()));
+                    Node viewSubheader = new Node("put-attribute", viewDefinition);
+                    viewSubheader.attribute("name", "subheader");
+                    viewSubheader.attribute("value", "View existing " + StringUtils.uncamelCase(entity.getName()));
                     Node viewBodyAttribute = new Node("put-attribute", viewDefinition);
                     viewBodyAttribute.attribute("name", "body");
                     viewBodyAttribute.attribute("value", "/WEB-INF/views" + targetDir + entity.getName() + "/view"
@@ -439,6 +475,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                     Node indexTitleAttribute = new Node("put-attribute", indexDefinition);
                     indexTitleAttribute.attribute("name", "title");
                     indexTitleAttribute.attribute("value", "Welcome to Forge");
+                    Node indexHeader = new Node("put-attribute", indexDefinition);
+                    indexHeader.attribute("name", "header");
+                    indexHeader.attribute("value", "Welcome to Forge");
+                    Node indexSubheader = new Node("put-attribute", indexDefinition);
+                    indexSubheader.attribute("name", "subheader");
+                    indexSubheader.attribute("value", "Your application is running.");
                     Node indexBodyAttribute = new Node("put-attribute", indexDefinition);
                     indexBodyAttribute.attribute("name", "body");
                     indexBodyAttribute.attribute("value", "/WEB-INF/views" + targetDir + "index.jsp");
