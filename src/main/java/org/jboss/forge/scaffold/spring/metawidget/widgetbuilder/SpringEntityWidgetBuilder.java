@@ -188,7 +188,8 @@ public class SpringEntityWidgetBuilder
 
         // Render non-optional ONE_TO_ONE with a button.
 
-        if (TRUE.equals(attributes.get(ONE_TO_ONE)) || TRUE.equals(attributes.get(N_TO_MANY)) && ! WidgetBuilderUtils.isReadOnly(attributes))
+        if (TRUE.equals(attributes.get(ONE_TO_ONE)) || TRUE.equals(attributes.get(N_TO_MANY)) || attributes.containsKey(REVERSE_PRIMARY_KEY_TYPE)
+                && ! WidgetBuilderUtils.isReadOnly(attributes))
         {
             // (we are about to create a nested metawidget, so we must prevent recursion)
 
@@ -200,9 +201,9 @@ public class SpringEntityWidgetBuilder
             // Use a dropdown menu with a create button.
 
             FormSelectTag select = new FormSelectTag();
-            select.putAttribute("path", attributes.get(NAME) + ".id");
 
-            if (!TRUE.equals(attributes.get(REQUIRED)) && TRUE.equals(attributes.get(ONE_TO_ONE)))
+            if (!TRUE.equals(attributes.get(REQUIRED)) && TRUE.equals(attributes.get(ONE_TO_ONE)) || (!TRUE.equals((attributes.get(N_TO_MANY)))
+                    && attributes.containsKey((REVERSE_PRIMARY_KEY_TYPE))))
             {
                 FormOptionTag emptyOption = new FormOptionTag();
                 emptyOption.putAttribute("value", "");
