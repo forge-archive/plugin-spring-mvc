@@ -123,7 +123,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     private static final String DAO_IMPLEMENTATION_TEMPLATE = "scaffold/spring/DaoImplementationTemplate.jv";
 
     private static final String ENTITY_CONVERTER_TEMPLATE = "scaffold/spring/EntityConverterTemplate.jv";
-    private static final String CONVERSION_SERVICE_TEMPLATE = "scaffold/spring/CustomConversionServiceTemplate.jv";
+    private static final String CONVERSION_SERVICE_TEMPLATE = "scaffold/spring/ConversionServiceTemplate.jv";
 
     private static final String VIEW_TEMPLATE = "scaffold/spring/view.jsp";
     private static final String VIEW_ALL_TEMPLATE = "scaffold/spring/viewAll.jsp";
@@ -1394,7 +1394,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         context.put("topLevelPackage", meta.getTopLevelPackage());
 
         JavaClass conversionService = JavaParser.parse(JavaClass.class, this.conversionServiceTemplate.render(context));
-        String customConversionService = meta.getTopLevelPackage() + ".conversion.CustomConversionService";
+        String customConversionService = meta.getTopLevelPackage() + ".conversion.ConversionService";
 
         if (java.getJavaResource(customConversionService).exists()) {
             conversionService = JavaParser.parse(JavaClass.class, java.getJavaResource(customConversionService).getResourceInputStream());
