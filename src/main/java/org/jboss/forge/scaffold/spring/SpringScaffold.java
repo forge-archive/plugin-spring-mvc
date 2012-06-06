@@ -55,6 +55,7 @@ import org.jboss.forge.project.facets.BaseFacet;
 import org.jboss.forge.project.facets.DependencyFacet;
 import org.jboss.forge.project.facets.JavaSourceFacet;
 import org.jboss.forge.project.facets.MetadataFacet;
+import org.jboss.forge.project.facets.ResourceFacet;
 import org.jboss.forge.project.facets.WebResourceFacet;
 import org.jboss.forge.project.facets.events.InstallFacets;
 import org.jboss.forge.resources.FileResource;
@@ -76,6 +77,8 @@ import org.jboss.seam.render.TemplateCompiler;
 import org.jboss.seam.render.spi.TemplateResolver;
 import org.jboss.seam.render.template.CompiledTemplateResource;
 import org.jboss.seam.render.template.resolver.ClassLoaderTemplateResolver;
+import org.jboss.shrinkwrap.descriptor.api.spec.jpa.persistence.PersistenceDescriptor;
+import org.jboss.shrinkwrap.descriptor.api.spec.jpa.persistence.PersistenceUnitDef;
 import org.metawidget.statically.StaticUtils.IndentedWriter;
 import org.metawidget.statically.javacode.StaticJavaMetawidget;
 import org.metawidget.statically.jsp.StaticJspMetawidget;
@@ -110,13 +113,17 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
     private static String XMLNS_PREFIX = "xmlns:";
 
+    private static final String APPLICATION_CONTEXT_TEMPLATE = "scaffold/spring/applicationContext.xl";
+    private static final String MVC_CONTEXT_TEMPLATE = "scaffold/spring/mvc-context.xl";
+    private static final String WEB_XML_TEMPLATE = "scaffold/spring/web.xl";
+
     private static final String INDEX_CONTROLLER_TEMPLATE = "scaffold/spring/IndexControllerTemplate.jv";
     private static final String SPRING_CONTROLLER_TEMPLATE = "scaffold/spring/SpringControllerTemplate.jv";
     private static final String DAO_INTERFACE_TEMPLATE = "scaffold/spring/DaoInterfaceTemplate.jv";
     private static final String DAO_IMPLEMENTATION_TEMPLATE = "scaffold/spring/DaoImplementationTemplate.jv";
 
     private static final String ENTITY_CONVERTER_TEMPLATE = "scaffold/spring/EntityConverterTemplate.jv";
-    private static final String CONVERSION_SERVICE_TEMPLATE = "scaffold/spring/CustomConversionServiceTemplate.jv";
+    private static final String CONVERSION_SERVICE_TEMPLATE = "scaffold/spring/ConversionServiceTemplate.jv";
 
     private static final String VIEW_TEMPLATE = "scaffold/spring/view.jsp";
     private static final String VIEW_ALL_TEMPLATE = "scaffold/spring/viewAll.jsp";
@@ -132,6 +139,10 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     //
 
     protected int backingBeanTemplateQbeMetawidgetIndent;
+
+    protected CompiledTemplateResource applicationContextTemplate;
+    protected CompiledTemplateResource mvcContextTemplate;
+    protected CompiledTemplateResource webXMLTemplate;
 
     protected CompiledTemplateResource indexControllerTemplate;
     protected CompiledTemplateResource springControllerTemplate;
@@ -159,8 +170,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
     protected CompiledTemplateResource errorTemplate;
     protected CompiledTemplateResource indexTemplate;   
+
     private TemplateResolver<ClassLoader> resolver;
-    
     private ShellPrompt prompt;
     private TemplateCompiler compiler;
     private Event<InstallFacets> install;
@@ -197,8 +208,32 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     //
 
     @Override
-    public List<Resource<?>> setup(String targetDir, Resource<?> template, boolean overwrite) {
+    public List<Resource<?>> setup(String targetDir, Resource<?> template, boolean overwrite)
+    {
         DependencyFacet deps = this.project.getFacet(DependencyFacet.class);
+        MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
+        PersistenceFacet persistence = this.project.getFacet(PersistenceFacet.class);
+        ResourceFacet resources = this.project.getFacet(ResourceFacet.class);
+        WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
+        // Use the Forge DependencyFacet to add Spring dependencies to the POM
+
+        String springVersion = "3.1.1.RELEASE";
+
+        deps.setProperty("spring.version", springVersion);
+
+        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-asm:${spring.version}"));
+        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-beans:${spring.version}"));
+        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-context:${spring.version}"));
+        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-context-support:${spring.version}"));
+        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-core:${spring.version}"));
+        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-expression:${spring.version}"));
+        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-tx:${spring.version}"));
+        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-web:${spring.version}"));
+        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-webmvc:${spring.version}"));
+        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-orm:${spring.version}"));
+ 
+        Map<Object, Object> context = CollectionUtils.newHashMap();
+        context.put("targetDir", targetDir);
 
         if (!targetDir.startsWith("/"))
             targetDir = "/" + targetDir;
@@ -206,10 +241,44 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         if (!targetDir.endsWith("/"))
             targetDir += "/";
 
+        context.put("topLevelPackage", meta.getTopLevelPackage());
+
+        PersistenceDescriptor descriptor = persistence.getConfig();
+
+        // Use the first persistence unit found by default
+
+        PersistenceUnitDef defaultUnit = descriptor.listUnits().get(0);
+        context.put("persistenceUnit", defaultUnit.getName());
+
+        // Add the JNDI name of the EntityManagerFactory to persistence.xml
+
+        defaultUnit.property("jboss.entity.manager.factory.jndi.name", "java:jboss/" + defaultUnit.getName() + "/persistence");
+        persistence.saveConfig(descriptor);
+
         List<Resource<?>> result = generateIndex(targetDir, template, overwrite);
 
-        result.add(setupMVCContext(targetDir));
-        result.add(updateWebXML(targetDir));
+        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, resources.getResource("META-INF/spring/applicationContext.xml"), 
+                this.applicationContextTemplate.render(context), overwrite));
+
+        String filename = "-mvc-context.xml";
+
+        if (!targetDir.equals("/"))
+        {
+            filename = "WEB-INF/" + targetDir.substring(1, targetDir.length()-1).replace('/', '-').toLowerCase() + filename;
+        }
+        else
+        {
+            filename = "WEB-INF/" + meta.getProjectName().replace(' ', '-').toLowerCase() + filename;
+        }
+
+        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(filename),
+                this.mvcContextTemplate.render(context), overwrite));
+
+        context.put("projectName", meta.getProjectName());
+
+        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/web.xml"),
+                this.webXMLTemplate.render(context), overwrite));
+
         result.add(setupTilesLayout(targetDir));
 
         deps.addDirectDependency(DependencyBuilder.create("org.jboss.spec.javax.servlet:jboss-servlet-api_3.0_spec"));
@@ -250,7 +319,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     }
 
     @Override
-    public List<Resource<?>> generateFromEntity(String targetDir, Resource<?> template, JavaClass entity, boolean overwrite) {
+    public List<Resource<?>> generateFromEntity(String targetDir, Resource<?> template, JavaClass entity, boolean overwrite)
+    {
 
         // Save the current thread's ContextClassLoader, so that it can be restored later
 
@@ -902,70 +972,108 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         return web.getWebResource("WEB-INF/web.xml");
     }
 
-    protected void loadTemplates() {
+    protected void loadTemplates()
+    {
+
+        if (this.applicationContextTemplate == null)
+        {
+            this.applicationContextTemplate = compiler.compile(APPLICATION_CONTEXT_TEMPLATE);
+        }
+
+        if (this.mvcContextTemplate == null)
+        {
+            this.mvcContextTemplate = compiler.compile(MVC_CONTEXT_TEMPLATE);
+        }
+
+        if (this.webXMLTemplate == null)
+        {
+            this.webXMLTemplate = compiler.compile(WEB_XML_TEMPLATE);
+        }
+
         // Compile the DAO interface Java template.
         
         if (this.daoInterfaceTemplate == null)
-           this.daoInterfaceTemplate = compiler.compile(DAO_INTERFACE_TEMPLATE);
+        {
+            this.daoInterfaceTemplate = compiler.compile(DAO_INTERFACE_TEMPLATE);           
+        }
         
         // Compile the DAO interface implementation Java template.
         
         if (this.daoImplementationTemplate == null)
+        {
             this.daoImplementationTemplate = compiler.compile(DAO_IMPLEMENTATION_TEMPLATE);
+        }
 
         // Compile the Spring MVC index controller Java template.
 
         if (this.indexControllerTemplate == null)
+        {
             this.indexControllerTemplate = compiler.compile(INDEX_CONTROLLER_TEMPLATE);
+        }
 
         // Compile the Spring MVC entity controller Java template.
         
         if (this.springControllerTemplate == null)
+        {
             this.springControllerTemplate = compiler.compile(SPRING_CONTROLLER_TEMPLATE);
+        }
 
         if (this.conversionServiceTemplate == null)
+        {
             this.conversionServiceTemplate = compiler.compile(CONVERSION_SERVICE_TEMPLATE);
+        }
 
         if (this.entityConverterTemplate == null)
+        {
             this.entityConverterTemplate = compiler.compile(ENTITY_CONVERTER_TEMPLATE);
+        }
 
         if (this.viewAllTemplate == null)
+        {
             this.viewAllTemplate = compiler.compile(VIEW_ALL_TEMPLATE);
+        }
 
-        if (this.viewTemplate == null) {
+        if (this.viewTemplate == null)
+        {
             this.viewTemplate = compiler.compile(VIEW_TEMPLATE);
             String template = Streams.toString(this.viewTemplate.getSourceTemplateResource().getInputStream());
             this.viewTemplateMetawidgetIndent = parseIndent(template, "@{metawidget}");
         }
 
-        if (this.updateTemplate == null) {
+        if (this.updateTemplate == null)
+        {
             this.updateTemplate = compiler.compile(UPDATE_TEMPLATE);
             String template = Streams.toString(this.updateTemplate.getSourceTemplateResource().getInputStream());
             this.updateTemplateEntityMetawidgetIndent = parseIndent(template, "@{metawidget}");
         }
 
-        if (this.createTemplate == null) {
+        if (this.createTemplate == null)
+        {
             this.createTemplate = compiler.compile(CREATE_TEMPLATE);
             String template = Streams.toString(this.createTemplate.getSourceTemplateResource().getInputStream());
             this.createTemplateEntityMetawidgetIndent = parseIndent(template, "@{metawidget}");
         }
 
-        if (this.navigationTemplate == null) {
+        if (this.navigationTemplate == null)
+        {
             this.navigationTemplate = compiler.compile(NAVIGATION_TEMPLATE);
             String template = Streams.toString(this.navigationTemplate.getSourceTemplateResource().getInputStream());
             this.navigationTemplateIndent = parseIndent(template, "@{navigation}");
         }
 
-        if (this.errorTemplate == null) {
+        if (this.errorTemplate == null)
+        {
             this.errorTemplate = compiler.compile(ERROR_TEMPLATE);
         }
 
-        if (this.indexTemplate == null) {
+        if (this.indexTemplate == null)
+        {
             this.indexTemplate = compiler.compile(INDEX_TEMPLATE);
         }
     }
 
-    protected HashMap<Object, Object> getTemplateContext(final Resource<?> template) {
+    protected HashMap<Object, Object> getTemplateContext(final Resource<?> template)
+    {
         HashMap<Object, Object> context = new HashMap<Object, Object>();
         context.put("template", template);
         context.put("templateStrategy", getTemplateStrategy());
@@ -1286,7 +1394,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         context.put("topLevelPackage", meta.getTopLevelPackage());
 
         JavaClass conversionService = JavaParser.parse(JavaClass.class, this.conversionServiceTemplate.render(context));
-        String customConversionService = meta.getTopLevelPackage() + ".conversion.CustomConversionService";
+        String customConversionService = meta.getTopLevelPackage() + ".conversion.ConversionService";
 
         if (java.getJavaResource(customConversionService).exists()) {
             conversionService = JavaParser.parse(JavaClass.class, java.getJavaResource(customConversionService).getResourceInputStream());
