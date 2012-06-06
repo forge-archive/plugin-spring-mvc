@@ -22,7 +22,7 @@ public class ReadOnlyEntityWidgetBuilder extends ReadOnlyWidgetBuilder
 
         Class<?> clazz = WidgetBuilderUtils.getActualClassOrType(attributes, null);
 
-        if (TRUE.equals(attributes.get(N_TO_MANY)) || attributes.containsKey(INVERSE_RELATIONSHIP))
+        if ((TRUE.equals(attributes.get(N_TO_MANY)) || attributes.containsKey(INVERSE_RELATIONSHIP)) && WidgetBuilderUtils.isReadOnly(attributes))
         {
             return new StaticXmlStub();
         }
