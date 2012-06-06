@@ -6,7 +6,7 @@ import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.stereotype.Component;
 
 @Component("conversionService")
-public class ConversionService extends DefaultConversionService implements InitializingBean
+public class CustomConversionService extends DefaultConversionService implements InitializingBean
 {
 	@Override
 	public void afterPropertiesSet() throws Exception
