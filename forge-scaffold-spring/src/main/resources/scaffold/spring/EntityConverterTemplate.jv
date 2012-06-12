@@ -1,0 +1,37 @@
+package @{topLevelPackage}.converters;
+
+import java.util.Collections;
+import java.util.Set;
+
+import org.springframework.core.convert.TypeDescriptor;
+import org.springframework.core.convert.converter.GenericConverter;
+
+import @{domainPackage};
+import @{topLevelPackage}.repo.@{entityName}Dao;
+
+public class @{entityName}Converter implements GenericConverter
+{
+
+	private @{entityName}Dao @{ccEntity}Dao;
+
+	public @{entityName}Converter(@{entityName}Dao @{ccEntity}Dao)
+	{
+		this.@{ccEntity}Dao = @{ccEntity}Dao;
+	}
+
+	@Override
+	public Set<ConvertiblePair> getConvertibleTypes()
+	{
+		return Collections.singleton(new ConvertiblePair(String.class, @{entityName}.class));
+	}
+
+	@Override
+	public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType)
+	{
+		String idString = source.toString();
+		Long id = Long.valueOf(idString);
+
+		@{entityName} @{ccEntity} = @{ccEntity}Dao.getById(id);
+		return @{ccEntity};
+	}
+}
