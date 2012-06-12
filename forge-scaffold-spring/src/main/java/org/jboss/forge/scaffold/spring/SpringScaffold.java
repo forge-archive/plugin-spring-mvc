@@ -73,6 +73,7 @@ import org.jboss.forge.shell.plugins.Help;
 import org.jboss.forge.shell.plugins.RequiresFacet;
 import org.jboss.forge.shell.util.Streams;
 import org.jboss.forge.spec.javaee.PersistenceFacet;
+import org.jboss.forge.spec.spring.mvc.SpringFacet;
 import org.jboss.seam.render.TemplateCompiler;
 import org.jboss.seam.render.spi.TemplateResolver;
 import org.jboss.seam.render.template.CompiledTemplateResource;
@@ -104,8 +105,10 @@ import org.metawidget.util.simple.StringUtils;
 @Help("Spring MVC scaffolding")
 @RequiresFacet({ DependencyFacet.class,
             WebResourceFacet.class,
-            PersistenceFacet.class})
-public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
+            PersistenceFacet.class,
+            SpringFacet.class })
+public class SpringScaffold extends BaseFacet implements ScaffoldProvider
+{
     
     //
     // Private statics
@@ -190,7 +193,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     public SpringScaffold(final Configuration config,
                     final ShellPrompt prompt,
                     final TemplateCompiler compiler,
-                    final Event<InstallFacets> install) {
+                    final Event<InstallFacets> install)
+    {
         this.config = config;
         this.prompt = prompt;
         this.compiler = compiler;
@@ -210,27 +214,11 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     @Override
     public List<Resource<?>> setup(String targetDir, Resource<?> template, boolean overwrite)
     {
-        DependencyFacet deps = this.project.getFacet(DependencyFacet.class);
         MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
         PersistenceFacet persistence = this.project.getFacet(PersistenceFacet.class);
         ResourceFacet resources = this.project.getFacet(ResourceFacet.class);
+
         WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
-        // Use the Forge DependencyFacet to add Spring dependencies to the POM
-
-        String springVersion = "3.1.1.RELEASE";
-
-        deps.setProperty("spring.version", springVersion);
-
-        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-asm:${spring.version}"));
-        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-beans:${spring.version}"));
-        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-context:${spring.version}"));
-        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-context-support:${spring.version}"));
-        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-core:${spring.version}"));
-        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-expression:${spring.version}"));
-        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-tx:${spring.version}"));
-        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-web:${spring.version}"));
-        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-webmvc:${spring.version}"));
-        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-orm:${spring.version}"));
  
         Map<Object, Object> context = CollectionUtils.newHashMap();
         context.put("targetDir", targetDir);
@@ -280,9 +268,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 this.webXMLTemplate.render(context), overwrite));
 
         result.add(setupTilesLayout(targetDir));
-
-        deps.addDirectDependency(DependencyBuilder.create("org.jboss.spec.javax.servlet:jboss-servlet-api_3.0_spec"));
-        deps.addDirectDependency(DependencyBuilder.create("org.apache.tiles:tiles-jsp:2.1.3"));
 
         return result;
     }
