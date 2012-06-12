@@ -71,6 +71,10 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
 
     private static final Dependency SPRING_WEB_MVC = DependencyBuilder.create("org.springframework:spring-webmvc:${spring.version}");
 
+    private static final Dependency JBOSS_SERVLET_API = DependencyBuilder.create("org.jboss.spec.javax.servelt:jboss-servlet-api_3.0_spec");
+
+    private static final Dependency APACHE_TILES = DependencyBuilder.create("org.apache.tiles:tiles-jsp:2.1.3");
+
     @Inject
     public SpringFacetImpl(final DependencyInstaller installer)
     {
@@ -129,7 +133,8 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
     protected List<Dependency> getRequiredDependencies()
     {
         return Arrays.asList(JAVAEE6, SPRING_ASM, SPRING_BEANS, SPRING_CONTEXT, SPRING_CONTEXT_SUPPORT,
-                SPRING_CORE, SPRING_EXPRESSION, SPRING_ORM, SPRING_TX, SPRING_WEB, SPRING_WEB_MVC);        
+                SPRING_CORE, SPRING_EXPRESSION, SPRING_ORM, SPRING_TX, SPRING_WEB, SPRING_WEB_MVC,
+                JBOSS_SERVLET_API, APACHE_TILES);        
     }
 
     /*
