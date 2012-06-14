@@ -65,16 +65,20 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.jboss.forge</groupId>
-      <artifactId>plugin-spring-mvc</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
-    </dependency>
-    <dependency>
       <groupId>org.jboss.seam.render</groupId>
       <artifactId>seam-render</artifactId>
       <version>1.0.0.Alpha6</version>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.jboss.forge</groupId>
+      <artifactId>plugin-spring-mvc</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
+      <scope>provided</scope>
+    </dependency>
+
+	<!-- Test dependencies -->
+
     <dependency>
       <groupId>org.jboss.forge</groupId>
       <artifactId>forge-test-harness</artifactId>
