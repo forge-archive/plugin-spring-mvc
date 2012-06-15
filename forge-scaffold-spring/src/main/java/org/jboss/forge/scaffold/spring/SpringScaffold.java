@@ -412,6 +412,25 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                     indexBodyAttribute.attribute("value", "/WEB-INF/views" + targetDir + "index.jsp");
                 }
 
+                if (!targetDir.equals("/") && !tilesDefinitionExists(targetDir + "error", tilesDefinitions))
+                {
+                    Node errorDefinition = new Node("definition", tilesDefinitions);
+                    errorDefinition.attribute("name", "/error");
+                    errorDefinition.attribute("extends", "standard");
+                    Node errorTitleAttribute = new Node("put-attribute", errorDefinition);
+                    errorTitleAttribute.attribute("name", "title");
+                    errorTitleAttribute.attribute("value", "Server Error");
+                    Node errorHeader = new Node("put-attribute", errorDefinition);
+                    errorHeader.attribute("name", "header");
+                    errorHeader.attribute("value", "Oops!");
+                    Node errorSubheader = new Node("put-attribute", errorDefinition);
+                    errorSubheader.attribute("name", "subheader");
+                    errorSubheader.attribute("value", "That's going to leave a mark!");
+                    Node errorBodyAttribute = new Node("put-attribute", errorDefinition);
+                    errorBodyAttribute.attribute("name", "body");
+                    errorBodyAttribute.attribute("value", "/WEB-INF/views/error.jsp");
+                }
+
                 if (!tilesDefinitionExists("/index", tilesDefinitions)) {
                     Node rootIndexDefinition = new Node("definition", tilesDefinitions);
                     rootIndexDefinition.attribute("name", "/index");
@@ -428,6 +447,24 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                     Node rootIndexBodyAttribute = new Node("put-attribute", rootIndexDefinition);
                     rootIndexBodyAttribute.attribute("name", "body");
                     rootIndexBodyAttribute.attribute("value", "/WEB-INF/views/index.jsp");
+                }
+
+                if (!tilesDefinitionExists("/error", tilesDefinitions)) {
+                    Node rootErrorDefinition = new Node("definition", tilesDefinitions);
+                    rootErrorDefinition.attribute("name", "/error");
+                    rootErrorDefinition.attribute("extends", "standard");
+                    Node rootErrorTitleAttribute = new Node("put-attribute", rootErrorDefinition);
+                    rootErrorTitleAttribute.attribute("name", "title");
+                    rootErrorTitleAttribute.attribute("value", "Server Error");
+                    Node rootErrorHeader = new Node("put-attribute", rootErrorDefinition);
+                    rootErrorHeader.attribute("name", "header");
+                    rootErrorHeader.attribute("value", "Oops!");
+                    Node rootErrorSubheader = new Node("put-attribute", rootErrorDefinition);
+                    rootErrorSubheader.attribute("name", "subheader");
+                    rootErrorSubheader.attribute("value", "That's going to leave a mark!");
+                    Node rootErrorBodyAttribute = new Node("put-attribute", rootErrorDefinition);
+                    rootErrorBodyAttribute.attribute("name", "body");
+                    rootErrorBodyAttribute.attribute("value", "/WEB-INF/views/error.jsp");
                 }
 
                 if (!tilesDefinitionExists("create" + entity.getName(), tilesDefinitions)) {
@@ -954,14 +991,14 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         // TODO: This may need to be modified later, to allow multiple error page locations.
 
-/*        if (webapp.get("error-page").isEmpty())
+        if (webapp.get("error-page").isEmpty())
         {
             Node errorPage = new Node("error-page", webapp);
             Node exceptionType = new Node("exception-type", errorPage);
             exceptionType.text("java.lang.Exception");
             Node location = new Node("location", errorPage);
             location.text("/WEB-INF/views/error.jsp");            
-        }*/
+        }
 
         // Save the updated web.xml file
 
