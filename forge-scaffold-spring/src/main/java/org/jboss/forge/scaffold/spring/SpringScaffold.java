@@ -215,6 +215,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         PersistenceFacet persistence = this.project.getFacet(PersistenceFacet.class);
         ResourceFacet resources = this.project.getFacet(ResourceFacet.class);
         WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
+
         // Use the Forge DependencyFacet to add Spring dependencies to the POM
 
         String springVersion = "3.1.1.RELEASE";
@@ -330,13 +331,15 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
 
         List<Resource<?>> result = new ArrayList<Resource<?>>();
 
-        try {
+        try
+        {
 
             // Force the current thread to use the ScaffoldProvider's ContextClassLoader
 
             Thread.currentThread().setContextClassLoader(SpringScaffold.class.getClassLoader());
 
-            try {
+            try
+            {
                 JavaSourceFacet java = this.project.getFacet(JavaSourceFacet.class);
                 WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
                 MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
@@ -377,15 +380,28 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 // Create a views.xml file containing all tiles definitions.
 
                 Resource<?> viewsXML = web.getWebResource("WEB-INF/views/views.xml");
-                Node tilesDefinitions = new Node("tiles-definitions");
+                Node definitions = new Node("tiles-definitions");
 
                 if (viewsXML.exists())
-                    tilesDefinitions = XMLParser.parse(viewsXML.getResourceInputStream());
+                    definitions = XMLParser.parse(viewsXML.getResourceInputStream());
 
-                String tilesName = "standard";
+                String tile = targetDir.equals("/") ? "standard" : targetDir.substring(1, targetDir.length()-1);
+
+                // Add index page(s)
 
                 if (!targetDir.equals("/"))
-                    tilesName = targetDir.substring(1, targetDir.length()-1);
+                {
+                    addViewDefinition("standard", "/index", "Weclome to Forge", "Welcome to Forge", "Your application is running.",
+                            "/WEB-INF/views/index.jsp", definitions);
+                }
+
+                addViewDefinition(tile, targetDir + "index", "Welcome to Forge", "Welcome to Forge", "Your application is running.",
+                        "/WEB-INF/views" + targetDir + "index.jsp", definitions);
+
+                // Add error page
+
+                addViewDefinition("standard", "/error", "Server Error", "Oops!", "That's going to leave a mark!",
+                        "/WEB-INF/views/error.jsp", definitions);
 
                 // Generate create
     
@@ -394,97 +410,9 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + entity.getName()
                         + "/create" + entity.getName() + ".jsp"), this.createTemplate.render(context), overwrite));
 
-                if (!targetDir.equals("/") && !tilesDefinitionExists(targetDir + "index", tilesDefinitions)) {
-                    Node indexDefinition = new Node("definition", tilesDefinitions);
-                    indexDefinition.attribute("name", targetDir + "index");
-                    indexDefinition.attribute("extends", tilesName);
-                    Node indexTitleAttribute = new Node("put-attribute", indexDefinition);
-                    indexTitleAttribute.attribute("name", "title");
-                    indexTitleAttribute.attribute("value", "Welcome to Forge");
-                    Node indexHeader = new Node("put-attribute", indexDefinition);
-                    indexHeader.attribute("name", "header");
-                    indexHeader.attribute("value", "Welcome to Forge");
-                    Node indexSubheader = new Node("put-attribute", indexDefinition);
-                    indexSubheader.attribute("name", "subheader");
-                    indexSubheader.attribute("value", "Your application is running.");
-                    Node indexBodyAttribute = new Node("put-attribute", indexDefinition);
-                    indexBodyAttribute.attribute("name", "body");
-                    indexBodyAttribute.attribute("value", "/WEB-INF/views" + targetDir + "index.jsp");
-                }
-
-                if (!targetDir.equals("/") && !tilesDefinitionExists(targetDir + "error", tilesDefinitions))
-                {
-                    Node errorDefinition = new Node("definition", tilesDefinitions);
-                    errorDefinition.attribute("name", "/error");
-                    errorDefinition.attribute("extends", "standard");
-                    Node errorTitleAttribute = new Node("put-attribute", errorDefinition);
-                    errorTitleAttribute.attribute("name", "title");
-                    errorTitleAttribute.attribute("value", "Server Error");
-                    Node errorHeader = new Node("put-attribute", errorDefinition);
-                    errorHeader.attribute("name", "header");
-                    errorHeader.attribute("value", "Oops!");
-                    Node errorSubheader = new Node("put-attribute", errorDefinition);
-                    errorSubheader.attribute("name", "subheader");
-                    errorSubheader.attribute("value", "That's going to leave a mark!");
-                    Node errorBodyAttribute = new Node("put-attribute", errorDefinition);
-                    errorBodyAttribute.attribute("name", "body");
-                    errorBodyAttribute.attribute("value", "/WEB-INF/views/error.jsp");
-                }
-
-                if (!tilesDefinitionExists("/index", tilesDefinitions)) {
-                    Node rootIndexDefinition = new Node("definition", tilesDefinitions);
-                    rootIndexDefinition.attribute("name", "/index");
-                    rootIndexDefinition.attribute("extends", "standard");
-                    Node rootIndexTitleAttribute = new Node("put-attribute", rootIndexDefinition);
-                    rootIndexTitleAttribute.attribute("name", "title");
-                    rootIndexTitleAttribute.attribute("value", "Welcome to Forge");
-                    Node rootIndexHeader = new Node("put-attribute", rootIndexDefinition);
-                    rootIndexHeader.attribute("name", "header");
-                    rootIndexHeader.attribute("value", "Welcome to Forge");
-                    Node rootIndexSubheader = new Node("put-attribute", rootIndexDefinition);
-                    rootIndexSubheader.attribute("name", "subheader");
-                    rootIndexSubheader.attribute("value", "Your application is running.");
-                    Node rootIndexBodyAttribute = new Node("put-attribute", rootIndexDefinition);
-                    rootIndexBodyAttribute.attribute("name", "body");
-                    rootIndexBodyAttribute.attribute("value", "/WEB-INF/views/index.jsp");
-                }
-
-                if (!tilesDefinitionExists("/error", tilesDefinitions)) {
-                    Node rootErrorDefinition = new Node("definition", tilesDefinitions);
-                    rootErrorDefinition.attribute("name", "/error");
-                    rootErrorDefinition.attribute("extends", "standard");
-                    Node rootErrorTitleAttribute = new Node("put-attribute", rootErrorDefinition);
-                    rootErrorTitleAttribute.attribute("name", "title");
-                    rootErrorTitleAttribute.attribute("value", "Server Error");
-                    Node rootErrorHeader = new Node("put-attribute", rootErrorDefinition);
-                    rootErrorHeader.attribute("name", "header");
-                    rootErrorHeader.attribute("value", "Oops!");
-                    Node rootErrorSubheader = new Node("put-attribute", rootErrorDefinition);
-                    rootErrorSubheader.attribute("name", "subheader");
-                    rootErrorSubheader.attribute("value", "That's going to leave a mark!");
-                    Node rootErrorBodyAttribute = new Node("put-attribute", rootErrorDefinition);
-                    rootErrorBodyAttribute.attribute("name", "body");
-                    rootErrorBodyAttribute.attribute("value", "/WEB-INF/views/error.jsp");
-                }
-
-                if (!tilesDefinitionExists("create" + entity.getName(), tilesDefinitions)) {
-                    Node createDefinition = new Node("definition", tilesDefinitions);
-                    createDefinition.attribute("name", "create" + entity.getName());
-                    createDefinition.attribute("extends", tilesName);
-                    Node createTitleAttribute = new Node("put-attribute", createDefinition);
-                    createTitleAttribute.attribute("name", "title");
-                    createTitleAttribute.attribute("value", "Create New " + StringUtils.uncamelCase(entity.getName()));
-                    Node createHeader = new Node("put-attribute", createDefinition);
-                    createHeader.attribute("name", "header");
-                    createHeader.attribute("value", StringUtils.uncamelCase(entity.getName()));
-                    Node createSubheader = new Node("put-attribute", createDefinition);
-                    createSubheader.attribute("name", "subheader");
-                    createSubheader.attribute("value", "Create a new " + StringUtils.uncamelCase(entity.getName()));
-                    Node createBodyAttribute = new Node("put-attribute", createDefinition);
-                    createBodyAttribute.attribute("name", "body");
-                    createBodyAttribute.attribute("value", "/WEB-INF/views" + targetDir + entity.getName() + "/create"
-                            + entity.getName() + ".jsp");
-                }
+                addViewDefinition(tile, "create" + entity.getName(), "Create " + StringUtils.uncamelCase(entity.getName()),
+                        StringUtils.uncamelCase(entity.getName()), "Create a new " + StringUtils.uncamelCase(entity.getName()),
+                        "/WEB-INF/views" + targetDir + entity.getName() + "/create" + entity.getName() + ".jsp", definitions);
 
                 // Generate update
 
@@ -493,26 +421,11 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + entity.getName()
                         + "/update" + entity.getName() + ".jsp"), this.updateTemplate.render(context), overwrite));
 
-                if (!tilesDefinitionExists("update" + entity.getName(), tilesDefinitions)) {
-                    Node updateDefinition = new Node("definition", tilesDefinitions);
-                    updateDefinition.attribute("name", "update" + entity.getName());
-                    updateDefinition.attribute("extends", tilesName);
-                    Node updateTitleAttribute = new Node("put-attribute", updateDefinition);
-                    updateTitleAttribute.attribute("name", "title");
-                    updateTitleAttribute.attribute("value", "Update " + StringUtils.uncamelCase(entity.getName()));
-                    Node updateHeader = new Node("put-attribute", updateDefinition);
-                    updateHeader.attribute("name", "header");
-                    updateHeader.attribute("value", StringUtils.uncamelCase(entity.getName()));
-                    Node updateSubheader = new Node("put-attribute", updateDefinition);
-                    updateSubheader.attribute("name", "subheader");
-                    updateSubheader.attribute("value", "Edit existing " + StringUtils.uncamelCase(entity.getName()));
-                    Node updateBodyAttribute = new Node("put-attribute", updateDefinition);
-                    updateBodyAttribute.attribute("name", "body");
-                    updateBodyAttribute.attribute("value", "/WEB-INF/views" + targetDir + entity.getName() + "/update"
-                            + entity.getName() + ".jsp");
-                }
+                addViewDefinition(tile, "update" + entity.getName(), "Edit " + StringUtils.uncamelCase(entity.getName()),
+                        StringUtils.uncamelCase(entity.getName()), "Edit an existing " + StringUtils.uncamelCase(entity.getName()),
+                        "/WEB-INF/views" + targetDir + entity.getName() + "/update" + entity.getName() + ".jsp", definitions);
 
-                // Generate search/view (all)
+                // Generate search
 
                 this.headerMetawidget.setValue(StaticJspUtils.wrapExpression(entity.getName()));
                 this.headerMetawidget.setPath(entity.getQualifiedName());
@@ -527,26 +440,11 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + entity.getName()
                         + "/" + entityPlural.toLowerCase() + ".jsp"), this.viewAllTemplate.render(context), overwrite));
 
-                if (!tilesDefinitionExists(entityPlural.toLowerCase(), tilesDefinitions)) {
-                    Node searchDefinition = new Node("definition", tilesDefinitions);
-                    searchDefinition.attribute("name", entityPlural.toLowerCase());
-                    searchDefinition.attribute("extends", tilesName);
-                    Node searchTitleAttribute = new Node("put-attribute", searchDefinition);
-                    searchTitleAttribute.attribute("name", "title");
-                    searchTitleAttribute.attribute( "value", "Search " + StringUtils.uncamelCase(entity.getName()) + " entities");
-                    Node searchHeader = new Node("put-attribute", searchDefinition);
-                    searchHeader.attribute("name", "header");
-                    searchHeader.attribute("value", StringUtils.uncamelCase(entity.getName()));
-                    Node searchSubheader = new Node("put-attribute", searchDefinition);
-                    searchSubheader.attribute("name", "subheader");
-                    searchSubheader.attribute("value", "Search " + StringUtils.uncamelCase(entity.getName()) + " entities");
-                    Node searchBodyAttribute = new Node("put-attribute", searchDefinition);
-                    searchBodyAttribute.attribute("name", "body");
-                    searchBodyAttribute.attribute("value", "/WEB-INF/views" + targetDir + entity.getName() + "/"
-                            + entityPlural.toLowerCase() + ".jsp");
-                }
+                addViewDefinition(tile, entityPlural.toLowerCase(), "Search " + StringUtils.uncamelCase(entity.getName()) + " entities",
+                        StringUtils.uncamelCase(entity.getName()), "Search " + StringUtils.uncamelCase(entity.getName()) + " entities",
+                        "/WEB-INF/views" + targetDir + entity.getName() + "/" + entityPlural.toLowerCase()+ ".jsp", definitions);
 
-                // Generate view (single)
+                // Generate view
 
                 this.entityMetawidget.setReadOnly(true);
                 writeEntityMetawidget(context, this.viewTemplateMetawidgetIndent, this.viewTemplateNamespaces);
@@ -554,46 +452,11 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + entity.getName()
                         + "/view" + entity.getName() + ".jsp"), this.viewTemplate.render(context), overwrite));
 
-                if (!tilesDefinitionExists("view" + entity.getName(), tilesDefinitions)) {
-                    Node viewDefinition = new Node("definition", tilesDefinitions);
-                    viewDefinition.attribute("name", "view" + entity.getName());
-                    viewDefinition.attribute("extends", tilesName);
-                    Node viewTitleAttribute = new Node("put-attribute", viewDefinition);
-                    viewTitleAttribute.attribute("name", "title");
-                    viewTitleAttribute.attribute("value", "View " + StringUtils.uncamelCase(entity.getName()));
-                    Node viewHeader = new Node("put-attribute", viewDefinition);
-                    viewHeader.attribute("name", "header");
-                    viewHeader.attribute("value", StringUtils.uncamelCase(entity.getName()));
-                    Node viewSubheader = new Node("put-attribute", viewDefinition);
-                    viewSubheader.attribute("name", "subheader");
-                    viewSubheader.attribute("value", "View existing " + StringUtils.uncamelCase(entity.getName()));
-                    Node viewBodyAttribute = new Node("put-attribute", viewDefinition);
-                    viewBodyAttribute.attribute("name", "body");
-                    viewBodyAttribute.attribute("value", "/WEB-INF/views" + targetDir + entity.getName() + "/view"
-                            + entity.getName() + ".jsp");
-                }
+                addViewDefinition(tile, "view" + entity.getName(), "View " + StringUtils.uncamelCase(entity.getName()),
+                        StringUtils.uncamelCase(entity.getName()), "View existing " + StringUtils.uncamelCase(entity.getName()),
+                        "/WEB-INF/views" + targetDir + entity.getName() + "/view" + entity.getName() + ".jsp", definitions);
 
-                // Generate index
-
-                if (!tilesDefinitionExists(targetDir + "index", tilesDefinitions)) {
-                    Node indexDefinition = new Node("definition", tilesDefinitions);
-                    indexDefinition.attribute("name", targetDir + "index");
-                    indexDefinition.attribute("extends", "standard");
-                    Node indexTitleAttribute = new Node("put-attribute", indexDefinition);
-                    indexTitleAttribute.attribute("name", "title");
-                    indexTitleAttribute.attribute("value", "Welcome to Forge");
-                    Node indexHeader = new Node("put-attribute", indexDefinition);
-                    indexHeader.attribute("name", "header");
-                    indexHeader.attribute("value", "Welcome to Forge");
-                    Node indexSubheader = new Node("put-attribute", indexDefinition);
-                    indexSubheader.attribute("name", "subheader");
-                    indexSubheader.attribute("value", "Your application is running.");
-                    Node indexBodyAttribute = new Node("put-attribute", indexDefinition);
-                    indexBodyAttribute.attribute("name", "body");
-                    indexBodyAttribute.attribute("value", "/WEB-INF/views" + targetDir + "index.jsp");
-                }
-
-                String viewsFile = XMLParser.toXMLString(tilesDefinitions);
+                String viewsFile = XMLParser.toXMLString(definitions);
 
                 // TODO: Find a cleaner way to add Tiles DTD than this.
 
@@ -904,30 +767,24 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
         return web.getWebResource(filename);
     }
 
-    protected Resource<?> setupTilesLayout(String targetDir) {
+    protected Resource<?> setupTilesLayout(String targetDir)
+    {
         WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
 
-        Node tilesDefinitions = new Node("tiles-definitions");
+        Node definitions = new Node("tiles-definitions");
 
         if (web.getWebResource("WEB-INF/layouts/layouts.xml").exists())
-            tilesDefinitions = XMLParser.parse(web.getWebResource("WEB-INF/layouts/layouts.xml").getResourceInputStream());
+            definitions = XMLParser.parse(web.getWebResource("WEB-INF/layouts/layouts.xml").getResourceInputStream());
 
-        if (!tilesDefinitionExists("standard", tilesDefinitions)) {
-            Node standardDefinition = new Node("definition", tilesDefinitions);
-            standardDefinition.attribute("name", "standard");
-            standardDefinition.attribute("template", "/WEB-INF/layouts/pageTemplate.jsp");
+        addLayoutDefinition("standard", "/WEB-INF/layouts/pageTemplate.jsp", definitions);
+
+        if (!targetDir.equals("/"))
+        {
+            String name = targetDir.substring(1, targetDir.length()-1);
+            addLayoutDefinition(name, "/WEB-INF/layouts/" + name + "Template.jsp", definitions);
         }
 
-        if (!targetDir.equals("/")) {
-
-            if(!tilesDefinitionExists(targetDir.substring(1, targetDir.length()-1), tilesDefinitions)) {
-                Node targetDirDefinition = new Node("definition", tilesDefinitions);
-                targetDirDefinition.attribute("name", targetDir.substring(1, targetDir.length()-1));
-                targetDirDefinition.attribute("template", "/WEB-INF/layouts/" + targetDir.substring(1, targetDir.length()-1) + "Template.jsp");
-            }
-        }
-
-        String tilesDefinitionFile = XMLParser.toXMLString(tilesDefinitions);
+        String tilesDefinitionFile = XMLParser.toXMLString(definitions);
 
         // TODO: Find a cleaner way to add Tiles DTD than this.
 
@@ -1251,21 +1108,24 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
      * Check if there is a servlet mapped to '/'.  If not, create one and an appropriate context file.
      */
 
-    protected void updateRootServlet() {
+    protected void updateRootServlet()
+    {
         WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
         MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
         Node webapp = XMLParser.parse(web.getWebResource("WEB-INF/web.xml").getResourceInputStream());
         boolean hasRootServlet = false;
         String filename = "WEB-INF/" + meta.getProjectName().replace(' ', '-').toLowerCase() + "-mvc-context.xml";
 
-        for (Node servletMapping : webapp.get("servlet-mapping")) {
+        for (Node servletMapping : webapp.get("servlet-mapping"))
+        {
             if (servletMapping.getSingle("url-pattern").getText().equals("/"))
                 hasRootServlet = true;
         }
 
         if (hasRootServlet == true)
             updateMVCContext(filename);
-        else {
+        else
+        {
             setupMVCContext("/");
 
             Node servlet = new Node("servlet", webapp);
@@ -1312,13 +1172,62 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     }
 
     /**
-     * Check if the passed node, tilesDefinition, contains an Apache Tiles2 <definition> with name="tilesName" as an attribute.
+     * Add an Apache Tiles2 view <definition> for the given parameters, assuming one does not exist already.
+     */
+
+    protected void addViewDefinition(String template, String name, String title, String header, String subheader,
+            String body, Node definitions)
+    {
+        if (definitionExists(name, definitions))
+        {
+            return;
+        }
+
+        Node definition = new Node("definition", definitions);
+        definition.attribute("extends", template);
+        definition.attribute("name", name);
+
+        Node titleAttribute = new Node("put-attribute", definition);
+        titleAttribute.attribute("name", "title");
+        titleAttribute.attribute("value", title);
+
+        Node headerAttribute = new Node("put-attribute", definition);
+        headerAttribute.attribute("name", "header");
+        headerAttribute.attribute("value", header);
+
+        Node subheaderAttribute = new Node("put-attribute", definition);
+        subheaderAttribute.attribute("name", "subheader");
+        subheaderAttribute.attribute("value", subheader);
+
+        Node bodyAttribute = new Node("put-attribute", definition);
+        bodyAttribute.attribute("name", "body");
+        bodyAttribute.attribute("value", body);
+    }
+
+    /**
+     * Add an Apache Tiles2 layout <definition>, assuming one does not already exist.
+     */
+
+    protected void addLayoutDefinition(String name, String template, Node definitions)
+    {
+        if (definitionExists(name, definitions))
+        {
+            return;
+        }
+
+        Node definition = new Node("definition");
+        definition.attribute("name", name);
+        definition.attribute("template", template);
+    }
+
+    /**
+     * Check if the passed node, definitions, contains an Apache Tiles2 <definition> with name="tilesName" as an attribute.
      */
     
-    protected boolean tilesDefinitionExists(String tilesName, Node tilesDefinitions) {
-
-        for (Node definition : tilesDefinitions.get("definition")) {
-            if (definition.getAttribute("name").equals(tilesName))
+    protected boolean definitionExists(String name, Node definitions)
+    {
+        for (Node definition : definitions.get("definition")) {
+            if (definition.getAttribute("name").equals(name))
                 return true;
         }
 
