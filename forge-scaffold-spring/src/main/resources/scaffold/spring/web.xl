@@ -42,6 +42,12 @@
     <servlet-name>@{projectName.replace(' ','-').toLowerCase()}</servlet-name>
     <url-pattern>/</url-pattern>
   </servlet-mapping>
+
+  <error-page>
+  	<exception-type>java.lang.Exception</exception-type>
+  	<location>/error</location>
+  </error-page>
+
   @else{}
   <servlet>
     <servlet-name>@{targetDir}</servlet-name>
@@ -57,5 +63,10 @@
     <servlet-name>@{targetDir}</servlet-name>
     <url-pattern>/@{targetDir}</url-pattern>
   </servlet-mapping>
+
+  <error-page>
+  	<exception-type>java.lang.Exception</exception-type>
+  	<location>/{targetDir}/error</location>
+  </error-page>
   @end{}
 </web-app>
