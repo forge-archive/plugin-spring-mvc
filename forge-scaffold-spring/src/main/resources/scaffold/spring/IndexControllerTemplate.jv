@@ -13,4 +13,10 @@ public class IndexController
 	{
 		return "@{targetDir}index";
 	}
+
+	@RequestMapping(value="error", method=RequestMethod.GET)
+	public String errorView()
+	{
+		return "@{targetDir}error";
+	}
 }
