@@ -151,7 +151,11 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     protected CompiledTemplateResource entityConverterTemplate;
     protected CompiledTemplateResource conversionServiceTemplate;
 
-    protected CompiledTemplateResource viewAllTemplate;
+    protected CompiledTemplateResource searchTemplate;
+    protected int searchTemplateMetawidgetIndent;
+    protected int searchMetawidgetIndent;
+    protected int headerMetawidgetIndent;
+
     protected CompiledTemplateResource viewTemplate;
     protected int viewTemplateMetawidgetIndent;
 
@@ -167,14 +171,15 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     protected CompiledTemplateResource errorTemplate;
     protected CompiledTemplateResource indexTemplate;   
 
-    private TemplateResolver<ClassLoader> resolver;
-    private ShellPrompt prompt;
-    private TemplateCompiler compiler;
-    private Event<InstallFacets> install;
-    private StaticSpringMetawidget entityMetawidget;
-    private StaticJspMetawidget headerMetawidget;
-    private StaticJspMetawidget searchMetawidget;
-    private StaticJavaMetawidget qbeMetawidget;
+    protected StaticSpringMetawidget entityMetawidget;
+    protected StaticJspMetawidget headerMetawidget;
+    protected StaticJspMetawidget searchMetawidget;
+    protected StaticJavaMetawidget qbeMetawidget;
+
+    protected TemplateResolver<ClassLoader> resolver;
+    protected ShellPrompt prompt;
+    protected TemplateCompiler compiler;
+    protected Event<InstallFacets> install;
 
     private Configuration config;
 
@@ -430,11 +435,11 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                 this.searchMetawidget.setPath(entity.getQualifiedName());
                 this.searchMetawidget.setReadOnly(true);
 
-                writeEntityMetawidget(context, this.viewTemplateMetawidgetIndent);
-                writeHeaderAndSearchMetawidgets(context, this.viewTemplateMetawidgetIndent);
+                writeEntityMetawidget(context, this.searchTemplateMetawidgetIndent);
+                writeHeaderAndSearchMetawidgets(context, this.headerMetawidgetIndent, this.searchMetawidgetIndent);
 
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + entity.getName()
-                        + "/" + entityPlural.toLowerCase() + ".jsp"), this.viewAllTemplate.render(context), overwrite));
+                        + "/" + entityPlural.toLowerCase() + ".jsp"), this.searchTemplate.render(context), overwrite));
 
                 addViewDefinition(tile, entityPlural.toLowerCase(), "Search " + StringUtils.uncamelCase(entity.getName()) + " entities",
                         StringUtils.uncamelCase(entity.getName()), "Search " + StringUtils.uncamelCase(entity.getName()) + " entities",
@@ -513,13 +518,13 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
                 result.add(generateNavigation(entity.getPackage(), "/", overwrite));
             }
-            catch (Exception e) {
-
+            catch (Exception e)
+            {
                 throw new RuntimeException("Error generating Spring scaffolding: " + entity.getName(), e);
             }
         }
-        finally {
-
+        finally
+        {
             // Restore the original ContextClassLoader
 
             Thread.currentThread().setContextClassLoader(oldClassLoader);
@@ -532,7 +537,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     @SuppressWarnings("unchecked")    
     public boolean install()
     {
-
         if(!(this.project.hasFacet(WebResourceFacet.class) && this.project.hasFacet(PersistenceFacet.class)))
             this.install.fire(new InstallFacets(WebResourceFacet.class, PersistenceFacet.class));
         
@@ -540,7 +544,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     }
 
     @Override
-    public boolean isInstalled() {
+    public boolean isInstalled()
+    {
         return true;
     }
 
@@ -740,9 +745,13 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
             this.entityConverterTemplate = compiler.compile(ENTITY_CONVERTER_TEMPLATE);
         }
 
-        if (this.viewAllTemplate == null)
+        if (this.searchTemplate == null)
         {
-            this.viewAllTemplate = compiler.compile(VIEW_ALL_TEMPLATE);
+            this.searchTemplate = compiler.compile(VIEW_ALL_TEMPLATE);
+            String template = Streams.toString(this.searchTemplate.getSourceTemplateResource().getInputStream());
+            this.searchTemplateMetawidgetIndent = parseIndent(template, "@{metawidet}");
+            this.headerMetawidgetIndent = parseIndent(template, "@{headerMetawidget}");
+            this.searchMetawidgetIndent = parseIndent(template, "@{searchMetawidget}");
         }
 
         if (this.viewTemplate == null)
@@ -903,14 +912,15 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
      * Writes the bean Metawidget for displaying the existing entities in the database on the view all page.
      */
 
-    protected void writeHeaderAndSearchMetawidgets(final Map<Object, Object> context, final int indent)
+    protected void writeHeaderAndSearchMetawidgets(final Map<Object, Object> context, final int headerMetawidgetIndent,
+            final int searchMetawidgetIndent)
     {
         StringWriter stringWriter = new StringWriter();
-        this.headerMetawidget.write(stringWriter, indent);
+        this.headerMetawidget.write(stringWriter, headerMetawidgetIndent);
         context.put("headerMetawidget", stringWriter.toString().trim());
 
         stringWriter = new StringWriter();
-        this.searchMetawidget.write(stringWriter, indent);
+        this.searchMetawidget.write(stringWriter, searchMetawidgetIndent);
         context.put("searchMetawidget", stringWriter.toString().trim());
     }
 
