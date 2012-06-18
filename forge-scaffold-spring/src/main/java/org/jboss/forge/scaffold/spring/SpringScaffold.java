@@ -153,15 +153,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
     protected CompiledTemplateResource viewAllTemplate;
     protected CompiledTemplateResource viewTemplate;
-    protected Map<String, String> viewTemplateNamespaces;
     protected int viewTemplateMetawidgetIndent;
 
     protected CompiledTemplateResource updateTemplate;
-    protected Map<String, String> updateTemplateNamespaces;
     protected int updateTemplateEntityMetawidgetIndent;
 
     protected CompiledTemplateResource createTemplate;
-    protected Map<String, String> createTemplateNamespaces;
     protected int createTemplateEntityMetawidgetIndent;
 
     protected CompiledTemplateResource navigationTemplate;
