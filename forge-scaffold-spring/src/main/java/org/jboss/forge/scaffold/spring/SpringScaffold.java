@@ -557,7 +557,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         loadTemplates();
 
 //        generateTemplates(overwrite);
-        HashMap<Object, Object> context = getTemplateContext(template);
+        HashMap<Object, Object> context = getTemplateContext(targetDir, template);
         context.put("targetDir", targetDir);
 
         // Root index page
@@ -791,11 +791,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         }
     }
 
-    protected HashMap<Object, Object> getTemplateContext(final Resource<?> template)
+    protected HashMap<Object, Object> getTemplateContext(String targetDir, final Resource<?> template)
     {
         HashMap<Object, Object> context = new HashMap<Object, Object>();
         context.put("template", template);
         context.put("templateStrategy", getTemplateStrategy());
+        context.put("targetDir", targetDir);
         return context;
     }
 
@@ -861,7 +862,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
         if (targetDir.equals("/"))
         {
-            return ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/layouts/pageTemplate.jsp"),
+            return ScaffoldUtil.createOrOverwrite(this.prompt, (FileResource<?>) getTemplateStrategy().getDefaultTemplate(),
                     this.navigationTemplate.render(context), overwrite);
         }
         else
