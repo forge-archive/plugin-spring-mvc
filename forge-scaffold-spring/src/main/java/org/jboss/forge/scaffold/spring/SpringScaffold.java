@@ -125,7 +125,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     private static final String CONVERSION_SERVICE_TEMPLATE = "scaffold/spring/ConversionServiceTemplate.jv";
 
     private static final String VIEW_TEMPLATE = "scaffold/spring/view.jsp";
-    private static final String VIEW_ALL_TEMPLATE = "scaffold/spring/viewAll.jsp";
+    private static final String VIEW_ALL_TEMPLATE = "scaffold/spring/search.jsp";
     private static final String UPDATE_TEMPLATE = "scaffold/spring/update.jsp";
     private static final String CREATE_TEMPLATE = "scaffold/spring/create.jsp";
     private static final String NAVIGATION_TEMPLATE = "scaffold/spring/pageTemplate.jsp";
