@@ -105,7 +105,8 @@ import org.metawidget.util.simple.StringUtils;
 @RequiresFacet({ DependencyFacet.class,
             WebResourceFacet.class,
             PersistenceFacet.class})
-public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
+public class SpringScaffold extends BaseFacet implements ScaffoldProvider
+{
     
     //
     // Private statics
@@ -630,7 +631,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     // TODO: Perhaps this method should retrieve all generated resources in targetDir, but instead retrieves any generated resource.
 
     @Override
-    public List<Resource<?>> getGeneratedResources(String targetDir) {
+    public List<Resource<?>> getGeneratedResources(String targetDir)
+    {
         /**
          * Not implemented as of yet.
          */
@@ -639,14 +641,16 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider {
     }
 
     @Override
-    public AccessStrategy getAccessStrategy() {
+    public AccessStrategy getAccessStrategy()
+    {
         // No AccessStrategy required for Spring.
 
         return null;
     }
 
     @Override
-    public TemplateStrategy getTemplateStrategy() {
+    public TemplateStrategy getTemplateStrategy()
+    {
         // No TemplateStrategy required for Spring.
 
         return null;
