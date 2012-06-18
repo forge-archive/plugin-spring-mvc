@@ -24,7 +24,9 @@
 
 	<table class="data-table">
 		<thead>
-			@{headerMetawidget}
+			<tr>
+				@{headerMetawidget}
+			</tr>
 		</thead>
 		<tbody>
 			<c:forEach items="$${@{entityPlural.toLowerCase()}}" var="@{entity.getName()}">
