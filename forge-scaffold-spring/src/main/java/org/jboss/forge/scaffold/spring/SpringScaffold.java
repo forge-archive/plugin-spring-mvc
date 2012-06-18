@@ -653,9 +653,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     @Override
     public TemplateStrategy getTemplateStrategy()
     {
-        // No TemplateStrategy required for Spring.
-
-        return null;
+        return new SpringTemplateStrategy(this.project);
     }
 
     //
