@@ -404,7 +404,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
                 // Generate create
     
-                writeEntityMetawidget(context, this.createTemplateEntityMetawidgetIndent, this.createTemplateNamespaces);
+                writeEntityMetawidget(context, this.createTemplateEntityMetawidgetIndent);
     
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + entity.getName()
                         + "/create" + entity.getName() + ".jsp"), this.createTemplate.render(context), overwrite));
@@ -415,7 +415,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
                 // Generate update
 
-                writeEntityMetawidget(context, this.updateTemplateEntityMetawidgetIndent, this.updateTemplateNamespaces);
+                writeEntityMetawidget(context, this.updateTemplateEntityMetawidgetIndent);
 
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + entity.getName()
                         + "/update" + entity.getName() + ".jsp"), this.updateTemplate.render(context), overwrite));
@@ -433,8 +433,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                 this.searchMetawidget.setPath(entity.getQualifiedName());
                 this.searchMetawidget.setReadOnly(true);
 
-                writeEntityMetawidget(context, this.viewTemplateMetawidgetIndent, null);
-                writeHeaderAndSearchMetawidgets(context, this.viewTemplateMetawidgetIndent, null);
+                writeEntityMetawidget(context, this.viewTemplateMetawidgetIndent);
+                writeHeaderAndSearchMetawidgets(context, this.viewTemplateMetawidgetIndent);
 
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + entity.getName()
                         + "/" + entityPlural.toLowerCase() + ".jsp"), this.viewAllTemplate.render(context), overwrite));
@@ -446,7 +446,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                 // Generate view
 
                 this.entityMetawidget.setReadOnly(true);
-                writeEntityMetawidget(context, this.viewTemplateMetawidgetIndent, this.viewTemplateNamespaces);
+                writeEntityMetawidget(context, this.viewTemplateMetawidgetIndent);
     
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + entity.getName()
                         + "/view" + entity.getName() + ".jsp"), this.viewTemplate.render(context), overwrite));
@@ -895,25 +895,18 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
      * Writes the entity Metawidget into the given context.
      */
 
-    protected void writeEntityMetawidget(final Map<Object, Object> context, final int entityMetawidgetIndent,
-            final Map<String, String> existingNamespaces)
+    protected void writeEntityMetawidget(final Map<Object, Object> context, final int entityMetawidgetIndent)
     {
         StringWriter writer = new StringWriter();
         this.entityMetawidget.write(writer, entityMetawidgetIndent);
         context.put("metawidget", writer.toString().trim());
-
-/*        Map<String, String> namespaces = this.entityMetawidget.getNamespaces();
-
-        if (namespaces.keySet() != null && existingNamespaces != null)
-            namespaces.keySet().removeAll(existingNamespaces.keySet());*/
     }
 
     /**
      * Writes the bean Metawidget for displaying the existing entities in the database on the view all page.
      */
 
-    protected void writeHeaderAndSearchMetawidgets(final Map<Object, Object> context, final int indent,
-            final Map<String, String> namespaces)
+    protected void writeHeaderAndSearchMetawidgets(final Map<Object, Object> context, final int indent)
     {
         StringWriter stringWriter = new StringWriter();
         this.headerMetawidget.write(stringWriter, indent);
