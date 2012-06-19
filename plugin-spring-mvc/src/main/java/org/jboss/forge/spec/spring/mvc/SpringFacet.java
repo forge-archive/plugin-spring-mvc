@@ -68,4 +68,11 @@ public interface SpringFacet extends Facet
      */
 
     Resource<?> getResourceForWebPath(String path);
+
+    /**
+     * Given a servlet name, return whether or not there is a servlet definition with that name in the application's
+     * web.xml file.
+     */
+
+    boolean hasServlet(String servletName);
 }
