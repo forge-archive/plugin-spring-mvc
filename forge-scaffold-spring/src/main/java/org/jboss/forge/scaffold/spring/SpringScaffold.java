@@ -561,7 +561,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
         loadTemplates();
 
-//        generateTemplates(overwrite);
+        generateTemplates(targetDir, overwrite);
         HashMap<Object, Object> context = getTemplateContext(targetDir, template);
         context.put("targetDir", targetDir);
 
@@ -621,7 +621,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
         try
         {
-
             result.add(generateNavigation(targetDir, overwrite));
         }
         catch (Exception e)
@@ -923,23 +922,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         stringWriter = new StringWriter();
         this.searchMetawidget.write(stringWriter, searchMetawidgetIndent);
         context.put("searchMetawidget", stringWriter.toString().trim());
-    }
-
-    /**
-     * Add an <mvc:resources location="/" mapping="/static/**"/> to the root servlet definition.
-     */
-    
-    protected void updateMVCContext(String filename) {
-        WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
-        Node beans = XMLParser.parse(web.getWebResource(filename).getResourceInputStream());
-
-        if (beans.getSingle("mvc:resources") == null) {
-            Node resources = new Node("mvc:resources");
-            resources.attribute("location", "/");
-            resources.attribute("mapping", "/static/**");
-        }
-
-        web.createWebResource(XMLParser.toXMLString(beans), filename);
     }
 
     /**
