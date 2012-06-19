@@ -73,12 +73,15 @@ import org.jboss.forge.shell.plugins.Help;
 import org.jboss.forge.shell.plugins.RequiresFacet;
 import org.jboss.forge.shell.util.Streams;
 import org.jboss.forge.spec.javaee.PersistenceFacet;
+import org.jboss.forge.spec.javaee.ServletFacet;
 import org.jboss.seam.render.TemplateCompiler;
 import org.jboss.seam.render.spi.TemplateResolver;
 import org.jboss.seam.render.template.CompiledTemplateResource;
 import org.jboss.seam.render.template.resolver.ClassLoaderTemplateResolver;
 import org.jboss.shrinkwrap.descriptor.api.spec.jpa.persistence.PersistenceDescriptor;
 import org.jboss.shrinkwrap.descriptor.api.spec.jpa.persistence.PersistenceUnitDef;
+import org.jboss.shrinkwrap.descriptor.api.spec.servlet.web.ServletDef;
+import org.jboss.shrinkwrap.descriptor.api.spec.servlet.web.WebAppDescriptor;
 import org.metawidget.statically.StaticUtils.IndentedWriter;
 import org.metawidget.statically.javacode.StaticJavaMetawidget;
 import org.metawidget.statically.jsp.StaticJspMetawidget;
@@ -514,9 +517,9 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                 // Generate navigation, for both "/" and for targetDir
 
                 if (!targetDir.equals("/"))
-                    result.add(generateNavigation(entity.getPackage(), targetDir, overwrite));
+                    result.add(generateNavigation(targetDir, overwrite));
 
-                result.add(generateNavigation(entity.getPackage(), "/", overwrite));
+                result.add(generateNavigation("/", overwrite));
             }
             catch (Exception e)
             {
@@ -614,16 +617,13 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     {
         List<Resource<?>> result = new ArrayList<Resource<?>>();
 
-        try {
-/*            WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
+        try
+        {
 
-            result.add(ScaffoldUtil.createOrOverwrite(this.prompt,
-                    web.getWebResource("/resources/scaffold/paginator.xhtml"),
-                    getClass().getResourceAsStream("/resources/scaffold/paginator.xhtml"),
-                    overwrite));
-
-            result.add(generateNavigation(targetDir, overwrite));*/
-        } catch (Exception e) {
+            result.add(generateNavigation(targetDir, overwrite));
+        }
+        catch (Exception e)
+        {
             throw new RuntimeException("Error generating default templates.", e);
         }
 
@@ -804,10 +804,9 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
      * Generates the navigation menu based on scaffolded entities.
      */
 
-    protected Resource<?> generateNavigation(String domainPackage, String targetDir, final boolean overwrite)
+    protected Resource<?> generateNavigation(String targetDir, final boolean overwrite)
             throws IOException
     {
-        JavaSourceFacet java = this.project.getFacet(JavaSourceFacet.class);
         WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
 
         HtmlTag unorderedList = new HtmlTag("ul");
@@ -817,10 +816,11 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         ResourceFilter filter = new ResourceFilter()
         {
             @Override
-            public boolean accept(Resource<?> resource) {
+            public boolean accept(Resource<?> resource)
+            {
                 FileResource<?> file = (FileResource<?>) resource;
 
-                if ( !file.isDirectory() || file.getName().equals("META-INF") || file.getName().equals("WEB-INF") 
+                if (!file.isDirectory() || file.getName().equals("META-INF") || file.getName().equals("WEB-INF") 
                         || file.getName().equals("resources") || file.getName().equals("layouts") || file.getName().equals("views"))
                     return false;
 
@@ -832,13 +832,13 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         {
             HtmlAnchor link = new HtmlAnchor();
 
-            if (java.getJavaResource(domainPackage + StringUtils.SEPARATOR_DOT_CHAR + resource.getName()).exists())
+            if (hasServlet(resource.getName()))
             {
-                link.putAttribute("href", "<c:url value=\"" + targetDir + pluralOf(resource.getName()).toLowerCase() + "/\"/>");
+                link.putAttribute("href", "<c:url value=\"" + targetDir + resource.getName() + "\"/>");
             }
             else
             {
-                link.putAttribute("href", "<c:url value=\"" + targetDir + resource.getName() + "\"/>");
+                link.putAttribute("href", "<c:url value=\"" + targetDir + pluralOf(resource.getName()).toLowerCase() + "/\"/>");
             }
 
             link.setTextContent(StringUtils.uncamelCase(resource.getName()));
@@ -1171,5 +1171,24 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
         JavaClass entityConverter = JavaParser.parse(JavaClass.class, this.entityConverterTemplate.render(context));
         java.saveJavaSource(entityConverter);
+    }
+
+    private boolean hasServlet(String targetDir)
+    {
+        targetDir = (targetDir.startsWith("/")) ? targetDir.substring(1) : targetDir;
+        targetDir = (targetDir.endsWith("/")) ? targetDir.substring(0, targetDir.length()-1) : targetDir;
+
+        ServletFacet servlet = project.getFacet(ServletFacet.class);
+        WebAppDescriptor webXml = servlet.getConfig();
+
+        for (ServletDef serv : webXml.getServlets())
+        {
+            if (serv.getName().equals(targetDir))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
