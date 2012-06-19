@@ -621,8 +621,9 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     public boolean install()
     {
 
-        if(!(this.project.hasFacet(WebResourceFacet.class) && this.project.hasFacet(PersistenceFacet.class)))
-            this.install.fire(new InstallFacets(WebResourceFacet.class, PersistenceFacet.class));
+        if(!(this.project.hasFacet(WebResourceFacet.class) && this.project.hasFacet(PersistenceFacet.class)
+                && this.project.hasFacet(SpringFacet.class)))
+            this.install.fire(new InstallFacets(WebResourceFacet.class, PersistenceFacet.class, SpringFacet.class));
         
         return true;
     }
