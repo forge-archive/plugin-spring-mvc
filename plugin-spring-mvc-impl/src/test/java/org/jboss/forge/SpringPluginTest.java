@@ -22,6 +22,7 @@
 package org.jboss.forge;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.forge.spec.spring.mvc.impl.SpringPlugin;
 import org.jboss.forge.test.AbstractShellTest;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
