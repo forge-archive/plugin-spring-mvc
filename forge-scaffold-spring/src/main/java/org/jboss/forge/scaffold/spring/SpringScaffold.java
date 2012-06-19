@@ -107,7 +107,8 @@ import org.metawidget.util.simple.StringUtils;
 @Help("Spring MVC scaffolding")
 @RequiresFacet({ DependencyFacet.class,
             WebResourceFacet.class,
-            PersistenceFacet.class})
+            PersistenceFacet.class,
+            ServletFacet.class})
 public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 {
     
@@ -540,8 +541,9 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     @SuppressWarnings("unchecked")    
     public boolean install()
     {
-        if(!(this.project.hasFacet(WebResourceFacet.class) && this.project.hasFacet(PersistenceFacet.class)))
-            this.install.fire(new InstallFacets(WebResourceFacet.class, PersistenceFacet.class));
+        if(!(this.project.hasFacet(WebResourceFacet.class) && this.project.hasFacet(PersistenceFacet.class)
+                && this.project.hasFacet(ServletFacet.class)))
+            this.install.fire(new InstallFacets(WebResourceFacet.class, PersistenceFacet.class, ServletFacet.class));
         
         return true;
     }
