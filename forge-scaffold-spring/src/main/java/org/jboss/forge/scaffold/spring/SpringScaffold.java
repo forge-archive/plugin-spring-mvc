@@ -1068,19 +1068,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         scan.attribute("base-package", basePackage);
     }
 
-    protected void loadConversionTemplates()
-    {
-        if (this.entityConverterTemplate == null)
-        {
-            this.compiler.compile(ENTITY_CONVERTER_TEMPLATE);
-        }
-
-        if (this.conversionServiceTemplate == null)
-        {
-            this.compiler.compile(CONVERSION_SERVICE_TEMPLATE);
-        }
-    }
-
     protected String findDomainPackage(String clazz, JavaClass entity)
     {
 
@@ -1103,7 +1090,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
         JavaSourceFacet java = this.project.getFacet(JavaSourceFacet.class);
 
-        loadConversionTemplates();
         context.put("topLevelPackage", meta.getTopLevelPackage());
 
         JavaClass conversionService = JavaParser.parse(JavaClass.class, this.conversionServiceTemplate.render(context));
