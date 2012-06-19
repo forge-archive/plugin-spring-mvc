@@ -994,14 +994,17 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         List<String> ccEntityClasses = new ArrayList<String>();
         List<String> nToMany = new ArrayList<String>();
 
-        for ( Field<?> field : entity.getFields()) {
+        for ( Field<?> field : entity.getFields())
+        {
             if (field.hasAnnotation(OneToOne.class) || field.hasAnnotation(OneToMany.class) || field.hasAnnotation(ManyToOne.class)
-                    || field.hasAnnotation(ManyToMany.class)) {
+                    || field.hasAnnotation(ManyToMany.class))
+            {
                 String name = field.getName();
                 entityNames.add(name);
                 String clazz = new String();
 
-                if (field.hasAnnotation(OneToMany.class) || field.hasAnnotation(ManyToMany.class)) {
+                if (field.hasAnnotation(OneToMany.class) || field.hasAnnotation(ManyToMany.class))
+                {
                     clazz = field.getStringInitializer();
                     int firstIndexOf = clazz.indexOf("<");
                     int lastIndexOf = clazz.indexOf(">");
@@ -1012,7 +1015,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                     nToMany.add(clazz);
                     createConverter(clazz, domainPackage);
                 }
-                else {
+                else
+                {
                     clazz = field.getType();
                 }
 
@@ -1026,7 +1030,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         context.put("entityClasses", entityClasses);
         context.put("ccEntityClasses", ccEntityClasses);
 
-        if (!nToMany.isEmpty()) {
+        if (!nToMany.isEmpty())
+        {
             context.put("nToMany", nToMany);
             addConverters(context);
             addConversionService();
