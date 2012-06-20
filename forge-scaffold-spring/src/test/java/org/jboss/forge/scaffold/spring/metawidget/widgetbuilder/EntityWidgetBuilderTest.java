@@ -169,7 +169,7 @@ public class EntityWidgetBuilderTest
         attributes.put(NAME, "bars");
         attributes.put(TYPE, Set.class.getName());
         attributes.put(PARAMETERIZED_TYPE, Bar.class.getName());
-        attributes.put(MANY_TO_MANY, TRUE);
+        attributes.put(N_TO_MANY, TRUE);
         StaticWidget widget = widgetBuilder.buildWidget(PROPERTY, attributes, metawidget);
 
         String result = "<table><thead><tr><th>Name</th><th>Description</th></tr></thead><tbody><c:forEach items=\"${bars}\" var=\"item\">";
@@ -204,7 +204,7 @@ public class EntityWidgetBuilderTest
         attributes.put(NAME, "bars");
         attributes.put(TYPE, Set.class.getName());
         attributes.put(PARAMETERIZED_TYPE, FooOneToMany.class.getName());
-        attributes.put(MANY_TO_MANY, TRUE);
+        attributes.put(N_TO_MANY, TRUE);
         StaticWidget widget = widgetBuilder.buildWidget(PROPERTY, attributes, metawidget);
 
         String result = "<table><thead><tr><th>Field 1</th><th>Field 2</th><th>Field 3</th></tr></thead><tbody>";
@@ -254,7 +254,7 @@ public class EntityWidgetBuilderTest
         attributes.put(NAME, "bars");
         attributes.put(TYPE, Set.class.getName());
         attributes.put(PARAMETERIZED_TYPE, FooOneToOne.class.getName());
-        attributes.put(MANY_TO_MANY, TRUE);
+        attributes.put(N_TO_MANY, TRUE);
         StaticWidget widget = widgetBuilder.buildWidget(PROPERTY, attributes, metawidget);
 
         String result = "<table><thead><tr><th>Bar</th></tr></thead><tbody><c:forEach items=\"${bars}\" var=\"item\"><tr><td>";

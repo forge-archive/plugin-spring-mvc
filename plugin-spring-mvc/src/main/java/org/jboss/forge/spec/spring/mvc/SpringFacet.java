@@ -47,6 +47,24 @@ public interface SpringFacet extends Facet
      * this method would return "/example"
      */
 
+    /**
+     * First, check whether a servlet exists with the name specified in the method parameter.
+     * If one does not exist, create a Spring DispatcherServlet with that servlet name.  The new servlet will be mapped
+     * to /{servletName}, assuming that servlet name does not start with a '/' character.
+     * <p>
+     * E.g: If the servletName specified was 'admin', a new DispatcherServlet, mapped to '/admin' would be created.  If
+     * it were '/admin', a new servlet named 'admin' would be created, mapping to '/admin'.
+     */
+
+    void addServlet(String servletName);
+
+    /**
+     * Given a servlet name, return whether or not the application's web.xml file contains a servlet definition with that
+     * name.
+     */
+
+    boolean hasServlet(String servletName);
+
     List<String> getWebPaths(Resource<?> r);
 
     /**

@@ -50,6 +50,7 @@ import org.jboss.forge.parser.java.Method;
 import org.jboss.forge.parser.xml.Node;
 import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.project.Project;
+import org.jboss.forge.project.dependencies.Dependency;
 import org.jboss.forge.project.dependencies.DependencyBuilder;
 import org.jboss.forge.project.facets.BaseFacet;
 import org.jboss.forge.project.facets.DependencyFacet;
@@ -73,15 +74,13 @@ import org.jboss.forge.shell.plugins.Help;
 import org.jboss.forge.shell.plugins.RequiresFacet;
 import org.jboss.forge.shell.util.Streams;
 import org.jboss.forge.spec.javaee.PersistenceFacet;
-import org.jboss.forge.spec.javaee.ServletFacet;
+import org.jboss.forge.spec.spring.mvc.SpringFacet;
 import org.jboss.seam.render.TemplateCompiler;
 import org.jboss.seam.render.spi.TemplateResolver;
 import org.jboss.seam.render.template.CompiledTemplateResource;
 import org.jboss.seam.render.template.resolver.ClassLoaderTemplateResolver;
 import org.jboss.shrinkwrap.descriptor.api.spec.jpa.persistence.PersistenceDescriptor;
 import org.jboss.shrinkwrap.descriptor.api.spec.jpa.persistence.PersistenceUnitDef;
-import org.jboss.shrinkwrap.descriptor.api.spec.servlet.web.ServletDef;
-import org.jboss.shrinkwrap.descriptor.api.spec.servlet.web.WebAppDescriptor;
 import org.metawidget.statically.StaticUtils.IndentedWriter;
 import org.metawidget.statically.javacode.StaticJavaMetawidget;
 import org.metawidget.statically.jsp.StaticJspMetawidget;
@@ -108,13 +107,16 @@ import org.metawidget.util.simple.StringUtils;
 @RequiresFacet({ DependencyFacet.class,
             WebResourceFacet.class,
             PersistenceFacet.class,
-            ServletFacet.class})
+            SpringFacet.class })
 public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 {
     
     //
     // Private statics
     //
+
+    private static final Dependency JBOSS_SERVLET_API = DependencyBuilder.create("org.jboss.spec.javax.servelt:jboss-servlet-api_3.0_spec:1.0.1.Final");
+    private static final Dependency APACHE_TILES = DependencyBuilder.create("org.apache.tiles:tiles-jsp:2.1.3");
 
     private static final String APPLICATION_CONTEXT_TEMPLATE = "scaffold/spring/applicationContext.xl";
     private static final String MVC_CONTEXT_TEMPLATE = "scaffold/spring/mvc-context.xl";
@@ -195,7 +197,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     public SpringScaffold(final Configuration config,
                     final ShellPrompt prompt,
                     final TemplateCompiler compiler,
-                    final Event<InstallFacets> install) {
+                    final Event<InstallFacets> install)
+    {
         this.config = config;
         this.prompt = prompt;
         this.compiler = compiler;
@@ -215,29 +218,17 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     @Override
     public List<Resource<?>> setup(String targetDir, Resource<?> template, boolean overwrite)
     {
-        DependencyFacet deps = this.project.getFacet(DependencyFacet.class);
-        MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
-        PersistenceFacet persistence = this.project.getFacet(PersistenceFacet.class);
-        ResourceFacet resources = this.project.getFacet(ResourceFacet.class);
-        WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
+        DependencyFacet deps = project.getFacet(DependencyFacet.class);
+        MetadataFacet meta = project.getFacet(MetadataFacet.class);
+        PersistenceFacet persistence = project.getFacet(PersistenceFacet.class);
+        ResourceFacet resources = project.getFacet(ResourceFacet.class);
+        WebResourceFacet web = project.getFacet(WebResourceFacet.class);
 
-        // Use the Forge DependencyFacet to add Spring dependencies to the POM
+        // Use the Forge DependencyFacet to add JBoss Servlet and Apache Tiles dependencies to the POM
 
-        String springVersion = "3.1.1.RELEASE";
+        deps.addDirectDependency(JBOSS_SERVLET_API);
+        deps.addDirectDependency(APACHE_TILES);
 
-        deps.setProperty("spring.version", springVersion);
-
-        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-asm:${spring.version}"));
-        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-beans:${spring.version}"));
-        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-context:${spring.version}"));
-        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-context-support:${spring.version}"));
-        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-core:${spring.version}"));
-        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-expression:${spring.version}"));
-        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-tx:${spring.version}"));
-        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-web:${spring.version}"));
-        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-webmvc:${spring.version}"));
-        deps.addDirectDependency(DependencyBuilder.create("org.springframework:spring-orm:${spring.version}"));
- 
         Map<Object, Object> context = CollectionUtils.newHashMap();
         context.put("targetDir", targetDir);
 
@@ -287,9 +278,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
         result.add(setupTilesLayout(targetDir));
 
-        deps.addDirectDependency(DependencyBuilder.create("org.jboss.spec.javax.servlet:jboss-servlet-api_3.0_spec"));
-        deps.addDirectDependency(DependencyBuilder.create("org.apache.tiles:tiles-jsp:2.1.3"));
-
         return result;
     }
 
@@ -302,7 +290,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
      */    
     
     @Override
-    public void setProject(Project project) {
+    public void setProject(Project project)
+    {
         super.setProject(project);
         
         ForgeConfigReader configReader = new ForgeConfigReader(this.config, this.project);
@@ -345,9 +334,9 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
             try
             {
-                JavaSourceFacet java = this.project.getFacet(JavaSourceFacet.class);
-                WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
-                MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
+                JavaSourceFacet java = project.getFacet(JavaSourceFacet.class);
+                WebResourceFacet web = project.getFacet(WebResourceFacet.class);
+                MetadataFacet meta = project.getFacet(MetadataFacet.class);
 
                 loadTemplates();
 
@@ -541,9 +530,9 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     @SuppressWarnings("unchecked")    
     public boolean install()
     {
-        if(!(this.project.hasFacet(WebResourceFacet.class) && this.project.hasFacet(PersistenceFacet.class)
-                && this.project.hasFacet(ServletFacet.class)))
-            this.install.fire(new InstallFacets(WebResourceFacet.class, PersistenceFacet.class, ServletFacet.class));
+        if(!(project.hasFacet(WebResourceFacet.class) && project.hasFacet(PersistenceFacet.class)
+                && project.hasFacet(SpringFacet.class)))
+            this.install.fire(new InstallFacets(WebResourceFacet.class, PersistenceFacet.class, SpringFacet.class));
         
         return true;
     }
@@ -557,7 +546,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     @Override
     public List<Resource<?>> generateIndex(String targetDir, Resource<?> template, boolean overwrite) {
         List<Resource<?>> result = new ArrayList<Resource<?>>();
-        WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
+        WebResourceFacet web = project.getFacet(WebResourceFacet.class);
 
         loadTemplates();
 
@@ -663,7 +652,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
     protected Resource<?> setupTilesLayout(String targetDir)
     {
-        WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
+        WebResourceFacet web = project.getFacet(WebResourceFacet.class);
 
         Node definitions = new Node("tiles-definitions");
 
@@ -808,7 +797,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     protected Resource<?> generateNavigation(String targetDir, final boolean overwrite)
             throws IOException
     {
-        WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
+        WebResourceFacet web = project.getFacet(WebResourceFacet.class);
 
         HtmlTag unorderedList = new HtmlTag("ul");
 
@@ -831,9 +820,10 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         
         for (Resource<?> resource : web.getWebResource("WEB-INF/views" + targetDir).listResources(filter))
         {
+            SpringFacet spring = project.getFacet(SpringFacet.class);
             HtmlAnchor link = new HtmlAnchor();
 
-            if (hasServlet(resource.getName()))
+            if (spring.hasServlet(resource.getName()))
             {
                 link.putAttribute("href", "<c:url value=\"" + targetDir + resource.getName() + "\"/>");
             }
@@ -1042,8 +1032,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
     protected void addConversionService()
     {
-        MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
-        WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
+        MetadataFacet meta = project.getFacet(MetadataFacet.class);
+        WebResourceFacet web = project.getFacet(WebResourceFacet.class);
 
         String filename = "WEB-INF/" + meta.getProjectName().replace(' ', '-').toLowerCase() + "-mvc-context.xml";
         Node beans = XMLParser.parse(web.getWebResource(filename).getResourceInputStream());
@@ -1087,8 +1077,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     @SuppressWarnings("unchecked")
     protected void addConverters(Map<Object, Object> context) throws FileNotFoundException
     {
-        MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
-        JavaSourceFacet java = this.project.getFacet(JavaSourceFacet.class);
+        MetadataFacet meta = project.getFacet(MetadataFacet.class);
+        JavaSourceFacet java = project.getFacet(JavaSourceFacet.class);
 
         context.put("topLevelPackage", meta.getTopLevelPackage());
 
@@ -1134,8 +1124,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
     protected void createConverter(String clazz, String domainPackage) throws FileNotFoundException
     {
-        JavaSourceFacet java = this.project.getFacet(JavaSourceFacet.class);
-        MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
+        JavaSourceFacet java = project.getFacet(JavaSourceFacet.class);
+        MetadataFacet meta = project.getFacet(MetadataFacet.class);
 
         Map<Object, Object> context = CollectionUtils.newHashMap();
 
@@ -1146,24 +1136,5 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
         JavaClass entityConverter = JavaParser.parse(JavaClass.class, this.entityConverterTemplate.render(context));
         java.saveJavaSource(entityConverter);
-    }
-
-    private boolean hasServlet(String targetDir)
-    {
-        targetDir = (targetDir.startsWith("/")) ? targetDir.substring(1) : targetDir;
-        targetDir = (targetDir.endsWith("/")) ? targetDir.substring(0, targetDir.length()-1) : targetDir;
-
-        ServletFacet servlet = project.getFacet(ServletFacet.class);
-        WebAppDescriptor webXml = servlet.getConfig();
-
-        for (ServletDef serv : webXml.getServlets())
-        {
-            if (serv.getName().equals(targetDir))
-            {
-                return true;
-            }
-        }
-
-        return false;
     }
 }
