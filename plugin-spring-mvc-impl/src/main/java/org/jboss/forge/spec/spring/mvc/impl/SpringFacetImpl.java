@@ -352,6 +352,23 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
         return null;
     }
 
+    @Override
+    public boolean hasServlet(String servletName)
+    {
+        ServletFacet serv = project.getFacet(ServletFacet.class);
+        WebAppDescriptor webXml = serv.getConfig();
+
+        for (ServletDef servlet : webXml.getServlets())
+        {
+            if (servlet.getName().equals(servletName))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * Build a Spring view ID for the given resource path, assumes Spring servlet mappings begin with either '/' or '.'
      */
