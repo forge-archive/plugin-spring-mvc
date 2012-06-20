@@ -59,6 +59,12 @@ public interface SpringFacet extends Facet
     void addServlet(String servletName);
 
     /**
+     * Add a servlet mapped to '/', with the name 'root', assuming one does not exist already.
+     */
+
+    void addRootServlet();
+
+    /**
      * Given a servlet name, return whether or not the application's web.xml file contains a servlet definition with that
      * name.
      */
@@ -86,11 +92,4 @@ public interface SpringFacet extends Facet
      */
 
     Resource<?> getResourceForWebPath(String path);
-
-    /**
-     * Given a servlet name, return whether or not there is a servlet definition with that name in the application's
-     * web.xml file.
-     */
-
-    boolean hasServlet(String servletName);
 }

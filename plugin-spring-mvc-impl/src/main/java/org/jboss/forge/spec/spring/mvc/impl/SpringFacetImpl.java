@@ -50,6 +50,7 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
     private ServletMappingHelper servletMappingHelper = new ServletMappingHelper();
 
     private static final String SPRING_VERSION = "3.1.1.RELEASE";
+    private static final String SPRING_DISPATCHER_SERVLET = "org.springframework.web.servlet.DispatcherServlet";
 
     private static final Dependency SPRING_ASM = DependencyBuilder.create("org.springframework:spring-asm:${spring.version}");
 
@@ -224,6 +225,25 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
     public void addServlet(String servletName)
     {
         servletName = processServletName(servletName);
+
+        if (hasServlet(servletName))
+        {
+            return;
+        }
+
+        ServletFacet serv = project.getFacet(ServletFacet.class);
+        WebAppDescriptor webXml = serv.getConfig();
+
+        webXml.servlet(servletName, SPRING_DISPATCHER_SERVLET, "/" + servletName);
+    }
+
+    @Override
+    public void addRootServlet()
+    {
+        ServletFacet serv = project.getFacet(ServletFacet.class);
+        WebAppDescriptor webXml = serv.getConfig();
+
+        webXml.servlet("root", SPRING_DISPATCHER_SERVLET, "/");
     }
 
     @Override
