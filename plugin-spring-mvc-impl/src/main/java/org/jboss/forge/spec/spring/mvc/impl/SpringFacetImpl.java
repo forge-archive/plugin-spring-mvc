@@ -71,10 +71,6 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
 
     private static final Dependency SPRING_WEB_MVC = DependencyBuilder.create("org.springframework:spring-webmvc:${spring.version}");
 
-    private static final Dependency JBOSS_SERVLET_API = DependencyBuilder.create("org.jboss.spec.javax.servelt:jboss-servlet-api_3.0_spec");
-
-    private static final Dependency APACHE_TILES = DependencyBuilder.create("org.apache.tiles:tiles-jsp:2.1.3");
-
     @Inject
     public SpringFacetImpl(final DependencyInstaller installer)
     {
@@ -113,7 +109,7 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
             {
                 DependencyFacet deps = project.getFacet(DependencyFacet.class);
 
-                if (!deps.hasEffectiveDependency(requirement) && !deps.hasDirectManagedDependency(JAVAEE6))
+                if (!deps.hasDirectManagedDependency(JAVAEE6))
                 {
                     this.installer.installManaged(project, JAVAEE6);
                 }
@@ -123,7 +119,10 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
                     deps.setProperty("spring.version", SPRING_VERSION);
                 }
 
-                this.installer.install(project, requirement);
+                if (!requirement.equals(JAVAEE6))
+                {
+                    deps.addDirectDependency(requirement);
+                }
             }
         }
 
@@ -132,7 +131,7 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
 
     protected List<Dependency> getRequiredDependencies()
     {
-        return Arrays.asList(JAVAEE6, SPRING_ASM, SPRING_BEANS, SPRING_CONTEXT, SPRING_CONTEXT_SUPPORT,
+        return Arrays.asList(SPRING_ASM, SPRING_BEANS, SPRING_CONTEXT, SPRING_CONTEXT_SUPPORT,
                 SPRING_CORE, SPRING_EXPRESSION, SPRING_ORM, SPRING_TX, SPRING_WEB, SPRING_WEB_MVC,
                 JBOSS_SERVLET_API, APACHE_TILES);        
     }
@@ -220,6 +219,30 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
         {
             facet.getConfigFile().setContents(newWebXml);
         }
+    }
+
+    @Override
+    public void addServlet(String servletName)
+    {
+        servletName = processServletName(servletName);
+    }
+
+    @Override
+    public boolean hasServlet(String servletName)
+    {
+        ServletFacet serv = project.getFacet(ServletFacet.class);
+        WebAppDescriptor webXml = serv.getConfig();
+        servletName = processServletName(servletName);
+
+        for (ServletDef servlet : webXml.getServlets())
+        {
+            if (servlet.getName().equals(servletName))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @Override
@@ -352,23 +375,6 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
         return null;
     }
 
-    @Override
-    public boolean hasServlet(String servletName)
-    {
-        ServletFacet serv = project.getFacet(ServletFacet.class);
-        WebAppDescriptor webXml = serv.getConfig();
-
-        for (ServletDef servlet : webXml.getServlets())
-        {
-            if (servlet.getName().equals(servletName))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     /**
      * Build a Spring view ID for the given resource path, assumes Spring servlet mappings begin with either '/' or '.'
      */
@@ -383,6 +389,14 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
         {
             return path + mapping;
         }
+    }
+
+    private String processServletName(String servletName)
+    {
+        servletName = (servletName.startsWith("/")) ? servletName.substring(1) : servletName;
+        servletName = (servletName.endsWith("/")) ? servletName.substring(0, servletName.length()-1) : servletName;
+
+        return servletName;
     }
 
     public static class ServletMappingHelper
