@@ -225,25 +225,25 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
     public void addServlet(String servletName)
     {
         servletName = processServletName(servletName);
-
-        if (hasServlet(servletName))
-        {
-            return;
-        }
-
         ServletFacet serv = project.getFacet(ServletFacet.class);
         WebAppDescriptor webXml = serv.getConfig();
 
-        webXml.servlet(servletName, SPRING_DISPATCHER_SERVLET, "/" + servletName);
+        ServletDef servlet = webXml.servlet(servletName, SPRING_DISPATCHER_SERVLET, "/" + servletName);
+        servlet.initParam("contextConfigLocation", "/WEB-INF/" + servletName.replace(' ', '-').toLowerCase() + "-mvc-context.xml");
+        // Does this need to be different for each servlet?
+        servlet.loadOnStartup(1);
     }
 
     @Override
     public void addRootServlet()
     {
+        MetadataFacet meta = project.getFacet(MetadataFacet.class);
         ServletFacet serv = project.getFacet(ServletFacet.class);
         WebAppDescriptor webXml = serv.getConfig();
 
-        webXml.servlet("root", SPRING_DISPATCHER_SERVLET, "/");
+        ServletDef servlet = webXml.servlet("root", SPRING_DISPATCHER_SERVLET, "/");
+        servlet.initParam("contextConfigLocation", "/WEB-INF/" + meta.getProjectName().replace(' ','-').toLowerCase() + "-mvc-context.xml");
+        servlet.loadOnStartup(1);
     }
 
     @Override
