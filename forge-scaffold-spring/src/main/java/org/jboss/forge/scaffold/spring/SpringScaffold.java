@@ -50,6 +50,8 @@ import org.jboss.forge.parser.java.Method;
 import org.jboss.forge.parser.xml.Node;
 import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.project.Project;
+import org.jboss.forge.project.dependencies.Dependency;
+import org.jboss.forge.project.dependencies.DependencyBuilder;
 import org.jboss.forge.project.facets.BaseFacet;
 import org.jboss.forge.project.facets.DependencyFacet;
 import org.jboss.forge.project.facets.JavaSourceFacet;
@@ -112,6 +114,9 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     //
     // Private statics
     //
+
+    private static final Dependency JBOSS_SERVLET_API = DependencyBuilder.create("org.jboss.spec.javax.servelt:jboss-servlet-api_3.0_spec:1.0.1.Final");
+    private static final Dependency APACHE_TILES = DependencyBuilder.create("org.apache.tiles:tiles-jsp:2.1.3");
 
     private static String XMLNS_PREFIX = "xmlns:";
 
@@ -213,12 +218,15 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     @Override
     public List<Resource<?>> setup(String targetDir, Resource<?> template, boolean overwrite)
     {
+        DependencyFacet deps = this.project.getFacet(DependencyFacet.class);
         MetadataFacet meta = this.project.getFacet(MetadataFacet.class);
         PersistenceFacet persistence = this.project.getFacet(PersistenceFacet.class);
         ResourceFacet resources = this.project.getFacet(ResourceFacet.class);
-
         WebResourceFacet web = this.project.getFacet(WebResourceFacet.class);
- 
+
+        deps.addDirectDependency(JBOSS_SERVLET_API);
+        deps.addDirectDependency(APACHE_TILES);
+
         Map<Object, Object> context = CollectionUtils.newHashMap();
         context.put("targetDir", targetDir);
 
