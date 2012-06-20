@@ -115,7 +115,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     // Private statics
     //
 
-    private static final Dependency JBOSS_SERVLET_API = DependencyBuilder.create("org.jboss.spec.javax.servelt:jboss-servlet-api_3.0_spec:1.0.1.Final");
+    private static final Dependency JBOSS_SERVLET_API = DependencyBuilder.create("org.jboss.spec.javax.servlet:jboss-servlet-api_3.0_spec");
     private static final Dependency APACHE_TILES = DependencyBuilder.create("org.apache.tiles:tiles-jsp:2.1.3");
 
     private static final String APPLICATION_CONTEXT_TEMPLATE = "scaffold/spring/applicationContext.xl";
