@@ -206,7 +206,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         
         this.resolver = new ClassLoaderTemplateResolver(SpringScaffold.class.getClassLoader());
         
-        if(this.compiler != null) {
+        if(this.compiler != null)
+        {
             this.compiler.getTemplateResolverFactory().addResolver(this.resolver);
         }
     }
@@ -231,6 +232,10 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
         Map<Object, Object> context = CollectionUtils.newHashMap();
         context.put("targetDir", targetDir);
+
+        String mvcPackage = (targetDir.isEmpty()) ? ".mvc.root" : ".mvc." + targetDir.toLowerCase().replace('/', '.');
+        mvcPackage = meta.getTopLevelPackage() + mvcPackage;
+        context.put("mvcPackage", mvcPackage);
 
         if (!targetDir.startsWith("/"))
             targetDir = "/" + targetDir;
@@ -273,8 +278,24 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
         context.put("projectName", meta.getProjectName());
 
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/web.xml"),
-                this.webXMLTemplate.render(context), overwrite));
+        if (!web.getWebResource("WEB-INF/web.xml").exists())
+        {
+            result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/web.xml"),
+                    this.webXMLTemplate.render(context), overwrite));
+        }
+        else
+        {
+            SpringFacet spring = project.getFacet(SpringFacet.class);
+
+            if (targetDir.equals("/"))
+            {
+                spring.addRootServlet();
+            }
+            else
+            {
+                spring.addServlet(targetDir);
+            }
+        }
 
         result.add(setupTilesLayout(targetDir));
 
@@ -327,7 +348,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
         try
         {
-
             // Force the current thread to use the ScaffoldProvider's ContextClassLoader
 
             Thread.currentThread().setContextClassLoader(SpringScaffold.class.getClassLoader());
@@ -349,8 +369,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
                 // TODO: Support multiple packages for controllers and DAOs.
 
-                context.put("daoPackage", meta.getTopLevelPackage() + ".repo");
-                context.put("mvcPackage", meta.getTopLevelPackage() + ".mvc");
+                context.put("topLevelPackage", meta.getTopLevelPackage());
+
+                String mvcPackage = (targetDir.isEmpty()) ? meta.getTopLevelPackage() + ".mvc.root" : meta.getTopLevelPackage() + ".mvc." +
+                                        targetDir.replace('/', '.');
+                context.put("mvcPackage", mvcPackage);
+
                 findEntityRelationships(entity, context);
 
                 if (!targetDir.startsWith("/"))
