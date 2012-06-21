@@ -3,9 +3,9 @@ package @{mvcPackage};
 import java.util.List;
 
 import @{entity.getQualifiedName()};
-import @{daoPackage}.@{entity.getName()}Dao;
+import @{topLevelPackage}.repo.@{entity.getName()}Dao;
 @foreach{clazz : entityClasses}
-import @{daoPackage}.@{clazz}Dao;
+import @{topLevelPackage}.repo.@{clazz}Dao;
 @end{}
 
 import org.springframework.beans.factory.annotation.Autowired;
