@@ -228,10 +228,10 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
         ServletFacet serv = project.getFacet(ServletFacet.class);
         WebAppDescriptor webXml = serv.getConfig();
 
-        ServletDef servlet = webXml.servlet(servletName, SPRING_DISPATCHER_SERVLET, "/" + servletName);
+        ServletDef servlet = webXml.servlet(servletName, SPRING_DISPATCHER_SERVLET, "/" + servletName + "/*");
         servlet.initParam("contextConfigLocation", "/WEB-INF/" + servletName.replace(' ', '-').toLowerCase() + "-mvc-context.xml");
-        // Does this need to be different for each servlet?
         servlet.loadOnStartup(1);
+        serv.saveConfig(webXml);
     }
 
     @Override
@@ -244,6 +244,7 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
         ServletDef servlet = webXml.servlet("root", SPRING_DISPATCHER_SERVLET, "/");
         servlet.initParam("contextConfigLocation", "/WEB-INF/" + meta.getProjectName().replace(' ','-').toLowerCase() + "-mvc-context.xml");
         servlet.loadOnStartup(1);
+        serv.saveConfig(webXml);
     }
 
     @Override
