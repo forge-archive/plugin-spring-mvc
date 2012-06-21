@@ -7,7 +7,7 @@
 	<head>
 		<title><tiles:insertAttribute name="title"/></title>
 
-		<link rel="icon" href="<c:url value="/static/resources/favicon.ico"/>"/>
+		<link rel="icon" href="<c:url value="/static/favicon.ico"/>"/>
 		<link rel="stylesheet" type="text/css" href="<c:url value="/static/resources/forge-style.css"/>"/>
 	</head>
 
