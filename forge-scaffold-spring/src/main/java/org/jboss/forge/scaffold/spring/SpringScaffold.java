@@ -603,9 +603,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/false.png"),
                 getClass().getResourceAsStream("/scaffold/spring/false.png"), overwrite));
 
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/favicon.ico"),
-                getClass().getResourceAsStream("/scaffold/spring/favicon.ico"), overwrite));
-
         result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/forge-logo.png"),
                 getClass().getResourceAsStream("/scaffold/spring/forge-logo.png"), overwrite));
 
