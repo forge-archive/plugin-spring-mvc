@@ -1,4 +1,4 @@
-package @{daoPackage};
+package @{topLevelPackage}.repo;
 
 import java.util.List;
 
