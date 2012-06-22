@@ -2,7 +2,7 @@
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 
 <div class="section">
-	<form:form commandName="search" method="GET">
+	<form:form commandName="search" id="search" method="GET">
 		@{metawidget}
 		<br/>
 

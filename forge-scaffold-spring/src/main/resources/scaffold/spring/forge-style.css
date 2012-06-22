@@ -108,7 +108,7 @@ h1 {
 
 #content .search {
 	display: block;
-	background-image: url('search.png');
+	background-image: url(search.png);
     background-repeat: no-repeat;
     padding-bottom: 20px;
     padding-left: 70px;
@@ -144,14 +144,14 @@ h1 {
 	display: block;
 	width: 22px;
 	height: 22px;
-	background-image: url( 'false.png' );
+	background-image: url(false.png);
 }
 
 #content .boolean-true {
 	display: block;
 	width: 22px;
 	height: 22px;
-	background-image: url( 'true.png' );
+	background-image: url(true.png);
 }
 
 #content .data-table .boolean-true {
@@ -222,7 +222,7 @@ h1 {
 	display: block;
 	width: 22px;
 	height: 22px;
-	background-image: url( 'remove.png' );
+	background-image: url(remove.png);
 }
 
 #content .data-table-footer {
@@ -247,7 +247,7 @@ h1 {
 	display: block;
 	width: 22px;
 	height: 22px;
-	background-image: url( 'add.png' );
+	background-image: url(add.png);
 }
 
 #content a {
