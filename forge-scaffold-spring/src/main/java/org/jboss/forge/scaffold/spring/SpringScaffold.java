@@ -178,6 +178,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     protected CompiledTemplateResource indexTemplate;   
 
     protected StaticSpringMetawidget entityMetawidget;
+    protected StaticSpringMetawidget searchEntityMetawidget;
     protected StaticJspMetawidget headerMetawidget;
     protected StaticJspMetawidget searchMetawidget;
     protected StaticJavaMetawidget qbeMetawidget;
@@ -321,6 +322,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         this.entityMetawidget.setConfigReader(configReader);
         this.entityMetawidget.setConfig("scaffold/spring/metawidget-entity.xml");
 
+        // TODO: Find a way to incorporate searchEntityMetawidget into entityMetawidget
+
+        this.searchEntityMetawidget = new StaticSpringMetawidget();
+        this.searchEntityMetawidget.setConfigReader(configReader);
+        this.searchEntityMetawidget.setConfig("scaffold/spring/metawidget-search-entity.xml");
+
         this.headerMetawidget = new StaticJspMetawidget();
         this.headerMetawidget.setConfigReader(configReader);
         this.headerMetawidget.setConfig("scaffold/spring/metawidget-header.xml");
@@ -391,7 +398,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
                 // Prepare entity metawidget
 
-                this.entityMetawidget.putAttribute("value", ccEntity);
+                this.entityMetawidget.setValue(ccEntity);
                 this.entityMetawidget.setPath(entity.getQualifiedName());
                 this.entityMetawidget.setReadOnly(false);
 
@@ -448,11 +455,16 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                 this.headerMetawidget.setValue(StaticJspUtils.wrapExpression(entity.getName()));
                 this.headerMetawidget.setPath(entity.getQualifiedName());
                 this.headerMetawidget.setReadOnly(true);
+
                 this.searchMetawidget.setValue(StaticJspUtils.wrapExpression(entity.getName()));
                 this.searchMetawidget.setPath(entity.getQualifiedName());
                 this.searchMetawidget.setReadOnly(true);
 
-                writeEntityMetawidget(context, this.searchTemplateMetawidgetIndent);
+                this.searchEntityMetawidget.setValue(ccEntity);
+                this.searchEntityMetawidget.setPath(entity.getQualifiedName());
+                this.searchEntityMetawidget.setReadOnly(false);
+
+                writeSearchEntityMetawidget(context, this.searchTemplateMetawidgetIndent);
                 writeHeaderAndSearchMetawidgets(context, this.headerMetawidgetIndent, this.searchMetawidgetIndent);
 
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + entity.getName()
@@ -916,6 +928,17 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     {
         StringWriter writer = new StringWriter();
         this.entityMetawidget.write(writer, entityMetawidgetIndent);
+        context.put("metawidget", writer.toString().trim());
+    }
+
+    /**
+     * Writes the entity Metawidget for the search form.
+     */
+
+    protected void writeSearchEntityMetawidget(final Map<Object, Object> context, final int searchEntityMetawidgetIndent)
+    {
+        StringWriter writer = new StringWriter();
+        this.searchEntityMetawidget.write(writer, searchEntityMetawidgetIndent);
         context.put("metawidget", writer.toString().trim());
     }
 
