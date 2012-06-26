@@ -609,9 +609,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
         // Static resources
 
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/add.png"),
-                getClass().getResourceAsStream("/scaffold/spring/add.png"), overwrite));
-
         result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/background.gif"),
                 getClass().getResourceAsStream("/scaffold/spring/background.gif"), overwrite));
 
@@ -626,9 +623,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
         result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/jboss-community.png"),
                 getClass().getResourceAsStream("/scaffold/spring/jboss-community.png"), overwrite));
-
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/remove.png"),
-                getClass().getResourceAsStream("/scaffold/spring/remove.png"), overwrite));
 
         result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/search.png"),
                 getClass().getResourceAsStream("/scaffold/spring/search.png"), overwrite));
