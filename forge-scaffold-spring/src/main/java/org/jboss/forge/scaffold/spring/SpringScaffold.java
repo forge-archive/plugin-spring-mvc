@@ -374,8 +374,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                 String ccEntity = StringUtils.decapitalize(entity.getName());
                 context.put("ccEntity", ccEntity);
 
-                // TODO: Support multiple packages for controllers and DAOs.
-
                 context.put("topLevelPackage", meta.getTopLevelPackage());
 
                 String mvcPackage = (targetDir.isEmpty()) ? meta.getTopLevelPackage() + ".mvc.root" : meta.getTopLevelPackage() + ".mvc." +
