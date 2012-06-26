@@ -384,11 +384,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
                 findEntityRelationships(entity, context);
 
-                if (!targetDir.startsWith("/"))
-                    targetDir = "/" + targetDir;
-
-                if (!targetDir.endsWith("/"))
-                    targetDir += "/";
+                targetDir = (targetDir.startsWith("/")) ? targetDir : "/" + targetDir;
+                targetDir = (targetDir.endsWith("/")) ? targetDir : targetDir + "/";
 
                 context.put("targetDir", targetDir);
                 context.put("entityName", StringUtils.uncamelCase(entity.getName()));
@@ -533,19 +530,25 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
                 // If we have not just generated an IndexController for the '/' directory, create one.
 
-                context.put("mvcPackage", meta.getTopLevelPackage() + ".mvc");
-                context.put("targetDir", "/");
-                JavaClass rootIndexController = JavaParser.parse(JavaClass.class, this.indexControllerTemplate.render(context));
-                java.saveJavaSource(rootIndexController);
-                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(rootIndexController),
-                        rootIndexController.toString(), overwrite));
+                if (!targetDir.equals("/"))
+                {
+                    context.put("mvcPackage", meta.getTopLevelPackage() + ".mvc.root");
+                    context.put("targetDir", "/");
+
+                    JavaClass rootIndexController = JavaParser.parse(JavaClass.class, this.indexControllerTemplate.render(context));
+                    java.saveJavaSource(rootIndexController);
+                    result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(rootIndexController),
+                            rootIndexController.toString(), overwrite));
+                }
 
                 // Generate navigation, for both "/" and for targetDir
 
                 if (!targetDir.equals("/"))
-                    result.add(generateNavigation(targetDir, overwrite));
+                {
+                    result.add(generateNavigation("/", overwrite));
+                }
 
-                result.add(generateNavigation("/", overwrite));
+                result.add(generateNavigation(targetDir, overwrite));
             }
             catch (Exception e)
             {
@@ -601,7 +604,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + "index.jsp"),
                 this.indexTemplate.render(context), overwrite));
 
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + "error.jsp"),
+        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/error.jsp"),
                 this.errorTemplate.render(context), overwrite));
 
         // Static resources
