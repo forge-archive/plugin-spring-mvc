@@ -29,7 +29,9 @@
 							<propertyStyle>
 								<forgePropertyStyle refId="forgePropertyStyle"/>
 							</propertyStyle>
-							<annotationLookup/>
+							<annotationLookup>
+								<annotationLookup/>
+							</annotationLookup>
 						</forgeInspector>
 						<jpaInspector xmlns="java:org.metawidget.inspector.jpa" config="JpaInspectorConfig">
 							<propertyStyle>
