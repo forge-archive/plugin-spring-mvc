@@ -204,7 +204,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         this.prompt = prompt;
         this.compiler = compiler;
         this.install = install;
-        
+
         this.resolver = new ClassLoaderTemplateResolver(SpringScaffold.class.getClassLoader());
         
         if(this.compiler != null)
@@ -1153,9 +1153,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
     protected boolean hasConverter(JavaClass conversionService, String clazz)
     {
-        for (Field<?> dao : conversionService.getFields()) {
-            if (dao.getName().equals(StringUtils.camelCase(clazz) + "Dao"));
+        for (Field<?> dao : conversionService.getFields())
+        {
+            if (dao.getName().equals(StringUtils.camelCase(clazz) + "Dao"))
+            {
                 return true;
+            }
         }
 
         return false;
