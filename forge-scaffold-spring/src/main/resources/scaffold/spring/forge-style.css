@@ -285,6 +285,31 @@ h1 {
 	background-color: #d2e8f2;
 }
 
+#content .button, #content .buttons input {
+	margin-top: 5px;
+	margin-left: 1px;
+	margin-right: 1px;
+	margin-bottom: 5px;
+	color: #5b5b5b;
+	padding-top: 3px;
+	padding-bottom: 3px;
+	padding-left: 10px;
+	padding-right: 10px;
+	text-decoration: none;
+	border-top: 1px solid #dddddd;
+	border-left: 1px solid #dddddd;
+	border-right: 1px solid #bbbbbb;
+	border-bottom: 1px solid #bbbbbb;
+	border-radius: 5px;
+	background-color: #eeeeee;
+	vertical-align: middle;
+	font: sans-serif;
+}
+
+#content .button:hover, #content .buttons input:hover {
+	background-color: #d2e8f2;
+}
+
 #content .paginator {
 	display: block;
 	text-align: right;
