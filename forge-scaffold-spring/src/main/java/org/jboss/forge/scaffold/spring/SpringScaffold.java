@@ -393,19 +393,21 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                 context.put("entityPlural", entityPlural);
                 context.put("entityPluralName", pluralOf(StringUtils.uncamelCase(entity.getName())));
 
+                context.put("dtd", "<!DOCTYPE tiles-definitions PUBLIC \"-//Apache Software Foundation//DTD Tiles Configuration 2.0//EN\"" +
+                        "\"http://tiles.apache.org/dtds/tiles-config_2_0.dtd\">");
+
                 // Prepare entity metawidget
 
                 this.entityMetawidget.setValue(ccEntity);
                 this.entityMetawidget.setPath(entity.getQualifiedName());
                 this.entityMetawidget.setReadOnly(false);
 
-                // Create a views.xml file containing all tiles definitions.
+                // Create, or update, a views.xml file containing all tiles definitions.
 
-                Resource<?> viewsXML = web.getWebResource("WEB-INF/views/views.xml");
                 Node definitions = new Node("tiles-definitions");
 
-                if (viewsXML.exists())
-                    definitions = XMLParser.parse(viewsXML.getResourceInputStream());
+                if (web.getWebResource("WEB-INF/views/views.xml").exists())
+                    definitions = XMLParser.parse(web.getWebResource("WEB-INF/views/views.xml").getResourceInputStream());
                 else
                 {
                     definitions = XMLParser.parse(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/views.xml"),
@@ -488,15 +490,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                         StringUtils.uncamelCase(entity.getName()), "View existing " + StringUtils.uncamelCase(entity.getName()),
                         "/WEB-INF/views" + targetDir + entity.getName() + "/view" + entity.getName() + ".jsp", definitions);
 
-//                String viewsFile = XMLParser.toXMLString(definitions);
-
-                // TODO: Find a cleaner way to add Tiles DTD than this.
-
-/*                viewsFile = viewsFile.substring(0, 55) + "\n<!DOCTYPE tiles-definitions PUBLIC\n\"-//Apache Software Foundation"
-                + "//DTD Tiles Configuration 2.0//EN\"\n\"http://tiles.apache.org/dtds/tiles-config_2_0.dtd\">\n\n" + viewsFile.substring(55);
-                result.add(web.createWebResource(viewsFile, "WEB-INF/views/views.xml"));
-*/
-                // Prepare qbeMetawidget
+                result.add(web.createWebResource(XMLParser.toXMLString(definitions), "WEB-INF/views/views.xml"));
 
                 this.qbeMetawidget.setPath(entity.getQualifiedName());
                 StringWriter writer = new StringWriter();
@@ -690,9 +684,19 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         WebResourceFacet web = project.getFacet(WebResourceFacet.class);
 
         Node definitions = new Node("tiles-definitions");
+        Map<Object, Object> context = CollectionUtils.newHashMap();
+        context.put("dtd", "<!DOCTYPE tiles-definitions PUBLIC \"-//Apache Software Foundation//DTD Tiles Configuration 2.0//EN\"" +
+                "\"http://tiles.apache.org/dtds/tiles-config_2_0.dtd\">");
 
         if (web.getWebResource("WEB-INF/layouts/layouts.xml").exists())
+        {
             definitions = XMLParser.parse(web.getWebResource("WEB-INF/layouts/layouts.xml").getResourceInputStream());
+        }
+        else
+        {
+            definitions = XMLParser.parse(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/layouts/layouts.xml"),
+                    this.tilesTemplate.render(context), false).getResourceInputStream());
+        }
 
         addLayoutDefinition("standard", "/WEB-INF/layouts/pageTemplate.jsp", definitions);
 
@@ -703,11 +707,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         }
 
         String tilesDefinitionFile = XMLParser.toXMLString(definitions);
-
-        // TODO: Find a cleaner way to add Tiles DTD than this.
-
-        tilesDefinitionFile = tilesDefinitionFile.substring(0, 55) + "\n<!DOCTYPE tiles-definitions PUBLIC\n\"-//Apache Software Foundation"
-        + "//DTD Tiles Configuration 2.0//EN\"\n\"http://tiles.apache.org/dtds/tiles-config_2_0.dtd\">\n\n" + tilesDefinitionFile.substring(55);
 
         return web.createWebResource(tilesDefinitionFile, "/WEB-INF/layouts/layouts.xml"); 
     }
@@ -924,8 +923,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
         return indent;
     }
-
-    // TODO: Manage import of namespaces in writeMetawidget methods.
 
     /**
      * Writes the entity Metawidget into the given context.
