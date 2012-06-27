@@ -409,7 +409,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                 else
                 {
                     definitions = XMLParser.parse(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/views.xml"),
-                            this.tilesTemplate.render(context), overwrite));
+                            this.tilesTemplate.render(context), overwrite).getResourceInputStream());
                 }
 
                 String tile = targetDir.equals("/") ? "standard" : targetDir.substring(1, targetDir.length()-1);
@@ -488,7 +488,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                         StringUtils.uncamelCase(entity.getName()), "View existing " + StringUtils.uncamelCase(entity.getName()),
                         "/WEB-INF/views" + targetDir + entity.getName() + "/view" + entity.getName() + ".jsp", definitions);
 
-                String viewsFile = XMLParser.toXMLString(definitions);
+//                String viewsFile = XMLParser.toXMLString(definitions);
 
                 // TODO: Find a cleaner way to add Tiles DTD than this.
 
