@@ -110,7 +110,7 @@ import org.metawidget.util.simple.StringUtils;
             SpringFacet.class })
 public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 {
-    
+
     //
     // Private statics
     //
@@ -653,11 +653,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     @Override
     public List<Resource<?>> getGeneratedResources(String targetDir)
     {
-        /**
-         * Not implemented as of yet.
-         */
-
-        return null;
+        throw new RuntimeException("Not implemented as of yet.");
     }
 
     @Override
