@@ -3,7 +3,7 @@
 
 <div class="section">
 	<form:form commandName="@{ccEntity}">
-	
+
 		@{metawidget}
 
 		<div class="buttons">

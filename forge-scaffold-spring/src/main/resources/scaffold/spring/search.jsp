@@ -2,11 +2,10 @@
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 
 <div class="section">
-	<form:form commandName="search" id="search" method="GET">
+	<form:form commandName="search" method="GET">
 		@{metawidget}
-		<br/>
 
-		<div class=" buttons">
+		<div class="buttons">
 			<table>
 				<tbody>
 					<tr>
@@ -16,7 +15,7 @@
 						<td>
 							<a class="button" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}/create"/>">Create New</a>
 						</td>
-					</tr>					
+					</tr>
 				</tbody>
 			</table>
 		</div>
