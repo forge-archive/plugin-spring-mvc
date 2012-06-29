@@ -544,11 +544,395 @@ public class SpringScaffoldTest extends AbstractSpringScaffoldTest
 
         queueInputLines("");
         getShell().execute("entity --named CustomerPerson");
-        getShell().execute("field string --named name");
+        getShell().execute("field string --named firstName");
+        getShell().execute("field string --named lastName");
 
         queueInputLines("", "", "", "");
         getShell().execute("scaffold from-entity");
 
-        Assert.assertNotNull(project);
+        WebResourceFacet web = project.getFacet(WebResourceFacet.class);
+
+        // Create
+
+        FileResource<?> create = web.getWebResource("WEB-INF/views/CustomerPerson/createCustomerPerson.jsp");
+        Assert.assertTrue(create.exists());
+        String contents = Streams.toString(create.getResourceInputStream());
+        StringBuilder metawidget = new StringBuilder();
+
+        metawidget.append("<%@ taglib prefix=\"c\" uri=\"http://java.sun.com/jsp/jstl/core\" %>\n");
+        metawidget.append("<%@ taglib prefix=\"form\" uri=\"http://www.springframework.org/tags/form\" %>\n\n");
+        metawidget.append("<div class=\"section\">\n");
+        metawidget.append("\t<form:form commandName=\"customerPerson\">\n\n");
+        metawidget.append("\t\t<table>")
+                .append(CRLF);
+        metawidget.append("\t\t\t<tbody>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t<tr>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<th/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t\t<form:hidden path=\"id\"/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t</td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<td/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t</tr>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t<tr>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<th/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t\t<form:hidden path=\"version\"/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t</td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<td/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t</tr>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t<tr>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<th>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t\t<form:label path=\"firstName\">First Name:</form:label>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t</th>")
+                .append(CRLF);
+        metawidget.append( "\t\t\t\t\t<td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t\t<form:input path=\"firstName\"/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t</td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<td/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t</tr>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t<tr>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<th>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t\t<form:label path=\"lastName\">Last Name:</form:label>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t</th>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t\t<form:input path=\"lastName\"/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t</td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<td/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t</tr>")
+                .append(CRLF);
+        metawidget.append( "\t\t\t</tbody>")
+                .append(CRLF);
+        metawidget.append("\t\t</table>\n\n\t\t<div class=\"buttons\">\n\t\t\t<table>\n\t\t\t\t<tbody>\n\t\t\t\t\t");
+        metawidget.append("<tr>\n\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t<input type=\"submit\" value=\"Save\" class=\"button\"/>\n\t\t\t\t\t\t");
+        metawidget.append("</td>\n\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t<a class=\"button\" href=\"<c:url value=\"/customerpersons\"/>\">Cancel</a>\n");
+        metawidget.append("\t\t\t\t\t\t</td>\n\t\t\t\t\t</tr>\n\t\t\t\t</tbody>\n\t\t\t</table>\n\t\t</div>\n\t</form:form>\n</div>\n");
+
+        Assert.assertEquals(metawidget.toString(), contents.toString());
+
+        // Update
+
+        FileResource<?> update = web.getWebResource("WEB-INF/views/CustomerPerson/updateCustomerPerson.jsp");
+        Assert.assertTrue(update.exists());
+        contents = Streams.toString(update.getResourceInputStream());
+        metawidget = new StringBuilder();
+
+        metawidget.append("<%@ taglib prefix=\"c\" uri=\"http://java.sun.com/jsp/jstl/core\" %>\n");
+        metawidget.append("<%@ taglib prefix=\"form\" uri=\"http://www.springframework.org/tags/form\" %>\n\n");
+        metawidget.append("<div class=\"section\">\n");
+        metawidget.append("\t<form:form commandName=\"customerPerson\" action=\"${customerPerson.id}\">\n\n");
+        metawidget.append("\t\t<table>")
+                .append(CRLF);
+        metawidget.append("\t\t\t<tbody>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t<tr>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<th/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t\t<form:hidden path=\"id\"/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t</td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<td/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t</tr>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t<tr>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<th/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t\t<form:hidden path=\"version\"/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t</td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<td/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t</tr>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t<tr>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<th>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t\t<form:label path=\"firstName\">First Name:</form:label>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t</th>")
+                .append(CRLF);
+        metawidget.append( "\t\t\t\t\t<td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t\t<form:input path=\"firstName\"/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t</td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<td/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t</tr>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t<tr>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<th>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t\t<form:label path=\"lastName\">Last Name:</form:label>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t</th>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t\t<form:input path=\"lastName\"/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t</td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<td/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t</tr>")
+                .append(CRLF);
+        metawidget.append( "\t\t\t</tbody>")
+                .append(CRLF);
+        metawidget.append("\t\t</table>\n\n\t\t<input type=\"submit\" value=\"Save\" class=\"button\"/>\n\n\t</form:form>\n\n\t");
+        metawidget.append("<div class=\"buttons\">\n\t\t<table>\n\t\t\t<tbody>\n\t\t\t\t");
+        metawidget.append("<tr>\n\t\t\t\t\t<td>\n\t\t\t\t\t\t<a class=\"button\" href=\"<c:url value=\"/customerpersons\"/>\">Cancel</a>\n\t\t\t\t");
+        metawidget.append("\t</td>\n\t\t\t\t\t<td>\n\t\t\t\t\t\t<form:form commandName=\"customerPerson\" action=\"${customerPerson.id}/delete\"");
+        metawidget.append(" method=\"POST\">\n\t\t\t\t\t\t\t<input type=\"submit\" value=\"Delete\" class=\"button\"/>\n");
+        metawidget.append("\t\t\t\t\t\t</form:form>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n</div>\n");
+
+        Assert.assertEquals(metawidget.toString(), contents.toString());
+
+        // Search
+
+        FileResource<?> search = web.getWebResource("WEB-INF/views/CustomerPerson/customerpersons.jsp");
+        Assert.assertTrue(update.exists());
+        contents = Streams.toString(search.getResourceInputStream());
+        metawidget = new StringBuilder();
+
+        metawidget.append("<%@ taglib prefix=\"c\" uri=\"http://java.sun.com/jsp/jstl/core\" %>\n");
+        metawidget.append("<%@ taglib prefix=\"form\" uri=\"http://www.springframework.org/tags/form\" %>\n\n");
+        metawidget.append("<div class=\"section\">\n");
+        metawidget.append("\t<form:form commandName=\"search\" method=\"GET\">\n");
+        metawidget.append("\t\t<table class=\"search\">")
+                .append(CRLF);
+        metawidget.append("\t<tbody>")
+                .append(CRLF);
+        metawidget.append("\t\t<tr>")
+                .append(CRLF);
+        metawidget.append("\t\t\t<th/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t<td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t<form:hidden path=\"id\"/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t</td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t<td/>")
+                .append(CRLF);
+        metawidget.append("\t\t</tr>")
+                .append(CRLF);
+        metawidget.append("\t\t<tr>")
+                .append(CRLF);
+        metawidget.append("\t\t\t<th/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t<td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t<form:hidden path=\"version\"/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t</td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t<td/>")
+                .append(CRLF);
+        metawidget.append("\t\t</tr>")
+                .append(CRLF);
+        metawidget.append("\t\t<tr>")
+                .append(CRLF);
+        metawidget.append("\t\t\t<th>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t<form:label path=\"firstName\">First Name:</form:label>")
+                .append(CRLF);
+        metawidget.append("\t\t\t</th>")
+                .append(CRLF);
+        metawidget.append( "\t\t\t<td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t<form:input path=\"firstName\"/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t</td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t<td/>")
+                .append(CRLF);
+        metawidget.append("\t\t</tr>")
+                .append(CRLF);
+        metawidget.append("\t\t<tr>")
+                .append(CRLF);
+        metawidget.append("\t\t\t<th>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t<form:label path=\"lastName\">Last Name:</form:label>")
+                .append(CRLF);
+        metawidget.append("\t\t\t</th>")
+                .append(CRLF);
+        metawidget.append("\t\t\t<td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t<form:input path=\"lastName\"/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t</td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t<td/>")
+                .append(CRLF);
+        metawidget.append("\t\t</tr>")
+                .append(CRLF);
+        metawidget.append( "\t</tbody>")
+                .append(CRLF);
+        metawidget.append("</table>\n\n\t\t<div class=\"buttons\">\n\t\t\t<table>\n\t\t\t\t<tbody>\n\t\t\t\t\t");
+        metawidget.append("<tr>\n\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t<input type=\"submit\" value=\"Search\" class=\"button\"/>\n\t\t\t\t\t");
+        metawidget.append("\t</td>\n\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t<a class=\"button\" href=\"<c:url value=\"/customerpersons/create\"/>\">");
+        metawidget.append("Create New</a>\n\t\t\t\t\t\t</td>\n\t\t\t\t\t</tr>\n\t\t\t\t</tbody>\n\t\t\t</table>\n\t\t</div>\n\t");
+        metawidget.append("</form:form>\n\n\t<table class=\"data-table\">\n\t\t<thead>\n\t\t\t<tr>\n\t\t\t\t");
+        metawidget.append("<th>First Name</th>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t<th>Last Name</th>\n\t\t\t</tr>\n\t\t</thead>\n\t\t<tbody>\n\t\t\t<c:forEach items=\"${customerpersons}\" ");
+        metawidget.append("var=\"CustomerPerson\">\n\t\t\t\t<tr>\n\t\t\t\t\t<td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t\t<a href=\"<c:url value=\"/customerpersons/${CustomerPerson.id}\"/>\">")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t\t\t<c:out value=\"${CustomerPerson.firstName}\"/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t\t</a>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t</td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t\t<a href=\"<c:url value=\"/customerpersons/${CustomerPerson.id}\"/>\">")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t\t\t<c:out value=\"${CustomerPerson.lastName}\"/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t\t</a>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</c:forEach>\n\t\t</tbody>\n\t</table>\n\t<span class=\"paginator\">\n");
+        metawidget.append("\t\t<c:if test=\"${current > 1}\">\n\t\t\t<a class=\"button\" href=\"<c:url value=\"/customerpersons?first=${(current-2)");
+        metawidget.append("*max}&max=${max}\"/>\">Previous</a>\n\t\t</c:if>\n\t\t<span>${first} to ${last} (of ${count})</span>\n\t\t");
+        metawidget.append("<c:if test=\"${count > current*max}\">\n\t\t\t<a class=\"button\" href=\"<c:url value=\"/customerpersons?first=");
+        metawidget.append("${current*max}&max=${max}\"/>\">Next</a>\n\t\t</c:if>\n\t</span>\n</div>\n");
+
+        Assert.assertEquals(metawidget.toString(), contents.toString());
+
+        // View
+
+        FileResource<?> view = web.getWebResource("WEB-INF/views/CustomerPerson/viewCustomerPerson.jsp");
+        Assert.assertTrue(view.exists());
+        contents = Streams.toString(view.getResourceInputStream());
+
+        metawidget = new StringBuilder();
+        metawidget.append("<%@ taglib prefix=\"c\" uri=\"http://java.sun.com/jsp/jstl/core\" %>\n");
+        metawidget.append("<%@ taglib prefix=\"form\" uri=\"http://www.springframework.org/tags/form\" %>\n\n");
+        metawidget.append("<div class=\"section\">\n");
+        metawidget.append("\t<form:form commandName=\"customerPerson\">\n\n");
+        metawidget.append("\t\t<table>")
+                .append(CRLF);
+        metawidget.append("\t\t\t<tbody>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t<tr>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<th/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t\t<form:hidden path=\"id\"/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t</td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<td/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t</tr>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t<tr>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<th/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t\t<form:hidden path=\"version\"/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t</td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<td/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t</tr>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t<tr>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<th>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t\t<form:label path=\"firstName\">First Name:</form:label>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t</th>")
+                .append(CRLF);
+        metawidget.append( "\t\t\t\t\t<td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t\t<c:out value=\"${customerPerson.firstName}\"/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t</td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<td/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t</tr>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t<tr>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<th>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t\t<form:label path=\"lastName\">Last Name:</form:label>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t</th>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<td>")
+                .append(CRLF);
+        metawidget.append( "\t\t\t\t\t\t<c:out value=\"${customerPerson.lastName}\"/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t</td>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t\t<td/>")
+                .append(CRLF);
+        metawidget.append("\t\t\t\t</tr>")
+                .append(CRLF);
+        metawidget.append("\t\t\t</tbody>")
+                .append(CRLF);
+        metawidget.append("\t\t</table>\n\n");
+        metawidget.append("\t</form:form>\n\n\t<div class=\"buttons\">\n\t\t<table>\n\t\t\t<tr>\n\t\t\t\t<td>\n\t\t\t\t\t");
+        metawidget.append("<a class=\"button\" href=\"<c:url value=\"/customerpersons\"/>\">View All</a>\n\t\t\t\t</td>\n\t\t\t\t<td>\n\t\t\t\t\t");
+        metawidget.append("<a class=\"button\" href=\"<c:url value=\"/customerpersons/${customerPerson.id}?edit=true\"/>\">Edit</a>\n\t\t\t\t");
+        metawidget.append("</td>\n\t\t\t\t<td>\n\t\t\t\t\t<a class=\"button\" href=\"<c:url value=\"/customerpersons/create\"/>\">");
+        metawidget.append("Create New</a>\n\t\t\t\t</td>\n\t\t\t</tr>\n\t\t</table>\n\t</div>\n</div>\n");
+        
+        Assert.assertEquals(metawidget.toString(), contents.toString());
     }
 }
