@@ -635,7 +635,7 @@ public class SpringScaffoldTest extends AbstractSpringScaffoldTest
                 .append(CRLF);
         metawidget.append("\t\t</table>\n\n\t\t<div class=\"buttons\">\n\t\t\t<table>\n\t\t\t\t<tbody>\n\t\t\t\t\t");
         metawidget.append("<tr>\n\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t<input type=\"submit\" value=\"Save\" class=\"button\"/>\n\t\t\t\t\t\t");
-        metawidget.append("</td>\n\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t<a class=\"button\" href=\"<c:url value=\"/customerpersons\"/>\">Cancel</a>\n");
+        metawidget.append("</td>\n\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t<a class=\"button\" href=\"<c:url value=\"/customerpeople\"/>\">Cancel</a>\n");
         metawidget.append("\t\t\t\t\t\t</td>\n\t\t\t\t\t</tr>\n\t\t\t\t</tbody>\n\t\t\t</table>\n\t\t</div>\n\t</form:form>\n</div>\n");
 
         Assert.assertEquals(metawidget.toString(), contents.toString());
@@ -723,7 +723,7 @@ public class SpringScaffoldTest extends AbstractSpringScaffoldTest
                 .append(CRLF);
         metawidget.append("\t\t</table>\n\n\t\t<input type=\"submit\" value=\"Save\" class=\"button\"/>\n\n\t</form:form>\n\n\t");
         metawidget.append("<div class=\"buttons\">\n\t\t<table>\n\t\t\t<tbody>\n\t\t\t\t");
-        metawidget.append("<tr>\n\t\t\t\t\t<td>\n\t\t\t\t\t\t<a class=\"button\" href=\"<c:url value=\"/customerpersons\"/>\">Cancel</a>\n\t\t\t\t");
+        metawidget.append("<tr>\n\t\t\t\t\t<td>\n\t\t\t\t\t\t<a class=\"button\" href=\"<c:url value=\"/customerpeople\"/>\">Cancel</a>\n\t\t\t\t");
         metawidget.append("\t</td>\n\t\t\t\t\t<td>\n\t\t\t\t\t\t<form:form commandName=\"customerPerson\" action=\"${customerPerson.id}/delete\"");
         metawidget.append(" method=\"POST\">\n\t\t\t\t\t\t\t<input type=\"submit\" value=\"Delete\" class=\"button\"/>\n");
         metawidget.append("\t\t\t\t\t\t</form:form>\n\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</tbody>\n\t\t</table>\n\t</div>\n</div>\n");
@@ -732,7 +732,7 @@ public class SpringScaffoldTest extends AbstractSpringScaffoldTest
 
         // Search
 
-        FileResource<?> search = web.getWebResource("WEB-INF/views/CustomerPerson/customerpersons.jsp");
+        FileResource<?> search = web.getWebResource("WEB-INF/views/CustomerPerson/customerpeople.jsp");
         Assert.assertTrue(update.exists());
         contents = Streams.toString(search.getResourceInputStream());
         metawidget = new StringBuilder();
@@ -813,15 +813,15 @@ public class SpringScaffoldTest extends AbstractSpringScaffoldTest
                 .append(CRLF);
         metawidget.append("</table>\n\n\t\t<div class=\"buttons\">\n\t\t\t<table>\n\t\t\t\t<tbody>\n\t\t\t\t\t");
         metawidget.append("<tr>\n\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t<input type=\"submit\" value=\"Search\" class=\"button\"/>\n\t\t\t\t\t");
-        metawidget.append("\t</td>\n\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t<a class=\"button\" href=\"<c:url value=\"/customerpersons/create\"/>\">");
+        metawidget.append("\t</td>\n\t\t\t\t\t\t<td>\n\t\t\t\t\t\t\t<a class=\"button\" href=\"<c:url value=\"/customerpeople/create\"/>\">");
         metawidget.append("Create New</a>\n\t\t\t\t\t\t</td>\n\t\t\t\t\t</tr>\n\t\t\t\t</tbody>\n\t\t\t</table>\n\t\t</div>\n\t");
         metawidget.append("</form:form>\n\n\t<table class=\"data-table\">\n\t\t<thead>\n\t\t\t<tr>\n\t\t\t\t");
         metawidget.append("<th>First Name</th>")
                 .append(CRLF);
-        metawidget.append("\t\t\t\t<th>Last Name</th>\n\t\t\t</tr>\n\t\t</thead>\n\t\t<tbody>\n\t\t\t<c:forEach items=\"${customerpersons}\" ");
+        metawidget.append("\t\t\t\t<th>Last Name</th>\n\t\t\t</tr>\n\t\t</thead>\n\t\t<tbody>\n\t\t\t<c:forEach items=\"${customerpeople}\" ");
         metawidget.append("var=\"CustomerPerson\">\n\t\t\t\t<tr>\n\t\t\t\t\t<td>")
                 .append(CRLF);
-        metawidget.append("\t\t\t\t\t\t<a href=\"<c:url value=\"/customerpersons/${CustomerPerson.id}\"/>\">")
+        metawidget.append("\t\t\t\t\t\t<a href=\"<c:url value=\"/customerpeople/${CustomerPerson.id}\"/>\">")
                 .append(CRLF);
         metawidget.append("\t\t\t\t\t\t\t<c:out value=\"${CustomerPerson.firstName}\"/>")
                 .append(CRLF);
@@ -831,16 +831,16 @@ public class SpringScaffoldTest extends AbstractSpringScaffoldTest
                 .append(CRLF);
         metawidget.append("\t\t\t\t\t<td>")
                 .append(CRLF);
-        metawidget.append("\t\t\t\t\t\t<a href=\"<c:url value=\"/customerpersons/${CustomerPerson.id}\"/>\">")
+        metawidget.append("\t\t\t\t\t\t<a href=\"<c:url value=\"/customerpeople/${CustomerPerson.id}\"/>\">")
                 .append(CRLF);
         metawidget.append("\t\t\t\t\t\t\t<c:out value=\"${CustomerPerson.lastName}\"/>")
                 .append(CRLF);
         metawidget.append("\t\t\t\t\t\t</a>")
                 .append(CRLF);
         metawidget.append("\t\t\t\t\t</td>\n\t\t\t\t</tr>\n\t\t\t</c:forEach>\n\t\t</tbody>\n\t</table>\n\t<span class=\"paginator\">\n");
-        metawidget.append("\t\t<c:if test=\"${current > 1}\">\n\t\t\t<a class=\"button\" href=\"<c:url value=\"/customerpersons?first=${(current-2)");
+        metawidget.append("\t\t<c:if test=\"${current > 1}\">\n\t\t\t<a class=\"button\" href=\"<c:url value=\"/customerpeople?first=${(current-2)");
         metawidget.append("*max}&max=${max}\"/>\">Previous</a>\n\t\t</c:if>\n\t\t<span>${first} to ${last} (of ${count})</span>\n\t\t");
-        metawidget.append("<c:if test=\"${count > current*max}\">\n\t\t\t<a class=\"button\" href=\"<c:url value=\"/customerpersons?first=");
+        metawidget.append("<c:if test=\"${count > current*max}\">\n\t\t\t<a class=\"button\" href=\"<c:url value=\"/customerpeople?first=");
         metawidget.append("${current*max}&max=${max}\"/>\">Next</a>\n\t\t</c:if>\n\t</span>\n</div>\n");
 
         Assert.assertEquals(metawidget.toString(), contents.toString());
@@ -928,9 +928,9 @@ public class SpringScaffoldTest extends AbstractSpringScaffoldTest
                 .append(CRLF);
         metawidget.append("\t\t</table>\n\n");
         metawidget.append("\t</form:form>\n\n\t<div class=\"buttons\">\n\t\t<table>\n\t\t\t<tr>\n\t\t\t\t<td>\n\t\t\t\t\t");
-        metawidget.append("<a class=\"button\" href=\"<c:url value=\"/customerpersons\"/>\">View All</a>\n\t\t\t\t</td>\n\t\t\t\t<td>\n\t\t\t\t\t");
-        metawidget.append("<a class=\"button\" href=\"<c:url value=\"/customerpersons/${customerPerson.id}?edit=true\"/>\">Edit</a>\n\t\t\t\t");
-        metawidget.append("</td>\n\t\t\t\t<td>\n\t\t\t\t\t<a class=\"button\" href=\"<c:url value=\"/customerpersons/create\"/>\">");
+        metawidget.append("<a class=\"button\" href=\"<c:url value=\"/customerpeople\"/>\">View All</a>\n\t\t\t\t</td>\n\t\t\t\t<td>\n\t\t\t\t\t");
+        metawidget.append("<a class=\"button\" href=\"<c:url value=\"/customerpeople/${customerPerson.id}?edit=true\"/>\">Edit</a>\n\t\t\t\t");
+        metawidget.append("</td>\n\t\t\t\t<td>\n\t\t\t\t\t<a class=\"button\" href=\"<c:url value=\"/customerpeople/create\"/>\">");
         metawidget.append("Create New</a>\n\t\t\t\t</td>\n\t\t\t</tr>\n\t\t</table>\n\t</div>\n</div>\n");
         
         Assert.assertEquals(metawidget.toString(), contents.toString());
