@@ -534,12 +534,9 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                     java.saveJavaSource(rootIndexController);
                     result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(rootIndexController),
                             rootIndexController.toString(), overwrite));
-                }
 
                 // Generate navigation, for both "/" and for targetDir
 
-                if (!targetDir.equals("/"))
-                {
                     result.add(generateNavigation("/", overwrite));
                 }
 
