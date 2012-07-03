@@ -394,7 +394,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                 context.put("entityPluralName", pluralOf(StringUtils.uncamelCase(entity.getName())));
 
                 context.put("dtd", "<!DOCTYPE tiles-definitions PUBLIC \"-//Apache Software Foundation//DTD Tiles Configuration 2.0//EN\"" +
-                        "\"http://tiles.apache.org/dtds/tiles-config_2_0.dtd\">");
+                        " \"http://tiles.apache.org/dtds/tiles-config_2_0.dtd\">");
 
                 // Prepare entity metawidget
 
@@ -404,15 +404,13 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
                 // Create, or update, a views.xml file containing all tiles definitions.
 
-                Node definitions = new Node("tiles-definitions");
-
-                if (web.getWebResource("WEB-INF/views/views.xml").exists())
-                    definitions = XMLParser.parse(web.getWebResource("WEB-INF/views/views.xml").getResourceInputStream());
-                else
+                if (!web.getWebResource("WEB-INF/views/views.xml").exists())
                 {
-                    definitions = XMLParser.parse(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/views.xml"),
-                            this.tilesTemplate.render(context), overwrite).getResourceInputStream());
+                    ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/views.xml"), 
+                            this.tilesTemplate.render(context), false);
                 }
+
+                Node definitions = XMLParser.parse(web.getWebResource("WEB-INF/views/views.xml").getResourceInputStream());
 
                 String tile = targetDir.equals("/") ? "standard" : targetDir.substring(1, targetDir.length()-1);
 
@@ -683,20 +681,17 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     {
         WebResourceFacet web = project.getFacet(WebResourceFacet.class);
 
-        Node definitions = new Node("tiles-definitions");
         Map<Object, Object> context = CollectionUtils.newHashMap();
         context.put("dtd", "<!DOCTYPE tiles-definitions PUBLIC \"-//Apache Software Foundation//DTD Tiles Configuration 2.0//EN\"" +
-                "\"http://tiles.apache.org/dtds/tiles-config_2_0.dtd\">");
+                " \"http://tiles.apache.org/dtds/tiles-config_2_0.dtd\">");
 
-        if (web.getWebResource("WEB-INF/layouts/layouts.xml").exists())
+        if (!web.getWebResource("WEB-INF/layouts/layouts.xml").exists())
         {
-            definitions = XMLParser.parse(web.getWebResource("WEB-INF/layouts/layouts.xml").getResourceInputStream());
+            ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/layouts/layouts.xml"), this.tilesTemplate.render(context),
+                    false);
         }
-        else
-        {
-            definitions = XMLParser.parse(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/layouts/layouts.xml"),
-                    this.tilesTemplate.render(context), false).getResourceInputStream());
-        }
+
+        Node definitions = XMLParser.parse(web.getWebResource("WEB-INF/layouts/layouts.xml").getResourceInputStream());
 
         addLayoutDefinition("standard", "/WEB-INF/layouts/pageTemplate.jsp", definitions);
 
