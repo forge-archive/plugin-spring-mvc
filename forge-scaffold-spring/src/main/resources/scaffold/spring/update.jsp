@@ -18,7 +18,7 @@
 						<a class="button" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}"/>">Cancel</a>
 					</td>
 					<td>
-						<form:form commandName="@{ccEntity}" action="$${@{ccEntity}.id}/delete" method="POST">
+						<form:form commandName="@{ccEntity}" action="$${@{ccEntity}.id}/delete" method="POST" class="align">
 							<input type="submit" value="Delete" class="button"/>
 						</form:form>
 					</td>

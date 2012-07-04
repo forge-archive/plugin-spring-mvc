@@ -281,6 +281,18 @@ h1 {
 	vertical-align: middle;
 }
 
+form.align{
+	margin-top: 5px;
+	margin-left: 1px;
+	margin-right: 1px;
+	margin-bottom: 5px;
+	padding-top: 3px;
+	padding-bottom: 3px;
+	padding-left: 10px;
+	padding-right: 10px;
+	vertical-align: middle;
+}
+
 #content .button:hover, #content .buttons a:hover {
 	background-color: #d2e8f2;
 }
