@@ -8,6 +8,7 @@ import @{topLevelPackage}.repo.@{entity.getName()}Dao;
 import @{topLevelPackage}.repo.@{clazz}Dao;
 @end{}
 
+import javax.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -67,6 +68,53 @@ public class @{entity.getName()}Controller
       	model.addAttribute("count", count);
 
 		List<@{entity.getName()}> @{entityPlural.toLowerCase()} = @{ccEntity}Dao.search(search, first, max);
+		@foreach{name : entityNames, ccClass : ccEntityClasses}
+		model.addAttribute("@{name}", @{ccClass}Dao.getAll());
+		@end{} 
+		return @{entityPlural.toLowerCase()};
+	}
+	
+	@RequestMapping(method=RequestMethod.POST, params="search")
+	public @ModelAttribute("@{entityPlural.toLowerCase()}")
+	List<@{entity.getName()}> view@{entityPlural}Post(@ModelAttribute("search") @{entity.getName()} search, @RequestParam(required=false) Long first, 
+			@RequestParam(required=false) Integer max, Model model)
+	{
+		if (max == null || max <= 0)
+		{
+			max = 10;
+		}
+
+		if (first == null || first < 0)
+		{
+			first = 0l;
+		}
+
+		Long count = this.@{ccEntity}Dao.getCount(search);
+
+		Long pages = Math.round(count.doubleValue()/max);
+
+		if (pages == 0)
+		{
+			pages++;
+		}
+
+		Long current = Math.round(first.doubleValue()*pages/count.doubleValue());
+
+		if (current == 0)
+		{
+			current++;
+		}
+
+		model.addAttribute("first", first);
+      	model.addAttribute("last", first + max - 1);
+      	model.addAttribute("current", current);
+      	model.addAttribute("max", max);
+      	model.addAttribute("count", count);
+
+		List<@{entity.getName()}> @{entityPlural.toLowerCase()} = @{ccEntity}Dao.search(search, first, max);
+		@foreach{name : entityNames, ccClass : ccEntityClasses}
+		model.addAttribute("@{name}", @{ccClass}Dao.getAll());
+		@end{} 
 		return @{entityPlural.toLowerCase()};
 	}
 
@@ -105,12 +153,17 @@ public class @{entity.getName()}Controller
 	}
 
 	@RequestMapping(value="/create", method=RequestMethod.GET)
-	public String create@{entity.getName()}(Model model)
+	public String create@{entity.getName()}(Model model, HttpSession session)
 	{
 		@foreach{name : entityNames, ccClass : ccEntityClasses}
 		model.addAttribute("@{name}", @{ccClass}Dao.getAll());
 		@end{} 
-		model.addAttribute("@{ccEntity}", new @{entity.getName()}());
+		if(session.getAttribute("@{ccEntity}") != null){
+			model.addAttribute("@{ccEntity}", session.getAttribute("@{ccEntity}"));
+			session.removeAttribute("@{ccEntity}");
+		} else {
+			model.addAttribute("@{ccEntity}", new @{entity.getName()}());
+		}
 		return "create@{entity.getName()}";
 	}
 
@@ -119,5 +172,12 @@ public class @{entity.getName()}Controller
 	{
 		@{ccEntity}Dao.create(@{ccEntity});
 		return "redirect:@{targetDir}@{entityPlural.toLowerCase()}";
+	}
+	
+	@RequestMapping(method=RequestMethod.POST, params="create")
+	public String create@{entity.getName()}Search(@ModelAttribute("search") @{entity.getName()} search, HttpSession session)
+	{
+		session.setAttribute("@{ccEntity}", search);
+		return "redirect:@{targetDir}@{entityPlural.toLowerCase()}/create";
 	}
 }
