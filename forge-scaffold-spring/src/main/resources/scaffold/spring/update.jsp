@@ -6,7 +6,7 @@
 
 		@{metawidget}
 
-		<input type="submit" value="Save" class="button"/>
+		<input type="submit" value="Save" class="btn btn-primary"/>
 
 	</form:form>
 
@@ -15,11 +15,11 @@
 			<tbody>
 				<tr>
 					<td>
-						<a class="button" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}"/>">Cancel</a>
+						<a class="btn btn-primary" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}"/>">Cancel</a>
 					</td>
 					<td>
 						<form:form commandName="@{ccEntity}" action="$${@{ccEntity}.id}/delete" method="POST" class="align">
-							<input type="submit" value="Delete" class="button"/>
+							<input type="submit" value="Delete" class="btn btn-primary"/>
 						</form:form>
 					</td>
 				</tr>

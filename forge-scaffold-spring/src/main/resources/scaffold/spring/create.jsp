@@ -11,10 +11,10 @@
 				<tbody>
 					<tr>
 						<td>
-							<input type="submit" value="Save" class="button"/>
+							<input type="submit" value="Save" class="btn btn-primary"/>
 						</td>
 						<td>
-							<a class="button" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}"/>">Cancel</a>
+							<a class="btn btn-primary" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}"/>">Cancel</a>
 						</td>
 					</tr>
 				</tbody>

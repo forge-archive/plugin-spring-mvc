@@ -12,13 +12,13 @@
 		<table>
 			<tr>
 				<td>
-					<a class="button" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}"/>">View All</a>
+					<a class="btn btn-primary" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}"/>">View All</a>
 				</td>
 				<td>
-					<a class="button" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}/$${@{ccEntity}.id}?edit=true"/>">Edit</a>
+					<a class="btn btn-primary" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}/$${@{ccEntity}.id}?edit=true"/>">Edit</a>
 				</td>
 				<td>
-					<a class="button" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}/create"/>">Create New</a>
+					<a class="btn btn-primary" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}/create"/>">Create New</a>
 				</td>
 			</tr>
 		</table>
