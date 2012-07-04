@@ -588,8 +588,10 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         // Root index page
 
         if (!targetDir.equals("/"))
+        {
             result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/index.jsp"),
                     this.indexTemplate.render(context), overwrite));
+        }
 
         // Basic pages
 
@@ -599,28 +601,15 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/error.jsp"),
                 this.errorTemplate.render(context), overwrite));
 
-        // Static resources
+        // Static resources - only add them if they are not already present.
 
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/background.gif"),
-                getClass().getResourceAsStream("/scaffold/spring/background.gif"), overwrite));
-
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/false.png"),
-                getClass().getResourceAsStream("/scaffold/spring/false.png"), overwrite));
-
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/forge-logo.png"),
-                getClass().getResourceAsStream("/scaffold/spring/forge-logo.png"), overwrite));
-
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/forge-style.css"),
-                getClass().getResourceAsStream("/scaffold/spring/forge-style.css"), overwrite));
-
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/jboss-community.png"),
-                getClass().getResourceAsStream("/scaffold/spring/jboss-community.png"), overwrite));
-
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/search.png"),
-                getClass().getResourceAsStream("/scaffold/spring/search.png"), overwrite));
-
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/true.png"),
-                getClass().getResourceAsStream("/scaffold/spring/true.png"), overwrite));
+        addStaticResource("background.gif");
+        addStaticResource("false.png");
+        addStaticResource("forge-logo.png");
+        addStaticResource("forge-style.css");
+        addStaticResource("jboss-community.png");
+        addStaticResource("search.png");
+        addStaticResource("true.png");
 
        return result;
     }
@@ -1157,5 +1146,18 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
         JavaClass entityConverter = JavaParser.parse(JavaClass.class, this.entityConverterTemplate.render(context));
         java.saveJavaSource(entityConverter);
+    }
+
+    // Private methods
+
+    private void addStaticResource(String resource)
+    {
+        WebResourceFacet web = project.getFacet(WebResourceFacet.class);
+
+        if (!web.getWebResource("resources/" + resource).exists())
+        {
+            ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("resources/" + resource),
+                    getClass().getResourceAsStream("scaffold/spring/" + resource), false);
+        }
     }
 }
