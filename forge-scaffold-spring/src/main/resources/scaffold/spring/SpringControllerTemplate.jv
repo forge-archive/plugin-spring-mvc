@@ -8,6 +8,7 @@ import @{topLevelPackage}.repo.@{entity.getName()}Dao;
 import @{topLevelPackage}.repo.@{clazz}Dao;
 @end{}
 
+import javax.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -157,12 +158,17 @@ public class @{entity.getName()}Controller
 	}
 
 	@RequestMapping(value="/create", method=RequestMethod.GET)
-	public String create@{entity.getName()}(Model model)
+	public String create@{entity.getName()}(Model model, HttpSession session)
 	{
 		@foreach{name : entityNames, ccClass : ccEntityClasses}
 		model.addAttribute("@{name}", @{ccClass}Dao.getAll());
 		@end{} 
-		model.addAttribute("@{ccEntity}", new @{entity.getName()}());
+		if(session.getAttribute("@{ccEntity}") != null){
+			model.addAttribute("@{ccEntity}", session.getAttribute("@{ccEntity}"));
+			session.removeAttribute("@{ccEntity}");
+		} else {
+			model.addAttribute("@{ccEntity}", new @{entity.getName()}());
+		}
 		return "create@{entity.getName()}";
 	}
 
@@ -174,9 +180,9 @@ public class @{entity.getName()}Controller
 	}
 	
 	@RequestMapping(method=RequestMethod.POST, params="create")
-	public String create@{entity.getName()}Search(@ModelAttribute("search") @{entity.getName()} search)
+	public String create@{entity.getName()}Search(@ModelAttribute("search") @{entity.getName()} search, HttpSession session)
 	{
-		@{ccEntity}Dao.create(search);
-		return "redirect:@{targetDir}@{entityPlural.toLowerCase()}";
+		session.setAttribute("@{ccEntity}", search);
+		return "redirect:@{targetDir}@{entityPlural.toLowerCase()}/create";
 	}
 }
