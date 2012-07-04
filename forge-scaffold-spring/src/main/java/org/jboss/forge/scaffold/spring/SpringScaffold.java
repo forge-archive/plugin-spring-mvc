@@ -607,7 +607,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         addStaticResource("false.png");
         addStaticResource("forge-logo.png");
         addStaticResource("forge-style.css");
-        addStaticResource("jboss-community.png");
+        addStaticResource("bootstrap.css");
         addStaticResource("search.png");
         addStaticResource("true.png");
 
@@ -852,6 +852,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         Map<Object, Object> context = CollectionUtils.newHashMap();
         context.put("navigation", writer.toString().trim());
         context.put("targetDir", targetDir);
+        context.put("appName", project.getProjectRoot().getName());
 
         if (this.navigationTemplate == null)
         {
