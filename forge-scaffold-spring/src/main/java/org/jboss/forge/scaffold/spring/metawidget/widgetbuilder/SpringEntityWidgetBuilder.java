@@ -87,6 +87,12 @@ public class SpringEntityWidgetBuilder
     @Override
     public StaticXmlWidget buildWidget(String elementName, Map<String, String> attributes, StaticSpringMetawidget metawidget)
     {
+    	
+    	if(metawidget.getClientProperty("search") != null && (TRUE.equals(attributes.get(ONE_TO_ONE)) 
+    			|| TRUE.equals(attributes.get(N_TO_MANY)) 
+    			|| TRUE.equals(attributes.get(REVERSE_PRIMARY_KEY)))){
+    		return new StaticXmlStub();  		
+    	}
         // Suppress nested INVERSE ONE_TO_ONE to avoid recursion.
 
         if (TRUE.equals(attributes.get(ONE_TO_ONE)) && TRUE.equals(attributes.get(INVERSE_RELATIONSHIP)))

@@ -451,6 +451,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                 this.searchMetawidget.setValue(StaticJspUtils.wrapExpression(entity.getName()));
                 this.searchMetawidget.setPath(entity.getQualifiedName());
                 this.searchMetawidget.setReadOnly(true);
+                
+                this.entityMetawidget.putClientProperty("search", true);
 
                 writeEntityMetawidget(context, this.searchTemplateMetawidgetIndent);
                 writeHeaderAndSearchMetawidgets(context, this.headerMetawidgetIndent, this.searchMetawidgetIndent);
@@ -461,7 +463,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                 addViewDefinition(tile, entityPlural.toLowerCase(), "Search " + StringUtils.uncamelCase(entity.getName()) + " entities",
                         StringUtils.uncamelCase(entity.getName()), "Search " + StringUtils.uncamelCase(entity.getName()) + " entities",
                         "/WEB-INF/views" + targetDir + entity.getName() + "/" + entityPlural.toLowerCase()+ ".jsp", definitions);
-
+                
+                findEntityRelationships(entity, context);
                 // Generate view
 
                 this.entityMetawidget.setReadOnly(true);
@@ -1046,6 +1049,55 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
             context.put("nToMany", nToMany);
             addConverters(context);
             addConversionService();
+        }
+
+        return context;
+    }
+    
+    protected Map<Object, Object> removeEntityRelationships(JavaClass entity, Map<Object, Object> context) throws FileNotFoundException
+    {
+        List<String> entityNames = new ArrayList<String>();
+        List<String> entityClasses = new ArrayList<String>();
+        List<String> ccEntityClasses = new ArrayList<String>();
+        List<String> nToMany = new ArrayList<String>();
+
+        for ( Field<?> field : entity.getFields())
+        {
+            if (field.hasAnnotation(OneToOne.class) || field.hasAnnotation(OneToMany.class) || field.hasAnnotation(ManyToOne.class)
+                    || field.hasAnnotation(ManyToMany.class))
+            {
+                String name = field.getName();
+                entityNames.add(name);
+                String clazz = new String();
+
+                if (field.hasAnnotation(OneToMany.class) || field.hasAnnotation(ManyToMany.class))
+                {
+                    clazz = field.getStringInitializer();
+                    int firstIndexOf = clazz.indexOf("<");
+                    int lastIndexOf = clazz.indexOf(">");
+
+                    clazz = clazz.substring(firstIndexOf + 1, lastIndexOf);
+
+                    nToMany.add(clazz);
+                }
+                else
+                {
+                    clazz = field.getType();
+                }
+
+                entityClasses.add(clazz);
+                String ccEntity = StringUtils.camelCase(clazz);
+                ccEntityClasses.add(ccEntity);
+            }
+        }
+
+        context.remove("entityNames");
+        context.remove("entityClasses");
+        context.remove("ccEntityClasses");
+
+        if (!nToMany.isEmpty())
+        {
+            context.put("nToMany", nToMany);
         }
 
         return context;
