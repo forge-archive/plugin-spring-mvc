@@ -262,6 +262,7 @@ h1 {
 }
 
 #content .button, #content .buttons a {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
 	margin-top: 5px;
 	margin-left: 1px;
 	margin-right: 1px;
@@ -279,16 +280,16 @@ h1 {
 	border-radius: 5px;
 	background-color: #eeeeee;
 	vertical-align: middle;
+	font-size: 12pt;
 }
 
-form.align{
+#content form.align{
 	margin-top: 5px;
 	margin-left: 1px;
 	margin-right: 1px;
 	margin-bottom: 5px;
 	padding-top: 3px;
 	padding-bottom: 3px;
-	padding-left: 10px;
 	padding-right: 10px;
 	vertical-align: middle;
 }
