@@ -253,7 +253,15 @@ public class SpringEntityWidgetBuilder
             HtmlAnchor createLink = new HtmlAnchor();
             createLink.setTextContent("Create New " + StringUtils.uncamelCase(entityName));
             createLink.putAttribute("href", curl.toString());
-            cell.getChildren().add(createLink);
+
+            if (TRUE.equals(attributes.get("search")))
+            {
+                return createLink;
+            }
+            else
+            {
+                cell.getChildren().add(createLink);
+            }
 
             return cell;
         }
