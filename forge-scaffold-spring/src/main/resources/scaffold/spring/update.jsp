@@ -5,25 +5,28 @@
 	<form:form commandName="@{ccEntity}" action="$${@{ccEntity}.id}">
 
 		@{metawidget}
-
-		<input type="submit" value="Save" class="button"/>
-
-	</form:form>
-
+		
 	<div class="buttons">
 		<table>
 			<tbody>
 				<tr>
 					<td>
-						<a class="button" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}"/>">Cancel</a>
+						<input type="submit" value="Save" class="button" name="update"/>
 					</td>
 					<td>
-						<form:form commandName="@{ccEntity}" action="$${@{ccEntity}.id}/delete" method="POST" class="align">
-							<input type="submit" value="Delete" class="button"/>
-						</form:form>
+						<input type="submit" value="Delete" class="button" name="delete"/>
+					</td>
+					<td>
+						<a class="button" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}"/>">Cancel</a>
 					</td>
 				</tr>
 			</tbody>
 		</table>
 	</div>
+		
+
+		
+
+	</form:form>
+
 </div>

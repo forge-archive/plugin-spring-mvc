@@ -137,14 +137,14 @@ public class @{entity.getName()}Controller
 		}
 	}
 
-	@RequestMapping(value="/{id}", method=RequestMethod.POST)
+	@RequestMapping(value="/{id}", method=RequestMethod.POST, params="update")
 	public String updatePost(@PathVariable("id") Long id, @{entity.getName()} @{ccEntity})
 	{
 		@{ccEntity}Dao.update(@{ccEntity});
 		return "view@{entity.getName()}";
 	}
 
-	@RequestMapping(value="/{id}/delete", method=RequestMethod.POST)
+	@RequestMapping(value="/{id}", method=RequestMethod.POST, params="delete")
 	public String update@{entity.getName()}(@PathVariable("id") Long id, @{entity.getName()} @{ccEntity})
 	{
 		@{ccEntity}Dao.delete(id);
