@@ -2,28 +2,39 @@
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 
 <div class="section">
-	<form:form commandName="@{ccEntity}" action="$${@{ccEntity}.id}">
+	<form:form commandName="@{ccEntity}" onsubmit="onSubmit();" id="editForm" name="editForm">
 
 		@{metawidget}
-
-		<input type="submit" value="Save" class="btn btn-primary"/>
-
-	</form:form>
-
+		
 	<div class="buttons">
 		<table>
 			<tbody>
 				<tr>
 					<td>
-						<a class="btn btn-primary" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}"/>">Cancel</a>
+						<input type="submit" value="Save" class="button" onclick="document.pressed=this.value"/>
 					</td>
 					<td>
-						<form:form commandName="@{ccEntity}" action="$${@{ccEntity}.id}/delete" method="POST" class="align">
-							<input type="submit" value="Delete" class="btn btn-primary"/>
-						</form:form>
+						<input type="submit" value="Delete" class="button" onclick="document.pressed=this.value"/>
+					</td>
+					<td>
+						<a class="button" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}"/>">Cancel</a>
 					</td>
 				</tr>
 			</tbody>
 		</table>
-	</div>
+	</div>		
+
+	</form:form>
+
 </div>
+
+<script type="text/javascript">
+	function onSubmit() {
+		if (document.pressed == 'Save') {
+			document.editForm.action = "$${@{ccEntity}.id}";
+		} else if (document.pressed == 'Delete') {
+			document.editForm.action = "$${@{ccEntity}.id}/delete";
+		}
+		return true;
+	}
+</script>

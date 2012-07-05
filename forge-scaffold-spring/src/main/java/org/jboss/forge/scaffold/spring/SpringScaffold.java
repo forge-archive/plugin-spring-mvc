@@ -359,7 +359,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                 JavaSourceFacet java = project.getFacet(JavaSourceFacet.class);
                 WebResourceFacet web = project.getFacet(WebResourceFacet.class);
                 MetadataFacet meta = project.getFacet(MetadataFacet.class);
-
                 loadTemplates();
 
                 // Set context for Java and JSP generation
@@ -461,6 +460,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                 this.searchMetawidget.setValue(StaticJspUtils.wrapExpression(entity.getName()));
                 this.searchMetawidget.setPath(entity.getQualifiedName());
                 this.searchMetawidget.setReadOnly(true);
+
 
                 HtmlTableLayoutConfig config = new HtmlTableLayoutConfig();
                 config.setTableStyleClass("search");

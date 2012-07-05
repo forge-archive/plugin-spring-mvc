@@ -68,9 +68,6 @@ public class @{entity.getName()}Controller
       	model.addAttribute("count", count);
 
 		List<@{entity.getName()}> @{entityPlural.toLowerCase()} = @{ccEntity}Dao.search(search, first, max);
-		@foreach{name : entityNames, ccClass : ccEntityClasses}
-		model.addAttribute("@{name}", @{ccClass}Dao.getAll());
-		@end{} 
 		return @{entityPlural.toLowerCase()};
 	}
 	
@@ -112,9 +109,6 @@ public class @{entity.getName()}Controller
       	model.addAttribute("count", count);
 
 		List<@{entity.getName()}> @{entityPlural.toLowerCase()} = @{ccEntity}Dao.search(search, first, max);
-		@foreach{name : entityNames, ccClass : ccEntityClasses}
-		model.addAttribute("@{name}", @{ccClass}Dao.getAll());
-		@end{} 
 		return @{entityPlural.toLowerCase()};
 	}
 
