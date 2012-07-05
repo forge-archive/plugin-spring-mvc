@@ -23,6 +23,7 @@
 package org.jboss.forge.scaffold.spring;
 
 import static org.jvnet.inflector.Noun.pluralOf;
+import static org.metawidget.inspector.InspectionResultConstants.TRUE;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -67,7 +68,9 @@ import org.jboss.forge.scaffold.ScaffoldProvider;
 import org.jboss.forge.scaffold.TemplateStrategy;
 import org.jboss.forge.scaffold.spring.metawidget.config.ForgeConfigReader;
 import org.jboss.forge.scaffold.spring.metawidget.layout.ScaffoldTableLayout;
+import org.jboss.forge.scaffold.spring.metawidget.widgetbuilder.EntityWidgetBuilderConfig;
 import org.jboss.forge.scaffold.spring.metawidget.widgetbuilder.HtmlAnchor;
+import org.jboss.forge.scaffold.spring.metawidget.widgetbuilder.SpringEntityWidgetBuilder;
 import org.jboss.forge.scaffold.util.ScaffoldUtil;
 import org.jboss.forge.shell.ShellPrompt;
 import org.jboss.forge.shell.plugins.Alias;
@@ -466,6 +469,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                 config.setTableStyleClass("search");
                 ScaffoldTableLayout layout = new ScaffoldTableLayout(config);
                 this.entityMetawidget.setLayout(layout);
+                this.entityMetawidget.putAttribute("search", TRUE);
                 this.entityMetawidget.setReadOnly(false);
 
                 writeEntityMetawidget(context, this.searchTemplateMetawidgetIndent);
