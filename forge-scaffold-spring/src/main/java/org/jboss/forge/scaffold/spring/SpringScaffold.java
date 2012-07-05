@@ -451,8 +451,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                 this.searchMetawidget.setPath(entity.getQualifiedName());
                 this.searchMetawidget.setReadOnly(true);
                 
-                this.entityMetawidget.putClientProperty("search", true);
-
                 writeEntityMetawidget(context, this.searchTemplateMetawidgetIndent);
                 writeHeaderAndSearchMetawidgets(context, this.headerMetawidgetIndent, this.searchMetawidgetIndent);
 
