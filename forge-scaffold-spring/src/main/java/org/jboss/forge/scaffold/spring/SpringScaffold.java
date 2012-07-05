@@ -603,13 +603,18 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
         // Static resources - only add them if they are not already present.
 
-        addStaticResource("background.gif");
-        addStaticResource("false.png");
-        addStaticResource("forge-logo.png");
-        addStaticResource("forge-style.css");
-        addStaticResource("bootstrap.css");
-        addStaticResource("search.png");
-        addStaticResource("true.png");
+        ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/bootstrap.css"),
+                getClass().getResourceAsStream("/scaffold/spring/bootstrap.css"), overwrite);
+        ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/false.png"),
+                getClass().getResourceAsStream("/scaffold/spring/false.png"), overwrite);
+        ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/forge-logo.png"),
+                getClass().getResourceAsStream("/scaffold/spring/forge-logo.png"), overwrite);
+        ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/forge-style.css"),
+                getClass().getResourceAsStream("/scaffold/spring/forge-style.css"), overwrite);
+        ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/search.png"),
+                getClass().getResourceAsStream("/scaffold/spring/search.png"), overwrite);
+        ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/true.png"), 
+                getClass().getResourceAsStream("/scaffold/spring/true.png"), overwrite);
 
        return result;
     }
@@ -1147,18 +1152,5 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
         JavaClass entityConverter = JavaParser.parse(JavaClass.class, this.entityConverterTemplate.render(context));
         java.saveJavaSource(entityConverter);
-    }
-
-    // Private methods
-
-    private void addStaticResource(String resource)
-    {
-        WebResourceFacet web = project.getFacet(WebResourceFacet.class);
-
-        if (!web.getWebResource("resources/" + resource).exists())
-        {
-            ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("resources/" + resource),
-                    getClass().getResourceAsStream("scaffold/spring/" + resource), false);
-        }
     }
 }
