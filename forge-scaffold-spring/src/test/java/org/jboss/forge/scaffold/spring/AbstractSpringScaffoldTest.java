@@ -39,11 +39,9 @@ public abstract class AbstractSpringScaffoldTest extends AbstractShellTest
     protected Project setupScaffoldProject() throws Exception
     {
         Project project = initializeJavaProject();
-        getShell().execute("spring setup");
-        queueInputLines("HIBERNATE", "JBOSS_AS7", "");
+        queueInputLines("HIBERNATE", "JBOSS_AS7", "", "");
         getShell().execute("persistence setup");
-        getShell().execute("spring persistence");
-        queueInputLines("", "", "2", "", "", "");
+        queueInputLines("", "", "", "");
         getShell().execute("scaffold setup --scaffoldType spring");
         return project;
     }
@@ -51,12 +49,20 @@ public abstract class AbstractSpringScaffoldTest extends AbstractShellTest
     protected Project setupScaffoldProject(String targetDir) throws Exception
     {
         Project project = initializeJavaProject();
-        getShell().execute("spring setup");
-        queueInputLines("HIBERNATE", "JBOSS_AS7", "");
+        queueInputLines("HIBERNATE", "JBOSS_AS7", "", "");
         getShell().execute("persistence setup");
-        getShell().execute("spring persistence");
-        queueInputLines("", "", "2", "", "", "");
+        queueInputLines("", "", "", "");
         getShell().execute("scaffold setup --scaffoldType spring --targetDir " + targetDir);
         return project;
+    }
+
+    protected String normalized(StringBuilder sb)
+    {
+        return normalized(sb.toString());
+    }
+
+    protected String normalized(String input)
+    {
+        return input.replaceAll("(\r|\n|\\s)+"," ");
     }
 }

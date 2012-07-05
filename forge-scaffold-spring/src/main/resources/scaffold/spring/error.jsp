@@ -5,7 +5,7 @@
 		<a target="_blank" href="http://www.jboss.org"><img
 			src="<c:url value="/static/resources/jboss-community.png"/>"
 			alt="JBoss and JBoss Community" width="250" height="31" border="0">
-		</a><br />To replace this page, edit 'src/main/webapp/WEB-INF/views@{targetDir}error.jsp', or
+		</a><br />To replace this page, edit 'src/main/webapp/WEB-INF/views/error.jsp', or
 		keep Forging!
 	</p>
 </div>

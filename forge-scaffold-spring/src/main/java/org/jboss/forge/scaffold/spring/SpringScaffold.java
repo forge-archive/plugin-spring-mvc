@@ -66,6 +66,7 @@ import org.jboss.forge.scaffold.AccessStrategy;
 import org.jboss.forge.scaffold.ScaffoldProvider;
 import org.jboss.forge.scaffold.TemplateStrategy;
 import org.jboss.forge.scaffold.spring.metawidget.config.ForgeConfigReader;
+import org.jboss.forge.scaffold.spring.metawidget.layout.ScaffoldTableLayout;
 import org.jboss.forge.scaffold.spring.metawidget.widgetbuilder.HtmlAnchor;
 import org.jboss.forge.scaffold.util.ScaffoldUtil;
 import org.jboss.forge.shell.ShellPrompt;
@@ -85,6 +86,7 @@ import org.metawidget.statically.StaticUtils.IndentedWriter;
 import org.metawidget.statically.javacode.StaticJavaMetawidget;
 import org.metawidget.statically.jsp.StaticJspMetawidget;
 import org.metawidget.statically.jsp.StaticJspUtils;
+import org.metawidget.statically.html.layout.HtmlTableLayoutConfig;
 import org.metawidget.statically.html.widgetbuilder.HtmlTag;
 import org.metawidget.statically.spring.StaticSpringMetawidget;
 import org.metawidget.util.CollectionUtils;
@@ -110,7 +112,7 @@ import org.metawidget.util.simple.StringUtils;
             SpringFacet.class })
 public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 {
-    
+
     //
     // Private statics
     //
@@ -203,7 +205,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         this.prompt = prompt;
         this.compiler = compiler;
         this.install = install;
-        
+
         this.resolver = new ClassLoaderTemplateResolver(SpringScaffold.class.getClassLoader());
         
         if(this.compiler != null)
@@ -366,8 +368,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                 String ccEntity = StringUtils.decapitalize(entity.getName());
                 context.put("ccEntity", ccEntity);
 
-                // TODO: Support multiple packages for controllers and DAOs.
-
                 context.put("topLevelPackage", meta.getTopLevelPackage());
 
                 String mvcPackage = (targetDir.isEmpty()) ? meta.getTopLevelPackage() + ".mvc.root" : meta.getTopLevelPackage() + ".mvc." +
@@ -376,11 +376,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
                 findEntityRelationships(entity, context);
 
-                if (!targetDir.startsWith("/"))
-                    targetDir = "/" + targetDir;
-
-                if (!targetDir.endsWith("/"))
-                    targetDir += "/";
+                targetDir = (targetDir.startsWith("/")) ? targetDir : "/" + targetDir;
+                targetDir = (targetDir.endsWith("/")) ? targetDir : targetDir + "/";
 
                 context.put("targetDir", targetDir);
                 context.put("entityName", StringUtils.uncamelCase(entity.getName()));
@@ -390,7 +387,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
                 // Prepare entity metawidget
 
-                this.entityMetawidget.putAttribute("value", ccEntity);
+                this.entityMetawidget.setValue(ccEntity);
                 this.entityMetawidget.setPath(entity.getQualifiedName());
                 this.entityMetawidget.setReadOnly(false);
 
@@ -442,26 +439,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                         StringUtils.uncamelCase(entity.getName()), "Edit an existing " + StringUtils.uncamelCase(entity.getName()),
                         "/WEB-INF/views" + targetDir + entity.getName() + "/update" + entity.getName() + ".jsp", definitions);
 
-                // Generate search
-
-                this.headerMetawidget.setValue(StaticJspUtils.wrapExpression(entity.getName()));
-                this.headerMetawidget.setPath(entity.getQualifiedName());
-                this.headerMetawidget.setReadOnly(true);
-                this.searchMetawidget.setValue(StaticJspUtils.wrapExpression(entity.getName()));
-                this.searchMetawidget.setPath(entity.getQualifiedName());
-                this.searchMetawidget.setReadOnly(true);
-                
-                writeEntityMetawidget(context, this.searchTemplateMetawidgetIndent);
-                writeHeaderAndSearchMetawidgets(context, this.headerMetawidgetIndent, this.searchMetawidgetIndent);
-
-                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + entity.getName()
-                        + "/" + entityPlural.toLowerCase() + ".jsp"), this.searchTemplate.render(context), overwrite));
-
-                addViewDefinition(tile, entityPlural.toLowerCase(), "Search " + StringUtils.uncamelCase(entity.getName()) + " entities",
-                        StringUtils.uncamelCase(entity.getName()), "Search " + StringUtils.uncamelCase(entity.getName()) + " entities",
-                        "/WEB-INF/views" + targetDir + entity.getName() + "/" + entityPlural.toLowerCase()+ ".jsp", definitions);
-                
-                findEntityRelationships(entity, context);
                 // Generate view
 
                 this.entityMetawidget.setReadOnly(true);
@@ -473,6 +450,33 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                 addViewDefinition(tile, "view" + entity.getName(), "View " + StringUtils.uncamelCase(entity.getName()),
                         StringUtils.uncamelCase(entity.getName()), "View existing " + StringUtils.uncamelCase(entity.getName()),
                         "/WEB-INF/views" + targetDir + entity.getName() + "/view" + entity.getName() + ".jsp", definitions);
+
+                // Generate search
+
+                this.headerMetawidget.setValue(StaticJspUtils.wrapExpression(entity.getName()));
+                this.headerMetawidget.setPath(entity.getQualifiedName());
+                this.headerMetawidget.setReadOnly(true);
+
+                this.searchMetawidget.setValue(StaticJspUtils.wrapExpression(entity.getName()));
+                this.searchMetawidget.setPath(entity.getQualifiedName());
+                this.searchMetawidget.setReadOnly(true);
+
+
+                HtmlTableLayoutConfig config = new HtmlTableLayoutConfig();
+                config.setTableStyleClass("search");
+                ScaffoldTableLayout layout = new ScaffoldTableLayout(config);
+                this.entityMetawidget.setLayout(layout);
+                this.entityMetawidget.setReadOnly(false);
+
+                writeEntityMetawidget(context, this.searchTemplateMetawidgetIndent);
+                writeHeaderAndSearchMetawidgets(context, this.headerMetawidgetIndent, this.searchMetawidgetIndent);
+
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + entity.getName()
+                        + "/" + entityPlural.toLowerCase() + ".jsp"), this.searchTemplate.render(context), overwrite));
+
+                addViewDefinition(tile, entityPlural.toLowerCase(), "Search " + StringUtils.uncamelCase(entity.getName()) + " entities",
+                        StringUtils.uncamelCase(entity.getName()), "Search " + StringUtils.uncamelCase(entity.getName()) + " entities",
+                        "/WEB-INF/views" + targetDir + entity.getName() + "/" + entityPlural.toLowerCase()+ ".jsp", definitions);
 
                 String viewsFile = XMLParser.toXMLString(definitions);
 
@@ -521,19 +525,22 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
                 // If we have not just generated an IndexController for the '/' directory, create one.
 
-                context.put("mvcPackage", meta.getTopLevelPackage() + ".mvc");
-                context.put("targetDir", "/");
-                JavaClass rootIndexController = JavaParser.parse(JavaClass.class, this.indexControllerTemplate.render(context));
-                java.saveJavaSource(rootIndexController);
-                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(rootIndexController),
-                        rootIndexController.toString(), overwrite));
+                if (!targetDir.equals("/"))
+                {
+                    context.put("mvcPackage", meta.getTopLevelPackage() + ".mvc.root");
+                    context.put("targetDir", "/");
+
+                    JavaClass rootIndexController = JavaParser.parse(JavaClass.class, this.indexControllerTemplate.render(context));
+                    java.saveJavaSource(rootIndexController);
+                    result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(rootIndexController),
+                            rootIndexController.toString(), overwrite));
 
                 // Generate navigation, for both "/" and for targetDir
 
-                if (!targetDir.equals("/"))
-                    result.add(generateNavigation(targetDir, overwrite));
+                    result.add(generateNavigation("/", overwrite));
+                }
 
-                result.add(generateNavigation("/", overwrite));
+                result.add(generateNavigation(targetDir, overwrite));
             }
             catch (Exception e)
             {
@@ -581,45 +588,33 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         // Root index page
 
         if (!targetDir.equals("/"))
+        {
             result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/index.jsp"),
                     this.indexTemplate.render(context), overwrite));
+        }
 
         // Basic pages
 
         result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + "index.jsp"),
                 this.indexTemplate.render(context), overwrite));
 
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + "error.jsp"),
+        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views/error.jsp"),
                 this.errorTemplate.render(context), overwrite));
 
-        // Static resources
+        // Static resources - only add them if they are not already present.
 
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/add.png"),
-                getClass().getResourceAsStream("/scaffold/spring/add.png"), overwrite));
-
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/background.gif"),
-                getClass().getResourceAsStream("/scaffold/spring/background.gif"), overwrite));
-
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/false.png"),
-                getClass().getResourceAsStream("/scaffold/spring/false.png"), overwrite));
-
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/forge-logo.png"),
-                getClass().getResourceAsStream("/scaffold/spring/forge-logo.png"), overwrite));
-
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/forge-style.css"),
-                getClass().getResourceAsStream("/scaffold/spring/forge-style.css"), overwrite));
-
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/jboss-community.png"),
-                getClass().getResourceAsStream("/scaffold/spring/jboss-community.png"), overwrite));
-
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/remove.png"),
-                getClass().getResourceAsStream("/scaffold/spring/remove.png"), overwrite));
-
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/search.png"),
-                getClass().getResourceAsStream("/scaffold/spring/search.png"), overwrite));
-
-        result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/true.png"),
-                getClass().getResourceAsStream("/scaffold/spring/true.png"), overwrite));
+        ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/bootstrap.css"),
+                getClass().getResourceAsStream("/scaffold/spring/bootstrap.css"), overwrite);
+        ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/false.png"),
+                getClass().getResourceAsStream("/scaffold/spring/false.png"), overwrite);
+        ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/forge-logo.png"),
+                getClass().getResourceAsStream("/scaffold/spring/forge-logo.png"), overwrite);
+        ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/forge-style.css"),
+                getClass().getResourceAsStream("/scaffold/spring/forge-style.css"), overwrite);
+        ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/search.png"),
+                getClass().getResourceAsStream("/scaffold/spring/search.png"), overwrite);
+        ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/true.png"), 
+                getClass().getResourceAsStream("/scaffold/spring/true.png"), overwrite);
 
        return result;
     }
@@ -646,11 +641,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     @Override
     public List<Resource<?>> getGeneratedResources(String targetDir)
     {
-        /**
-         * Not implemented as of yet.
-         */
-
-        return null;
+        throw new RuntimeException("Not implemented as of yet.");
     }
 
     @Override
@@ -866,6 +857,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         Map<Object, Object> context = CollectionUtils.newHashMap();
         context.put("navigation", writer.toString().trim());
         context.put("targetDir", targetDir);
+        context.put("appName", project.getProjectRoot().getName());
 
         if (this.navigationTemplate == null)
         {
@@ -1135,9 +1127,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
     protected boolean hasConverter(JavaClass conversionService, String clazz)
     {
-        for (Field<?> dao : conversionService.getFields()) {
-            if (dao.getName().equals(StringUtils.camelCase(clazz) + "Dao"));
+        for (Field<?> dao : conversionService.getFields())
+        {
+            if (dao.getName().equals(StringUtils.camelCase(clazz) + "Dao"))
+            {
                 return true;
+            }
         }
 
         return false;

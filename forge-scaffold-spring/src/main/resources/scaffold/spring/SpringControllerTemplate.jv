@@ -59,12 +59,7 @@ public class @{entity.getName()}Controller
 			pages++;
 		}
 
-		Long current = Math.round(first.doubleValue()*pages/count.doubleValue());
-
-		if (current == 0)
-		{
-			current++;
-		}
+		Long current = (first/max) + 1;
 
 		model.addAttribute("first", first);
       	model.addAttribute("last", first + max - 1);

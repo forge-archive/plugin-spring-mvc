@@ -4,19 +4,18 @@
 <div class="section">
 	<form:form commandName="search" method="POST">
 		@{metawidget}
-		<br/>
 
-		<div class=" buttons">
+		<div class="buttons">
 			<table>
 				<tbody>
 					<tr>
 						<td>
-							<input type="submit" value="Search" class="button" name="search"/>
+							<input type="submit" value="Search" class="btn btn-primary" name="search"/>
 						</td>
 						<td>
-							<input type="submit" value="Create New" class="button" name="create"/>
+							<input type="submit" value="Create New" class="btn btn-primary" name="create"/>
 						</td>
-					</tr>					
+					</tr>
 				</tbody>
 			</table>
 		</div>
@@ -38,11 +37,11 @@
 	</table>
 	<span class="paginator">
 		<c:if test="$${current > 1}">
-			<a class="button" href="<c:url value="/@{entityPlural.toLowerCase()}?first=$${(current-2)*max}&max=$${max}"/>">Previous</a>
+			<a class="btn btn-primary" href="<c:url value="/@{entityPlural.toLowerCase()}?first=$${(current-2)*max}&max=$${max}"/>">Previous</a>
 		</c:if>
-		<span>$${first} to $${last} (of $${last})</span>
+		<span>$${first} to $${last} (of $${count})</span>
 		<c:if test="$${count > current*max}">
-			<a class="button" href="<c:url value="/@{entityPlural.toLowerCase()}?first=$${current*max}&max=$${max}"/>">Next</a>
+			<a class="btn btn-primary" href="<c:url value="/@{entityPlural.toLowerCase()}?first=$${current*max}&max=$${max}"/>">Next</a>
 		</c:if>
 	</span>
 </div>
