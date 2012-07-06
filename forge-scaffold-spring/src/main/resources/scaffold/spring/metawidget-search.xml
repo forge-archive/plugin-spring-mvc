@@ -10,8 +10,8 @@
 	<!-- metawidget-entity.xml is used to generate both the read-only -->
 	<!-- and the editable version of the domain entity		          -->
 
-	<staticJspMetawidget xmlns="java:org.metawidget.statically.jsp">
-
+	<staticSpringMetawidget xmlns="java:org.metawidget.statically.spring">
+	
 		<inspector>
 			<compositeInspector xmlns="java:org.metawidget.inspector.composite" config="CompositeInspectorConfig">
 				<inspectors>
@@ -25,7 +25,7 @@
 								</forgePropertyStyle>
 							</propertyStyle>
 						</propertyTypeInspector>
-						<forgeInspector xmlns="java:org.jboss.forge.scaffold.spring.metawidget.inspector" config="org.jboss.forge.scaffold.spring.metawidget.inspector.ForgeInspectorConfig">
+						<forgeInspector xmlns="java:org.jboss.forge.scaffold.spring.metawidget.inspector" config="ForgeInspectorConfig">
 							<propertyStyle>
 								<forgePropertyStyle refId="forgePropertyStyle"/>
 							</propertyStyle>
@@ -47,19 +47,88 @@
 				</inspectors>
 			</compositeInspector>
 		</inspector>
+		
+		<widgetBuilder>
+			<compositeWidgetBuilder xmlns="java:org.metawidget.widgetbuilder.composite" config="CompositeWidgetBuilderConfig">
+				<widgetBuilders>
+					<array>
+						<readOnlyEntityWidgetBuilder xmlns="java:org.jboss.forge.scaffold.spring.metawidget.widgetbuilder"/>
+						<springEntityWidgetBuilder xmlns="java:org.jboss.forge.scaffold.spring.metawidget.widgetbuilder" config="EntityWidgetBuilderConfig">
+							<config>
+								<forgeConfig/>
+							</config>
+						</springEntityWidgetBuilder>
+						<springWidgetBuilder xmlns="java:org.metawidget.statically.spring.widgetbuilder"/>
+					</array>
+				</widgetBuilders>
+			</compositeWidgetBuilder>
+		</widgetBuilder>
 
-		<inspectionResultProcessors>
+		<widgetProcessors>
 			<array>
-				<forgeInspectionResultProcessor xmlns="java:org.jboss.forge.scaffold.spring.metawidget.processor"/>
+				<entityPathProcessor xmlns="java:org.jboss.forge.scaffold.spring.metawidget.widgetprocessor"/>
+				<hiddenFieldProcessor xmlns="java:org.metawidget.statically.spring.widgetprocessor"/>
+				<cssStyleProcessor xmlns="java:org.metawidget.statically.spring.widgetprocessor"/>
 			</array>
-		</inspectionResultProcessors>
+		</widgetProcessors>
+
+		<layout>
+			<scaffoldTableLayout xmlns="java:org.jboss.forge.scaffold.spring.metawidget.layout" config="org.metawidget.statically.html.layout.HtmlTableLayoutConfig">
+				<tableStyleClass>
+					<string>search</string>
+				</tableStyleClass>
+			</scaffoldTableLayout>
+		</layout>
+		
+	</staticSpringMetawidget>
+
+	<staticJspMetawidget xmlns="java:org.metawidget.statically.jsp">
+
+		<inspector>
+			<compositeInspector xmlns="java:org.metawidget.inspector.composite" config="CompositeInspectorConfig">
+				<inspectors>
+					<array>
+						<propertyTypeInspector xmlns="java:org.metawidget.inspector.propertytype" config="org.metawidget.inspector.impl.BaseObjectInspectorConfig">
+							<propertyStyle>
+								<forgePropertyStyle id="forgePropertyStyle" xmlns="java:org.jboss.forge.spring.metawidget.inspector.propertystyle" config="ForgePropertyStyleConfig">
+									<project>
+										<forgeProject/>
+									</project>
+								</forgePropertyStyle>
+							</propertyStyle>
+						</propertyTypeInspector>
+						<forgeInspector xmlns="java:org.jboss.forge.spring.metawidget.inspector" config="org.metawidget.inspector.impl.BaseObjectInspectorConfig">
+							<propertyStyle>
+								<forgePropertyStyle refId="forgePropertyStyle"/>
+							</propertyStyle>
+						</forgeInspector>
+						<jpaInspector xmlns="java:org.metawidget.inspector.jpa" config="JpaInspectorConfig">
+							<propertyStyle>
+								<forgePropertyStyle refId="forgePropertyStyle"/>
+							</propertyStyle>
+						</jpaInspector>
+						<beanValidationInspector xmlns="java:org.metawidget.inspector.beanvalidation" config="org.metawidget.inspector.impl.BaseObjectInspectorConfig">
+							<propertyStyle>
+								<forgePropertyStyle refId="forgePropertyStyle"/>
+							</propertyStyle>
+							<project>
+								<forgeProject/>
+							</project>
+							<annotationLookup>
+								<annotationLookup/>
+							</annotationLookup>
+						</beanValidationInspector>
+					</array>
+				</inspectors>
+			</compositeInspector>
+		</inspector>
 
 		<widgetBuilder>
 			<compositeWidgetBuilder xmlns="java:org.metawidget.widgetbuilder.composite" config="CompositeWidgetBuilderConfig">
 				<widgetBuilders>
 					<array>
+						<readOnlyWidgetBuilder xmlns="java:org.metawidget.statically.jsp.widgetbuilder"/>
 						<jspEntityWidgetBuilder xmlns="java:org.jboss.forge.scaffold.spring.metawidget.widgetbuilder"/>
-						<readOnlyEntityWidgetBuilder xmlns="java:org.jboss.forge.scaffold.spring.metawidget.widgetbuilder"/>
 						<jspWidgetBuilder xmlns="java:org.metawidget.statically.jsp.widgetbuilder"/>
 					</array>
 				</widgetBuilders>
@@ -68,13 +137,13 @@
 
 		<widgetProcessors>
 			<array>
+				<hiddenFieldProcessor xmlns="java:org.metawidget.statically.jsp.widgetprocessor"/>
 				<standardBindingProcessor xmlns="java:org.metawidget.statically.jsp.widgetprocessor"/>
-				<cssStyleProcessor xmlns="java:org.metawidget.statically.html.widgetprocessor"/>
 			</array>
 		</widgetProcessors>
 
 		<layout>
-			<tableCellLinkLayout xmlns="java:org.jboss.forge.scaffold.spring.metawidget.layout"/>
+			<simpleLayout xmlns="org.metawidget.statically.layout"/>
 		</layout>
 
 	</staticJspMetawidget>
