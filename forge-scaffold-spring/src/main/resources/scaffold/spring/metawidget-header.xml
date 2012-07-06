@@ -7,8 +7,8 @@
 						java:org.metawidget.inspector.composite http://metawidget.org/xsd/org.metawidget.inspector.composite-1.0.xsd"
 	version="1.0">
 
-	<!-- metawidget-entity.xml is used to generate both the read-only -->
-	<!-- and the editable version of the domain entity		          -->
+	<!-- metawidget-header.xml is used to the header of the table for -->
+	<!-- the results of the database search for the domain entity     -->
 
 	<staticJspMetawidget xmlns="java:org.metawidget.statically.jsp">
 
