@@ -23,8 +23,6 @@
 package org.jboss.forge.scaffold.spring;
 
 import static org.jvnet.inflector.Noun.pluralOf;
-import static org.metawidget.inspector.InspectionResultConstants.TRUE;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -67,10 +65,7 @@ import org.jboss.forge.scaffold.AccessStrategy;
 import org.jboss.forge.scaffold.ScaffoldProvider;
 import org.jboss.forge.scaffold.TemplateStrategy;
 import org.jboss.forge.scaffold.spring.metawidget.config.ForgeConfigReader;
-import org.jboss.forge.scaffold.spring.metawidget.layout.ScaffoldTableLayout;
-import org.jboss.forge.scaffold.spring.metawidget.widgetbuilder.EntityWidgetBuilderConfig;
 import org.jboss.forge.scaffold.spring.metawidget.widgetbuilder.HtmlAnchor;
-import org.jboss.forge.scaffold.spring.metawidget.widgetbuilder.SpringEntityWidgetBuilder;
 import org.jboss.forge.scaffold.util.ScaffoldUtil;
 import org.jboss.forge.shell.ShellPrompt;
 import org.jboss.forge.shell.plugins.Alias;
@@ -89,7 +84,6 @@ import org.metawidget.statically.StaticUtils.IndentedWriter;
 import org.metawidget.statically.javacode.StaticJavaMetawidget;
 import org.metawidget.statically.jsp.StaticJspMetawidget;
 import org.metawidget.statically.jsp.StaticJspUtils;
-import org.metawidget.statically.html.layout.HtmlTableLayoutConfig;
 import org.metawidget.statically.html.widgetbuilder.HtmlTag;
 import org.metawidget.statically.spring.StaticSpringMetawidget;
 import org.metawidget.util.CollectionUtils;
@@ -184,7 +178,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
     protected StaticSpringMetawidget entityMetawidget;
     protected StaticJspMetawidget headerMetawidget;
-    protected StaticJspMetawidget searchMetawidget;
+    protected StaticJspMetawidget resultMetawidget;
+    protected StaticSpringMetawidget searchMetawidget;
     protected StaticJavaMetawidget qbeMetawidget;
 
     protected TemplateResolver<ClassLoader> resolver;
@@ -330,7 +325,11 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         this.headerMetawidget.setConfigReader(configReader);
         this.headerMetawidget.setConfig("scaffold/spring/metawidget-header.xml");
 
-        this.searchMetawidget = new StaticJspMetawidget();
+        this.resultMetawidget = new StaticJspMetawidget();
+        this.resultMetawidget.setConfigReader(configReader);
+        this.resultMetawidget.setConfig("scaffold/spring/metawidget-result.xml");
+
+        this.searchMetawidget = new StaticSpringMetawidget();
         this.searchMetawidget.setConfigReader(configReader);
         this.searchMetawidget.setConfig("scaffold/spring/metawidget-search.xml");
 
@@ -461,18 +460,15 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                 this.headerMetawidget.setPath(entity.getQualifiedName());
                 this.headerMetawidget.setReadOnly(true);
 
-                this.searchMetawidget.setValue(StaticJspUtils.wrapExpression(entity.getName()));
+                this.resultMetawidget.setValue(StaticJspUtils.wrapExpression(entity.getName()));
+                this.resultMetawidget.setPath(entity.getQualifiedName());
+                this.resultMetawidget.setReadOnly(true);
+
+                this.searchMetawidget.setValue(ccEntity);
                 this.searchMetawidget.setPath(entity.getQualifiedName());
-                this.searchMetawidget.setReadOnly(true);
+                this.searchMetawidget.setReadOnly(false);
 
-                HtmlTableLayoutConfig config = new HtmlTableLayoutConfig();
-                config.setTableStyleClass("search");
-                ScaffoldTableLayout layout = new ScaffoldTableLayout(config);
-                this.entityMetawidget.setLayout(layout);
-                this.entityMetawidget.putAttribute("search", TRUE);
-                this.entityMetawidget.setReadOnly(false);
-
-                writeEntityMetawidget(context, this.searchTemplateMetawidgetIndent);
+                writeSearchMetawidget(context, this.searchTemplateMetawidgetIndent);
                 writeHeaderAndSearchMetawidgets(context, this.headerMetawidgetIndent, this.searchMetawidgetIndent);
 
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + entity.getName()
@@ -910,6 +906,13 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         context.put("metawidget", writer.toString().trim());
     }
 
+    protected void writeSearchMetawidget(final Map<Object, Object> context, final int searchMetawidgetIndent)
+    {
+        StringWriter writer = new StringWriter();
+        this.searchMetawidget.write(writer, searchMetawidgetIndent);
+        context.put("metawidget", writer.toString().trim());
+    }
+
     /**
      * Writes the bean Metawidget for displaying the existing entities in the database on the view all page.
      */
@@ -922,7 +925,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         context.put("headerMetawidget", stringWriter.toString().trim());
 
         stringWriter = new StringWriter();
-        this.searchMetawidget.write(stringWriter, searchMetawidgetIndent);
+        this.resultMetawidget.write(stringWriter, searchMetawidgetIndent);
         context.put("searchMetawidget", stringWriter.toString().trim());
     }
 

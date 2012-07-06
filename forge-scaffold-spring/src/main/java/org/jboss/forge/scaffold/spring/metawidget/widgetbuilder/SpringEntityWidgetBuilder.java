@@ -231,8 +231,6 @@ public class SpringEntityWidgetBuilder
 
             // TODO: Find a way to direct this link to a create form for the top entity, not the member.
 
-            // TODO: Find a better way to retrieve the controller name.
-
             String entityName = new String();
 
             if (TRUE.equals(attributes.get(N_TO_MANY)))
