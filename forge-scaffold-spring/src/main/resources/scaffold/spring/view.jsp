@@ -8,19 +8,9 @@
 
 	</form:form>
 
-	<div class="buttons">
-		<table>
-			<tr>
-				<td>
-					<a class="btn btn-primary" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}"/>">View All</a>
-				</td>
-				<td>
-					<a class="btn btn-primary" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}/$${@{ccEntity}.id}?edit=true"/>">Edit</a>
-				</td>
-				<td>
-					<a class="btn btn-primary" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}/create"/>">Create New</a>
-				</td>
-			</tr>
-		</table>
-	</div>
+	<span class="buttons">
+		<a class="btn btn-primary" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}"/>">View All</a>
+		<a class="btn btn-primary" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}/$${@{ccEntity}.id}?edit=true"/>">Edit</a>
+		<a class="btn btn-primary" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}/create"/>">Create New</a>
+	</span>
 </div>

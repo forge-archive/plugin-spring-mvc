@@ -6,19 +6,9 @@
 
 		@{metawidget}
 
-		<div class="buttons">
-			<table>
-				<tbody>
-					<tr>
-						<td>
-							<input type="submit" value="Save" class="btn btn-primary"/>
-						</td>
-						<td>
-							<a class="btn btn-primary" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}"/>">Cancel</a>
-						</td>
-					</tr>
-				</tbody>
-			</table>
-		</div>
+		<span class="buttons">
+			<input type="submit" value="Save" class="btn btn-primary"/>
+			<a class="btn btn-primary" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}"/>">Cancel</a>
+		</span>
 	</form:form>
 </div>

@@ -5,20 +5,10 @@
 	<form:form commandName="search" method="POST">
 		@{metawidget}
 
-		<div class="buttons">
-			<table>
-				<tbody>
-					<tr>
-						<td>
-							<input type="submit" value="Search" class="btn btn-primary" name="search"/>
-						</td>
-						<td>
-							<input type="submit" value="Create New" class="btn btn-primary" name="create"/>
-						</td>
-					</tr>
-				</tbody>
-			</table>
-		</div>
+		<span class="buttons">
+			<input type="submit" value="Search" class="btn btn-primary" name="search"/>
+			<input type="submit" value="Create New" class="btn btn-primary" name="create"/>
+		</span>
 	</form:form>
 
 	<table class="data-table">
