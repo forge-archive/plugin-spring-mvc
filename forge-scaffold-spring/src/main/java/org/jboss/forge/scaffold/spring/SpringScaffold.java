@@ -133,7 +133,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
     private static final String VIEW_TEMPLATE = "scaffold/spring/view.jsp";
     private static final String SEARCH_TEMPLATE = "scaffold/spring/search.jsp";
-    private static final String UPDATE_TEMPLATE = "scaffold/spring/update.jsp";
+    private static final String EDIT_TEMPLATE = "scaffold/spring/edit.jsp";
     private static final String CREATE_TEMPLATE = "scaffold/spring/create.jsp";
     private static final String NAVIGATION_TEMPLATE = "scaffold/spring/pageTemplate.jsp";
     
@@ -166,8 +166,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     protected CompiledTemplateResource viewTemplate;
     protected int viewTemplateMetawidgetIndent;
 
-    protected CompiledTemplateResource updateTemplate;
-    protected int updateTemplateEntityMetawidgetIndent;
+    protected CompiledTemplateResource editTemplate;
+    protected int editTemplateEntityMetawidgetIndent;
 
     protected CompiledTemplateResource createTemplate;
     protected int createTemplateEntityMetawidgetIndent;
@@ -433,16 +433,16 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                         StringUtils.uncamelCase(entity.getName()), "Create a new " + StringUtils.uncamelCase(entity.getName()),
                         "/WEB-INF/views" + targetDir + entity.getName() + "/create" + entity.getName() + ".jsp", definitions);
 
-                // Generate update
+                // Generate edit
 
-                writeMetawidget(context, this.entityMetawidget, this.updateTemplateEntityMetawidgetIndent, "metawidget");
+                writeMetawidget(context, this.entityMetawidget, this.editTemplateEntityMetawidgetIndent, "metawidget");
 
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + entity.getName()
-                        + "/update" + entity.getName() + ".jsp"), this.updateTemplate.render(context), overwrite));
+                        + "/edit" + entity.getName() + ".jsp"), this.editTemplate.render(context), overwrite));
 
-                addViewDefinition(tile, "update" + entity.getName(), "Edit " + StringUtils.uncamelCase(entity.getName()),
+                addViewDefinition(tile, "edit" + entity.getName(), "Edit " + StringUtils.uncamelCase(entity.getName()),
                         StringUtils.uncamelCase(entity.getName()), "Edit an existing " + StringUtils.uncamelCase(entity.getName()),
-                        "/WEB-INF/views" + targetDir + entity.getName() + "/update" + entity.getName() + ".jsp", definitions);
+                        "/WEB-INF/views" + targetDir + entity.getName() + "/edit" + entity.getName() + ".jsp", definitions);
 
                 // Generate view
 
@@ -764,11 +764,11 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
             this.viewTemplateMetawidgetIndent = parseIndent(template, "@{metawidget}");
         }
 
-        if (this.updateTemplate == null)
+        if (this.editTemplate == null)
         {
-            this.updateTemplate = compiler.compile(UPDATE_TEMPLATE);
-            String template = Streams.toString(this.updateTemplate.getSourceTemplateResource().getInputStream());
-            this.updateTemplateEntityMetawidgetIndent = parseIndent(template, "@{metawidget}");
+            this.editTemplate = compiler.compile(EDIT_TEMPLATE);
+            String template = Streams.toString(this.editTemplate.getSourceTemplateResource().getInputStream());
+            this.editTemplateEntityMetawidgetIndent = parseIndent(template, "@{metawidget}");
         }
 
         if (this.createTemplate == null)
