@@ -244,7 +244,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         if (!targetDir.endsWith("/"))
             targetDir += "/";
 
-        context.put("topLevelPackage", meta.getTopLevelPackage());
+        context.put("repoPackage", meta.getTopLevelPackage() + ".repo");
 
         PersistenceDescriptor descriptor = persistence.getConfig();
 

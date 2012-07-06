@@ -6,7 +6,7 @@
 	http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd
 	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
 
-  <context:component-scan base-package="@{topLevelPackage}.repo"/>
+  <context:component-scan base-package="@{repoPackage}"/>
 
   <bean class="org.springframework.orm.jpa.support.SharedEntityManagerBean" id="entityManager">
     <property name="entityManagerFactory" ref="entityManagerFactory"/>
