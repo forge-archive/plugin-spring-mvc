@@ -80,10 +80,12 @@ import org.jboss.seam.render.template.CompiledTemplateResource;
 import org.jboss.seam.render.template.resolver.ClassLoaderTemplateResolver;
 import org.jboss.shrinkwrap.descriptor.api.spec.jpa.persistence.PersistenceDescriptor;
 import org.jboss.shrinkwrap.descriptor.api.spec.jpa.persistence.PersistenceUnitDef;
+import org.metawidget.statically.StaticMetawidget;
 import org.metawidget.statically.StaticUtils.IndentedWriter;
 import org.metawidget.statically.javacode.StaticJavaMetawidget;
 import org.metawidget.statically.jsp.StaticJspMetawidget;
 import org.metawidget.statically.jsp.StaticJspUtils;
+import org.metawidget.statically.html.StaticHtmlMetawidget;
 import org.metawidget.statically.html.widgetbuilder.HtmlTag;
 import org.metawidget.statically.spring.StaticSpringMetawidget;
 import org.metawidget.util.CollectionUtils;
@@ -158,7 +160,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
     protected CompiledTemplateResource searchTemplate;
     protected int searchTemplateMetawidgetIndent;
-    protected int searchMetawidgetIndent;
+    protected int resultMetawidgetIndent;
     protected int headerMetawidgetIndent;
 
     protected CompiledTemplateResource viewTemplate;
@@ -421,8 +423,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                         "/WEB-INF/views/error.jsp", definitions);
 
                 // Generate create
-    
-                writeEntityMetawidget(context, this.createTemplateEntityMetawidgetIndent);
+
+                writeMetawidget(context, this.entityMetawidget, this.createTemplateEntityMetawidgetIndent, "metawidget");
     
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + entity.getName()
                         + "/create" + entity.getName() + ".jsp"), this.createTemplate.render(context), overwrite));
@@ -433,7 +435,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
                 // Generate update
 
-                writeEntityMetawidget(context, this.updateTemplateEntityMetawidgetIndent);
+                writeMetawidget(context, this.entityMetawidget, this.updateTemplateEntityMetawidgetIndent, "metawidget");
 
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + entity.getName()
                         + "/update" + entity.getName() + ".jsp"), this.updateTemplate.render(context), overwrite));
@@ -445,7 +447,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                 // Generate view
 
                 this.entityMetawidget.setReadOnly(true);
-                writeEntityMetawidget(context, this.viewTemplateMetawidgetIndent);
+                writeMetawidget(context, this.entityMetawidget, this.viewTemplateMetawidgetIndent, "metawidget");
     
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + entity.getName()
                         + "/view" + entity.getName() + ".jsp"), this.viewTemplate.render(context), overwrite));
@@ -468,8 +470,9 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                 this.searchMetawidget.setPath(entity.getQualifiedName());
                 this.searchMetawidget.setReadOnly(false);
 
-                writeSearchMetawidget(context, this.searchTemplateMetawidgetIndent);
-                writeHeaderAndSearchMetawidgets(context, this.headerMetawidgetIndent, this.searchMetawidgetIndent);
+                writeMetawidget(context, this.searchMetawidget, this.searchTemplateMetawidgetIndent, "metawidget");
+                writeMetawidget(context, this.headerMetawidget, this.headerMetawidgetIndent, "headerMetawidget");
+                writeMetawidget(context, this.resultMetawidget, this.resultMetawidgetIndent, "resultMetawidget");
 
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + entity.getName()
                         + "/" + entityPlural.toLowerCase() + ".jsp"), this.searchTemplate.render(context), overwrite));
@@ -746,7 +749,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
             String template = Streams.toString(this.searchTemplate.getSourceTemplateResource().getInputStream());
             this.searchTemplateMetawidgetIndent = parseIndent(template, "@{metawidet}");
             this.headerMetawidgetIndent = parseIndent(template, "@{headerMetawidget}");
-            this.searchMetawidgetIndent = parseIndent(template, "@{searchMetawidget}");
+            this.resultMetawidgetIndent = parseIndent(template, "@{resultMetawidget}");
         }
 
         if (this.viewTemplate == null)
@@ -896,37 +899,15 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     // TODO: Manage import of namespaces in writeMetawidget methods.
 
     /**
-     * Writes the entity Metawidget into the given context.
+     * Writes the Metawidget into the given context.
      */
 
-    protected void writeEntityMetawidget(final Map<Object, Object> context, final int entityMetawidgetIndent)
+    protected void writeMetawidget(final Map<Object, Object> context, final StaticMetawidget metawidget, final int metawidgetIndent,
+                    final String metawidgetName)
     {
         StringWriter writer = new StringWriter();
-        this.entityMetawidget.write(writer, entityMetawidgetIndent);
-        context.put("metawidget", writer.toString().trim());
-    }
-
-    protected void writeSearchMetawidget(final Map<Object, Object> context, final int searchMetawidgetIndent)
-    {
-        StringWriter writer = new StringWriter();
-        this.searchMetawidget.write(writer, searchMetawidgetIndent);
-        context.put("metawidget", writer.toString().trim());
-    }
-
-    /**
-     * Writes the bean Metawidget for displaying the existing entities in the database on the view all page.
-     */
-
-    protected void writeHeaderAndSearchMetawidgets(final Map<Object, Object> context, final int headerMetawidgetIndent,
-            final int searchMetawidgetIndent)
-    {
-        StringWriter stringWriter = new StringWriter();
-        this.headerMetawidget.write(stringWriter, headerMetawidgetIndent);
-        context.put("headerMetawidget", stringWriter.toString().trim());
-
-        stringWriter = new StringWriter();
-        this.resultMetawidget.write(stringWriter, searchMetawidgetIndent);
-        context.put("searchMetawidget", stringWriter.toString().trim());
+        metawidget.write(writer, metawidgetIndent);
+        context.put(metawidgetName, writer.toString().trim());
     }
 
     /**

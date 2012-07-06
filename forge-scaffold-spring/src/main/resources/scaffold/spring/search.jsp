@@ -30,7 +30,7 @@
 		<tbody>
 			<c:forEach items="$${@{entityPlural.toLowerCase()}}" var="@{entity.getName()}">
 				<tr>
-					@{searchMetawidget}
+					@{resultMetawidget}
 				</tr>
 			</c:forEach>
 		</tbody>
