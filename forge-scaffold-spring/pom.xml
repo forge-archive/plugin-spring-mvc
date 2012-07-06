@@ -104,11 +104,6 @@
       <version>${forge.test.version}</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.jboss.forge.spring</groupId>
-      <artifactId>plugin-spring-mvc-impl</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
-    </dependency>
   </dependencies>
   <repositories>
     <repository>
