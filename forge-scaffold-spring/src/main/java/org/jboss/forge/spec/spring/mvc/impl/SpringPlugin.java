@@ -21,32 +21,44 @@
  */
 package org.jboss.forge.spec.spring.mvc.impl;
 
+import java.util.Map;
+
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 
 import org.jboss.forge.project.Project;
+import org.jboss.forge.project.facets.MetadataFacet;
 import org.jboss.forge.project.facets.PackagingFacet;
+import org.jboss.forge.project.facets.ResourceFacet;
 import org.jboss.forge.project.facets.WebResourceFacet;
 import org.jboss.forge.project.facets.events.InstallFacets;
 import org.jboss.forge.project.packaging.PackagingType;
+import org.jboss.forge.scaffold.util.ScaffoldUtil;
 import org.jboss.forge.shell.ShellMessages;
 import org.jboss.forge.shell.ShellPrompt;
 import org.jboss.forge.shell.plugins.Alias;
 import org.jboss.forge.shell.plugins.Command;
+import org.jboss.forge.shell.plugins.Option;
 import org.jboss.forge.shell.plugins.PipeOut;
 import org.jboss.forge.shell.plugins.Plugin;
+import org.jboss.forge.shell.plugins.RequiresFacet;
 import org.jboss.forge.shell.plugins.SetupCommand;
+import org.jboss.forge.spec.javaee.PersistenceFacet;
 import org.jboss.forge.spec.spring.mvc.SpringFacet;
 import org.jboss.seam.render.TemplateCompiler;
 import org.jboss.seam.render.spi.TemplateResolver;
 import org.jboss.seam.render.template.CompiledTemplateResource;
 import org.jboss.seam.render.template.resolver.ClassLoaderTemplateResolver;
+import org.metawidget.util.CollectionUtils;
 
 /**
  *  @author <a href="mailto:ryan.k.bradley@gmail.com">Ryan Bradley</a>
  */
 
 @Alias("spring")
+@RequiresFacet({SpringFacet.class,
+                PersistenceFacet.class,
+                WebResourceFacet.class})
 public class SpringPlugin implements Plugin
 {
    @Inject
@@ -103,28 +115,58 @@ public class SpringPlugin implements Plugin
            }
        }
 
-
        if (project.hasFacet(SpringFacet.class))
        {
            ShellMessages.success(out, "Spring MVC dependencies are installed.");
        }
    }
 
-   @Command
-   public void mvc()
+   @Command("mvc-from-template")
+   public void mvc(@Option(required=false, defaultValue="Y", description="Overwrite existing files?", name="overwrite") boolean overwrite,
+                   @Option(required=false, name="MVC Package") String mvcPackage,
+                   @Option(required=false, name="DAO Package") String repoPackage,
+                   @Option(required=false, name="Target Directory") String targetDir)
    {
-       if (prompt.promptBoolean("Do you also want to generate Spring application context files from default templates?"))
+       Map<Object, Object> context = CollectionUtils.newHashMap();
+       MetadataFacet meta = project.getFacet(MetadataFacet.class);
+
+       if (mvcPackage == null)
        {
-           generateContextFiles();
-           return;
+           mvcPackage = meta.getTopLevelPackage() + ".mvc.root";
        }
-       
+       if(repoPackage == null)
+       {
+           repoPackage = meta.getTopLevelPackage() + ".repo";
+       }
+       if (targetDir == null)
+       {
+           targetDir = new String();
+       }
+
+       context.put("mvcPackage", mvcPackage);
+       context.put("repoPackage", repoPackage);
+       context.put("targetDir", targetDir);
+
+       generateContextFiles(overwrite, context);
    }
 
-   protected void generateContextFiles()
+   protected void generateContextFiles(boolean overwrite, Map<Object, Object> context)
    {
+       MetadataFacet meta = project.getFacet(MetadataFacet.class);
+       PersistenceFacet persistence = project.getFacet(PersistenceFacet.class);
+       ResourceFacet resources = project.getFacet(ResourceFacet.class);
+       WebResourceFacet web = project.getFacet(WebResourceFacet.class);
+
+       String filename = "WEB-INF/" + meta.getProjectName().replace(' ', '-') + "-mvc-context.xml";
        loadTemplates();
 
+       context.put("projectName", meta.getProjectName());
+       context.put("persistenceUnit", persistence.getConfig().listUnits().get(0).getName());
+
+       ScaffoldUtil.createOrOverwrite(this.prompt, resources.getResource("META-INF/spring/applicationContext.xml"),
+               applicationContextTemplate.render(context), overwrite);
+       ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/web.xml"), webXmlTemplate.render(context), overwrite);
+       ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(filename), mvcContextTemplate.render(context), overwrite);
    }
 
    protected void loadTemplates()
