@@ -85,7 +85,6 @@ import org.metawidget.statically.StaticUtils.IndentedWriter;
 import org.metawidget.statically.javacode.StaticJavaMetawidget;
 import org.metawidget.statically.jsp.StaticJspMetawidget;
 import org.metawidget.statically.jsp.StaticJspUtils;
-import org.metawidget.statically.html.StaticHtmlMetawidget;
 import org.metawidget.statically.html.widgetbuilder.HtmlTag;
 import org.metawidget.statically.spring.StaticSpringMetawidget;
 import org.metawidget.util.CollectionUtils;
