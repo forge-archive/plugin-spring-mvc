@@ -180,7 +180,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     protected StaticSpringMetawidget entityMetawidget;
     protected StaticJspMetawidget headerMetawidget;
     protected StaticJspMetawidget resultMetawidget;
-    protected StaticSpringMetawidget searchMetawidget;
     protected StaticJavaMetawidget qbeMetawidget;
 
     protected TemplateResolver<ClassLoader> resolver;
@@ -330,10 +329,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         this.resultMetawidget.setConfigReader(configReader);
         this.resultMetawidget.setConfig("scaffold/spring/metawidget-result.xml");
 
-        this.searchMetawidget = new StaticSpringMetawidget();
-        this.searchMetawidget.setConfigReader(configReader);
-        this.searchMetawidget.setConfig("scaffold/spring/metawidget-search.xml");
-
         this.qbeMetawidget = new StaticJavaMetawidget();
         this.qbeMetawidget.setConfigReader(configReader);
         this.qbeMetawidget.setConfig("scaffold/spring/metawidget-qbe.xml");
@@ -443,6 +438,27 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                         StringUtils.uncamelCase(entity.getName()), "Edit an existing " + StringUtils.uncamelCase(entity.getName()),
                         "/WEB-INF/views" + targetDir + entity.getName() + "/edit" + entity.getName() + ".jsp", definitions);
 
+                // Generate search
+
+                this.headerMetawidget.setValue(StaticJspUtils.wrapExpression(entity.getName()));
+                this.headerMetawidget.setPath(entity.getQualifiedName());
+                this.headerMetawidget.setReadOnly(true);
+
+                this.resultMetawidget.setValue(StaticJspUtils.wrapExpression(entity.getName()));
+                this.resultMetawidget.setPath(entity.getQualifiedName());
+                this.resultMetawidget.setReadOnly(true);
+
+                writeMetawidget(context, this.entityMetawidget, this.searchTemplateMetawidgetIndent, "metawidget");
+                writeMetawidget(context, this.headerMetawidget, this.headerMetawidgetIndent, "headerMetawidget");
+                writeMetawidget(context, this.resultMetawidget, this.resultMetawidgetIndent, "resultMetawidget");
+
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + entity.getName()
+                        + "/" + entityPlural.toLowerCase() + ".jsp"), this.searchTemplate.render(context), overwrite));
+
+                addViewDefinition(tile, entityPlural.toLowerCase(), "Search " + StringUtils.uncamelCase(entity.getName()) + " entities",
+                        StringUtils.uncamelCase(entity.getName()), "Search " + StringUtils.uncamelCase(entity.getName()) + " entities",
+                        "/WEB-INF/views" + targetDir + entity.getName() + "/" + entityPlural.toLowerCase()+ ".jsp", definitions);
+
                 // Generate view
 
                 this.entityMetawidget.setReadOnly(true);
@@ -454,31 +470,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                 addViewDefinition(tile, "view" + entity.getName(), "View " + StringUtils.uncamelCase(entity.getName()),
                         StringUtils.uncamelCase(entity.getName()), "View existing " + StringUtils.uncamelCase(entity.getName()),
                         "/WEB-INF/views" + targetDir + entity.getName() + "/view" + entity.getName() + ".jsp", definitions);
-
-                // Generate search
-
-                this.headerMetawidget.setValue(StaticJspUtils.wrapExpression(entity.getName()));
-                this.headerMetawidget.setPath(entity.getQualifiedName());
-                this.headerMetawidget.setReadOnly(true);
-
-                this.resultMetawidget.setValue(StaticJspUtils.wrapExpression(entity.getName()));
-                this.resultMetawidget.setPath(entity.getQualifiedName());
-                this.resultMetawidget.setReadOnly(true);
-
-                this.searchMetawidget.setValue(ccEntity);
-                this.searchMetawidget.setPath(entity.getQualifiedName());
-                this.searchMetawidget.setReadOnly(false);
-
-                writeMetawidget(context, this.searchMetawidget, this.searchTemplateMetawidgetIndent, "metawidget");
-                writeMetawidget(context, this.headerMetawidget, this.headerMetawidgetIndent, "headerMetawidget");
-                writeMetawidget(context, this.resultMetawidget, this.resultMetawidgetIndent, "resultMetawidget");
-
-                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + entity.getName()
-                        + "/" + entityPlural.toLowerCase() + ".jsp"), this.searchTemplate.render(context), overwrite));
-
-                addViewDefinition(tile, entityPlural.toLowerCase(), "Search " + StringUtils.uncamelCase(entity.getName()) + " entities",
-                        StringUtils.uncamelCase(entity.getName()), "Search " + StringUtils.uncamelCase(entity.getName()) + " entities",
-                        "/WEB-INF/views" + targetDir + entity.getName() + "/" + entityPlural.toLowerCase()+ ".jsp", definitions);
 
                 String viewsFile = XMLParser.toXMLString(definitions);
 
