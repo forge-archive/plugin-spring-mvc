@@ -1,18 +1,16 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 
-<div class="section">
-	<form:form commandName="@{ccEntity}" name="edit" onsubmit="onSubmit()">
+<form:form commandName="@{ccEntity}" name="edit" onsubmit="onSubmit()">
 
-		@{metawidget}
+	@{metawidget}
 
-		<span class="buttons">
-			<input type="submit" value="Save" class="btn btn-primary" onclick="document.pressed=this.value"/>
-			<a class="btn btn-primary" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}"/>">Cancel</a>
-			<input type="submit" value="Delete" class="btn btn-primary" onclick="document.pressed=this.value"/>
-		</span>
-	</form:form>
-</div>
+	<span class="buttons">
+		<input type="submit" value="Save" class="btn btn-primary" onclick="document.pressed=this.value"/>
+		<a class="btn btn-primary" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}"/>">Cancel</a>
+		<input type="submit" value="Delete" class="btn btn-primary" onclick="document.pressed=this.value"/>
+	</span>
+</form:form>
 
 <script type="text/javascript">
 	function onSubmit()
