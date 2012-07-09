@@ -79,11 +79,20 @@
 		</widgetProcessors>
 
 		<layout>
-			<scaffoldTableLayout xmlns="java:org.jboss.forge.scaffold.spring.metawidget.layout" config="org.metawidget.statically.html.layout.HtmlTableLayoutConfig">
+			<springTableLayout xmlns="java:org.metawidget.statically.spring.layout" config="org.metawidget.statically.html.layout.HtmlTableLayoutConfig">
 				<tableStyleClass>
 					<string>search</string>
 				</tableStyleClass>
-			</scaffoldTableLayout>
+				<labelColumnStyleClass>
+					<string>label</string>
+				</labelColumnStyleClass>
+				<componentColumnStyleClass>
+					<string>component</string>
+				</componentColumnStyleClass>
+				<requiredColumnStyleClass>
+					<string>required</string>
+				</requiredColumnStyleClass>
+			</springTableLayout>
 		</layout>
 		
 	</staticSpringMetawidget>
