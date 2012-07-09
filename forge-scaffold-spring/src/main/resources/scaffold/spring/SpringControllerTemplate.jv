@@ -76,7 +76,7 @@ public class @{entity.getName()}Controller
 	
 	@RequestMapping(method=RequestMethod.POST, params="search")
 	public @ModelAttribute("@{entityPlural.toLowerCase()}")
-	List<@{entity.getName()}> view@{entityPlural}Post(@ModelAttribute("search") @{entity.getName()} search, @RequestParam(required=false) Long first, 
+	List<@{entity.getName()}> search@{entity.getName()}(@ModelAttribute("search") @{entity.getName()} search, @RequestParam(required=false) Long first, 
 			@RequestParam(required=false) Integer max, Model model)
 	{
 		if (max == null || max <= 0)
@@ -134,19 +134,19 @@ public class @{entity.getName()}Controller
 			@foreach{name : entityNames, ccClass : ccEntityClasses}
 			model.addAttribute("@{name}", @{ccClass}Dao.getAll());
 			@end{} 
-			return "update@{entity.getName()}";
+			return "edit@{entity.getName()}";
 		}
 	}
 
 	@RequestMapping(value="/{id}", method=RequestMethod.POST)
-	public String updatePost(@PathVariable("id") Long id, @{entity.getName()} @{ccEntity})
+	public String update@{entity.getName()}(@PathVariable("id") Long id, @{entity.getName()} @{ccEntity})
 	{
 		@{ccEntity}Dao.update(@{ccEntity});
 		return "view@{entity.getName()}";
 	}
 
 	@RequestMapping(value="/{id}/delete", method=RequestMethod.POST)
-	public String update@{entity.getName()}(@PathVariable("id") Long id, @{entity.getName()} @{ccEntity})
+	public String delete@{entity.getName()}(@PathVariable("id") Long id, @{entity.getName()} @{ccEntity})
 	{
 		@{ccEntity}Dao.delete(id);
 		return "redirect:@{targetDir}@{entityPlural.toLowerCase()}";
@@ -175,7 +175,7 @@ public class @{entity.getName()}Controller
 	}
 	
 	@RequestMapping(method=RequestMethod.POST, params="create")
-	public String create@{entity.getName()}Search(@ModelAttribute("search") @{entity.getName()} search, HttpSession session)
+	public String createNew@{entity.getName()}(@ModelAttribute("search") @{entity.getName()} search, HttpSession session)
 	{
 		session.setAttribute("@{ccEntity}", search);
 		return "redirect:@{targetDir}@{entityPlural.toLowerCase()}/create";
