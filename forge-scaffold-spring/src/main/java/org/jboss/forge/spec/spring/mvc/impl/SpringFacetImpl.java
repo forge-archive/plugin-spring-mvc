@@ -237,7 +237,7 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
         ServletFacet serv = project.getFacet(ServletFacet.class);
         WebAppDescriptor webXml = serv.getConfig();
 
-        if (hasServlet(servletName))
+        if (hasServlet("/" + servletName + "/*"))
         {
             return;
         }
@@ -255,7 +255,7 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
         ServletFacet serv = project.getFacet(ServletFacet.class);
         WebAppDescriptor webXml = serv.getConfig();
 
-        if (hasServlet("root"))
+        if (hasServlet("/"))
         {
             return;
         }
@@ -267,17 +267,19 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
     }
 
     @Override
-    public boolean hasServlet(String servletName)
+    public boolean hasServlet(String servletMapping)
     {
         ServletFacet serv = project.getFacet(ServletFacet.class);
         WebAppDescriptor webXml = serv.getConfig();
-        servletName = processServletName(servletName);
 
         for (ServletDef servlet : webXml.getServlets())
         {
-            if (servlet.getName().equals(servletName))
+            for (ServletMappingDef mapping : servlet.getMappings())
             {
-                return true;
+                if (mapping.getUrlPatterns().contains(servletMapping))
+                {
+                    return true;
+                }
             }
         }
 
