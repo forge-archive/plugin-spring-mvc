@@ -26,6 +26,8 @@ import java.util.Map;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 
+import org.jboss.forge.parser.xml.Node;
+import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.project.Project;
 import org.jboss.forge.project.facets.MetadataFacet;
 import org.jboss.forge.project.facets.PackagingFacet;
@@ -44,11 +46,15 @@ import org.jboss.forge.shell.plugins.Plugin;
 import org.jboss.forge.shell.plugins.RequiresFacet;
 import org.jboss.forge.shell.plugins.SetupCommand;
 import org.jboss.forge.spec.javaee.PersistenceFacet;
+import org.jboss.forge.spec.javaee.ServletFacet;
 import org.jboss.forge.spec.spring.mvc.SpringFacet;
 import org.jboss.seam.render.TemplateCompiler;
 import org.jboss.seam.render.spi.TemplateResolver;
 import org.jboss.seam.render.template.CompiledTemplateResource;
 import org.jboss.seam.render.template.resolver.ClassLoaderTemplateResolver;
+import org.jboss.shrinkwrap.descriptor.api.spec.servlet.web.FilterDef;
+import org.jboss.shrinkwrap.descriptor.api.spec.servlet.web.FilterMappingDef;
+import org.jboss.shrinkwrap.descriptor.api.spec.servlet.web.WebAppDescriptor;
 import org.metawidget.util.CollectionUtils;
 
 /**
@@ -122,7 +128,7 @@ public class SpringPlugin implements Plugin
    }
 
    @Command("mvc-from-template")
-   public void mvc(@Option(required=false, defaultValue="Y", description="Overwrite existing files?", name="overwrite") boolean overwrite,
+   public void generateMVCFromTemplate(@Option(required=false, defaultValue="Y", description="Overwrite existing files?", name="overwrite") boolean overwrite,
                    @Option(required=false, name="MVC Package") String mvcPackage,
                    @Option(required=false, name="DAO Package") String repoPackage,
                    @Option(required=false, name="Target Directory") String targetDir)
@@ -148,6 +154,34 @@ public class SpringPlugin implements Plugin
        context.put("targetDir", targetDir);
 
        generateContextFiles(overwrite, context);
+   }
+
+   @Command("mvc")
+   public void updateMVC( @Option(required=false, name="MVC Package") String mvcPackage,
+                   @Option(required=false, name="DAO Package") String repoPackage,
+                   @Option(required=false, name="Target Directory") String targetDir)
+   {
+       MetadataFacet meta = project.getFacet(MetadataFacet.class);
+
+       if (targetDir == null)
+       {
+           targetDir = new String();
+       }
+
+       targetDir = processTargetDir(targetDir);
+
+       if (mvcPackage == null)
+       {
+           mvcPackage = meta.getTopLevelPackage() + ".mvc";
+           mvcPackage += (targetDir.isEmpty()) ? ".root" : targetDir.replace('/', '.');
+       }
+
+       if (repoPackage == null)
+       {
+           repoPackage = meta.getTopLevelPackage() + ".repo";
+       }
+
+       updateWebXML(targetDir);
    }
 
    protected void generateContextFiles(boolean overwrite, Map<Object, Object> context)
@@ -185,5 +219,117 @@ public class SpringPlugin implements Plugin
        {
            webXmlTemplate = compiler.compile(WEB_XML_TEMPLATE);
        }
+   }
+
+   protected void updateWebXML(String targetDir)
+   {
+       MetadataFacet meta = project.getFacet(MetadataFacet.class);
+       ServletFacet servlet = project.getFacet(ServletFacet.class);
+       SpringFacet spring = project.getFacet(SpringFacet.class);
+
+       WebAppDescriptor webXML = servlet.getConfig();
+
+       // If the application already has a name, prompt the user to change it to the project name
+
+       if (webXML.getDisplayName() != null)
+       {
+           if (this.prompt.promptBoolean("Change the application's display name to " + meta.getProjectName() + "?"))
+           {
+               webXML.displayName(meta.getProjectName());
+           }
+       }
+       else
+       {
+           webXML.displayName(meta.getProjectName());
+       }
+
+       // Add the application context file to web.xml's <context-param>
+
+       if (webXML.getContextParam("contextConfigLocation") == null)
+       {
+           webXML.contextParam("contextConfigLocation", "classpath:/" + spring.getContextFileLocation());
+       }
+       else
+       {
+           String contextConfigLocation = webXML.getContextParam("contextConfigLocation");
+
+           if (!contextConfigLocation.contains(spring.getContextFileLocation()))
+           {
+               contextConfigLocation += ", classpath:/" + spring.getContextFileLocation();
+               webXML.contextParam("contextConfigLocation", contextConfigLocation);
+           }
+       }
+
+       if (!webXML.getListeners().contains("org.springframework.web.context.ContextLoaderListener"))
+       {
+           webXML.listener("org.springframework.web.context.ContextLoaderListener");
+       }
+
+       webXML = addPersistenceContextRef(webXML);
+       webXML = addOpenEntityManagerInViewFilter(webXML);
+       servlet.saveConfig(webXML);
+
+       if (targetDir.equals("/") || targetDir.isEmpty())
+       {
+           spring.addRootServlet();
+       }
+       else
+       {
+           spring.addServlet(targetDir);
+       }
+   }
+
+   private String processTargetDir(String targetDir)
+   {
+       targetDir = (targetDir.startsWith("/")) ? targetDir.substring(1) : targetDir;
+       targetDir = (targetDir.endsWith("/")) ? targetDir.substring(0, targetDir.length()-1) : targetDir;
+
+       return targetDir;
+   }
+
+   private WebAppDescriptor addPersistenceContextRef(WebAppDescriptor webXML)
+   {
+       Node webapp = XMLParser.parse(webXML.toString());
+
+       if (webapp.get("persistence-context-ref") == null)
+       {
+           PersistenceFacet persistence = project.getFacet(PersistenceFacet.class);
+           ServletFacet servlet = project.getFacet(ServletFacet.class);
+           WebResourceFacet web = project.getFacet(WebResourceFacet.class);
+
+           Node persistenceContextRef = new Node("persistence-context-ref", webapp);
+           String unitName = persistence.getConfig().listUnits().get(0).getName();
+           persistenceContextRef.createChild("persistence-context-ref-name").text("persistence/" + unitName + "/entityManager");
+           persistenceContextRef.createChild("persistence-unit-name").text(unitName);
+
+           web.createWebResource(XMLParser.toXMLString(webapp), "WEB-INF/web.xml");
+           return servlet.getConfig();
+       }
+
+       return webXML;
+   }
+
+   private WebAppDescriptor addOpenEntityManagerInViewFilter(WebAppDescriptor webXML)
+   {
+       for (FilterDef filter : webXML.getFilters())
+       {
+           if (filter.getClass().getName().equals("org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter"))
+           {
+               for (FilterMappingDef mapping : filter.getMappings())
+               {
+                   if (mapping.getUrlPatterns().contains("/*"))
+                   {
+                       return webXML;
+                   }
+               }
+
+               filter.mapping().urlPattern("/*");
+           }
+       }
+
+       String[] urlPatterns = {"/*"};
+       webXML.filter("org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter", urlPatterns);
+
+       return webXML;
    }
 }
