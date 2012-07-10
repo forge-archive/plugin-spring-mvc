@@ -16,6 +16,21 @@ import org.jboss.forge.project.Project;
 public interface SpringFacet extends Facet
 {
     /**
+     * Change the location of the application context file (the default location is
+     * src/main/resources/META-INF/spring/applicationContext.xml
+     * 
+     * @returns true, if the specified file exists and the default location is changed, otherwise false.
+     */
+
+    boolean setContextFileLocation(String location);
+
+    /**
+     * @returns the String value of the location of the application context XML file.
+     */
+
+    String getContextFileLocation();
+
+    /**
      * Get this application's applicationContext.xml file.
      */
 
@@ -25,7 +40,7 @@ public interface SpringFacet extends Facet
      * Get the servlet XML context file for the specified targetDir of the application.
      */
 
-    FileResource<?> getMvcContextFile(String targetDir);
+    FileResource<?> getMVCContextFile(String targetDir);
 
     /**
      * Get this application's currently configured servlet mappings from the web.xml
