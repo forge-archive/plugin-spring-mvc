@@ -127,6 +127,22 @@ public class SpringPlugin implements Plugin
        }
    }
 
+   @Command("context-location")
+   public void setApplicationContextLocation(@Option(required=true, name="Application Context Location",
+                   description="applicationContext.xml location") String location, final PipeOut out)
+   {
+      SpringFacet spring = project.getFacet(SpringFacet.class);
+
+      if (spring.setContextFileLocation(location))
+      {
+          ShellMessages.success(out, "Application context file location changed to: src/main/resources/" + location);
+      }
+      else
+      {
+          ShellMessages.error(out, "No file found at: src/main/resources/" + location);
+      }
+   }
+
    @Command("mvc-from-template")
    public void generateMVCFromTemplate(@Option(required=false, defaultValue="Y", description="Overwrite existing files?", name="overwrite") boolean overwrite,
                    @Option(required=false, name="MVC Package") String mvcPackage,
