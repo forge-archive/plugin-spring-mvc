@@ -79,6 +79,8 @@ public class SpringPlugin implements Plugin
    @Inject
    private ShellPrompt prompt;
 
+   private static final String XMLNS_PREFIX = "xmlns:";
+
    private TemplateResolver<ClassLoader> resolver;
 
    private String APPLICATION_CONTEXT_TEMPLATE = "org/jboss/forge/applicationContext.xl";
@@ -102,7 +104,8 @@ public class SpringPlugin implements Plugin
    }
 
    @SetupCommand
-   public void setup(PipeOut out)
+   public void setup(PipeOut out, @Option(required=false, defaultValue="META-INF/spring/applicationContext.xml",
+                       description="Location of the application context XML file.") String location)
    {
        if (!project.hasFacet(SpringFacet.class))
        {
@@ -124,6 +127,18 @@ public class SpringPlugin implements Plugin
        if (project.hasFacet(SpringFacet.class))
        {
            ShellMessages.success(out, "Spring MVC dependencies are installed.");
+           SpringFacet spring = project.getFacet(SpringFacet.class);
+
+           location = (location.startsWith("/")) ? location.substring(1) : location;
+
+           if (spring.setContextFileLocation(location))
+           {
+               ShellMessages.success(out, "Application context file located at: src/main/resources/" + location);
+           }
+           else
+           {
+               ShellMessages.error(out, "Could not change application context location, no file found at src/main/resources/" + location);
+           }
        }
    }
 
@@ -143,31 +158,106 @@ public class SpringPlugin implements Plugin
       }
    }
 
+   @Command("persistence")
+   public void generateApplicationContext(@Option(required=false, name="DAO Package") String repoPackage)
+   {
+       MetadataFacet meta = project.getFacet(MetadataFacet.class);
+       ResourceFacet resources = project.getFacet(ResourceFacet.class);
+       SpringFacet spring = project.getFacet(SpringFacet.class);
+
+       Node beans = XMLParser.parse(resources.getResource(spring.getContextFileLocation()).getResourceInputStream());
+
+       if (beans == null)
+       {
+           beans = new Node("beans");
+       }
+
+       addXMLSchema(beans, true);
+
+       if (repoPackage == null)
+       {
+           repoPackage = meta.getTopLevelPackage() + ".repo";
+       }
+
+       if (!hasContextComponentScan(beans, repoPackage))
+       {
+           addContextComponentScan(beans, repoPackage);
+       }
+
+       if (!hasChild(beans, "entityManager"))
+       {
+           Node entityManager = new Node("bean", beans);
+           entityManager.attribute("id", "entityManager");
+           entityManager.attribute("class", "org.springframework.orm.jpa.support.SharedEntityManagerBean");
+           entityManager.createChild("property").attribute("name", "entityManagerFactory")
+                       .attribute("ref", "entityManagerFactory");
+       }
+
+       if (beans.getSingle("tx:annotation-driven") == null)
+       {
+           beans.createChild("tx:annotation-driven");
+       }
+
+       if (beans.getSingle("tx:jta-transaction-manager") == null)
+       {
+           beans.createChild("tx:jta-transaction-manager");
+       }
+
+       if (!hasChild(beans, "entityManagerFactory"))
+       {
+           PersistenceFacet persistence = project.getFacet(PersistenceFacet.class);
+           String unitName = persistence.getConfig().listUnits().get(0).getName();
+
+           beans.createChild("jee:jndi-lookup").attribute("expected-type", "javax.persistence.EntityManagerFactory")
+                       .attribute("id", "entityManagerFactory")
+                       .attribute("jndi-name", "java:jboss/" + unitName + "/persistence");
+       }
+   }
+
    @Command("mvc-from-template")
-   public void generateMVCFromTemplate(@Option(required=false, defaultValue="Y", description="Overwrite existing files?", name="overwrite") boolean overwrite,
+   public void generateMVCFromTemplate(@Option(required=false, defaultValue="true", name="overwrite") boolean overwrite,
                    @Option(required=false, name="MVC Package") String mvcPackage,
+                   @Option(required=false, name="MVC Context File") String mvcContext,
                    @Option(required=false, name="DAO Package") String repoPackage,
                    @Option(required=false, name="Target Directory") String targetDir)
    {
        Map<Object, Object> context = CollectionUtils.newHashMap();
        MetadataFacet meta = project.getFacet(MetadataFacet.class);
 
-       if (mvcPackage == null)
-       {
-           mvcPackage = meta.getTopLevelPackage() + ".mvc.root";
-       }
-       if(repoPackage == null)
-       {
-           repoPackage = meta.getTopLevelPackage() + ".repo";
-       }
        if (targetDir == null)
        {
            targetDir = new String();
        }
 
+       targetDir = processTargetDir(targetDir);
+
+       if (mvcPackage == null)
+       {
+           mvcPackage = meta.getTopLevelPackage() + ".mvc";
+           mvcPackage += (targetDir.isEmpty()) ? ".root" : "." + targetDir.replace('/', '.');
+       }
+
+       if (mvcContext == null)
+       {
+           if (targetDir.isEmpty() || targetDir.equals("/"))
+           {
+               mvcContext = "WEB-INF/" + meta.getTopLevelPackage().replace(' ', '-').toLowerCase() + "-mvc-context.xml";              
+           }
+           else
+           {
+               mvcContext = "/WEB-INF/" + targetDir.replace('/', '-').toLowerCase() + "-mvc-context.xml";
+           }
+       }
+
+       if(repoPackage == null)
+       {
+           repoPackage = meta.getTopLevelPackage() + ".repo";
+       }
+
        context.put("mvcPackage", mvcPackage);
        context.put("repoPackage", repoPackage);
        context.put("targetDir", targetDir);
+       context.put("mvc-context-file", mvcContext);
 
        generateContextFiles(overwrite, context);
    }
@@ -186,6 +276,8 @@ public class SpringPlugin implements Plugin
 
        targetDir = processTargetDir(targetDir);
 
+       updateWebXML(targetDir);
+
        if (mvcPackage == null)
        {
            mvcPackage = meta.getTopLevelPackage() + ".mvc";
@@ -196,8 +288,6 @@ public class SpringPlugin implements Plugin
        {
            repoPackage = meta.getTopLevelPackage() + ".repo";
        }
-
-       updateWebXML(targetDir);
    }
 
    protected void generateContextFiles(boolean overwrite, Map<Object, Object> context)
@@ -207,7 +297,7 @@ public class SpringPlugin implements Plugin
        ResourceFacet resources = project.getFacet(ResourceFacet.class);
        WebResourceFacet web = project.getFacet(WebResourceFacet.class);
 
-       String filename = "WEB-INF/" + meta.getProjectName().replace(' ', '-') + "-mvc-context.xml";
+       String filename = context.get("mvc-context-file").toString();
        loadTemplates();
 
        context.put("projectName", meta.getProjectName());
@@ -234,6 +324,72 @@ public class SpringPlugin implements Plugin
        if (webXmlTemplate == null)
        {
            webXmlTemplate = compiler.compile(WEB_XML_TEMPLATE);
+       }
+   }
+
+   protected void generateMVCContext(String mvcContextFilename, String mvcPackage)
+   {
+       WebResourceFacet web = project.getFacet(WebResourceFacet.class);
+
+       Node beans = XMLParser.parse(web.getWebResource(mvcContextFilename).getResourceInputStream());
+
+       if (beans == null)
+       {
+           beans = new Node("beans");
+       }
+
+       beans = addXMLSchema(beans, false);
+       beans = addContextComponentScan(beans, mvcPackage);
+
+       // Add view resolver, default to Apache Tiles2
+
+       if (!hasChild(beans, "viewResolver"))
+       {
+           Node viewResolver = new Node("bean", beans);
+           viewResolver.attribute("id", "viewResolver");
+           viewResolver.attribute("class", "org.springframework.web.servlet.view.tiles2.TilesViewResolver");
+
+           viewResolver.createChild("property").attribute("name", "viewClass")
+                       .attribute("value", "org.springframework.web.servlet.view.tiles2.TilesView");
+
+           if (!hasChild(beans, "tilesConfigurer"))
+           {
+               Node tilesConfigurer = new Node("bean", beans);
+               tilesConfigurer.attribute("id", "tilesConfigurer");
+               tilesConfigurer.attribute("class", "org.springframework.web.servlet.view.tiles2.TilesConfigurer");
+
+               Node definitions = new Node("property", tilesConfigurer);
+               definitions.attribute("name", "definitions");
+
+               Node list = new Node("list", definitions);
+               list.createChild("value").text("/WEB-INF/**/layouts.xml");
+               list.createChild("value").text("/WEB-INF/**/views.xml");
+           }
+       }
+
+       if (!hasChild(beans, "errorViewResolver"))
+       {
+           Node errorViewResolver = new Node("bean", beans);
+           errorViewResolver.attribute("id", "errorViewResolver");
+           errorViewResolver.attribute("class", "org.springframework.web.servlet.handler.SimpleMappingExceptionHandler");
+
+           Node exceptionMappings = new Node("property", errorViewResolver);
+           exceptionMappings.createChild("props").createChild("prop").text("error").attribute("key", "java.lang.Exception");
+       }
+
+       if (beans.get("mvc:annotation-driven") == null)
+       {
+           beans.createChild("mvc:annotation-driven");
+       }
+
+       if (beans.get("mvc:resources") == null)
+       {
+           beans.createChild("mvc:resources").attribute("location", "/").attribute("mapping", "/static/**");
+       }
+
+       if (beans.get("mvc:default-servlet-handler") == null)
+       {
+           beans.createChild("mvc:default-servlet-handler");
        }
    }
 
@@ -276,14 +432,20 @@ public class SpringPlugin implements Plugin
            }
        }
 
+       // Add a Spring ContextLoaderListener
+
        if (!webXML.getListeners().contains("org.springframework.web.context.ContextLoaderListener"))
        {
            webXML.listener("org.springframework.web.context.ContextLoaderListener");
        }
 
+       // Add a reference to the application's persistence unit as well as an OpenEntityManagerInView bean
+
        webXML = addPersistenceContextRef(webXML);
        webXML = addOpenEntityManagerInViewFilter(webXML);
        servlet.saveConfig(webXML);
+
+       // Add a servlet corresponding to the specified targetDir
 
        if (targetDir.equals("/") || targetDir.isEmpty())
        {
@@ -295,12 +457,102 @@ public class SpringPlugin implements Plugin
        }
    }
 
+   private Node addContextComponentScan(Node beans, String basePackage)
+   {
+       if (hasContextComponentScan(beans, basePackage))
+       {
+           return beans;
+       }
+
+       Node scan = new Node("context:component-scan", beans);
+       scan.attribute("base-package", basePackage);
+
+       return beans;
+   }
+
+   private boolean hasContextComponentScan(Node beans, String basePackage)
+   {
+       for (Node scan : beans.get("context:component-scan"))
+       {
+           if (scan.getAttribute("base-package").equals(basePackage))
+           {
+               return true;
+           }
+       }
+
+       return false;
+   }
+
+   private boolean hasChild(Node beans, String id)
+   {
+       for (Node child : beans.getChildren())
+       {
+           if (child.getAttribute("id").equals(id))
+           {
+               return true;
+           }
+       }
+
+       return false;
+   }
+
    private String processTargetDir(String targetDir)
    {
        targetDir = (targetDir.startsWith("/")) ? targetDir.substring(1) : targetDir;
        targetDir = (targetDir.endsWith("/")) ? targetDir.substring(0, targetDir.length()-1) : targetDir;
 
        return targetDir;
+   }
+
+   private Node addXMLSchema(Node beans, boolean applicationContext)
+   {
+       beans.attribute("xmlns", "http://www.springframework.org/schema/beans");
+       beans.attribute(XMLNS_PREFIX + "context", "http://www.springframework.org/schema/context");
+       beans.attribute(XMLNS_PREFIX + "xsi", "http://www.w3.org/2001/XMLSchema-instance");
+
+       String schemaLocation = beans.getAttribute("xsi:schemaLocation");
+
+       if (!schemaLocation.contains("http://www.springframework.org/schema/beans " +
+       		"http://www.springframework.org/schema/beans/spring-beans.xsd"))
+       {
+           schemaLocation += " http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd\n";
+       }
+
+       if (!schemaLocation.contains("http://www.springframework.org/schema/context " +
+       		"http://www.springframework.org/schema/context/spring-context.xsd"))
+       {
+           schemaLocation += " http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd\n";
+       }
+
+       if (!applicationContext)
+       {
+           beans.attribute(XMLNS_PREFIX + "mvc", "http://www.springframework.org/schema/mvc");
+
+           if (!schemaLocation.contains("http://www.springframework.org/schema/mvc " +
+           		"http://www.springframework.org/schema/mvc/spring-mvc.xsd"))
+           {
+               schemaLocation += " http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd\n";
+           }
+       }
+       else
+       {
+           beans.attribute(XMLNS_PREFIX + "jee", "http://www.springframework.org/schema/jee");
+           beans.attribute(XMLNS_PREFIX + "tx", "http://www.springframework.org/schema/tx");
+
+           if (!schemaLocation.contains("http://www.springframework.org/schema/jee " +
+                   "http://www.springframework.org/schema/jee/spring-jee.xsd"))
+           {
+               schemaLocation += " http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee.xsd\n";
+           }
+
+           if (!schemaLocation.contains("http://www.springframework.org/schema/tx " +
+                   "http://www.springframework.org/schema/tx/spring-tx.xsd"))
+           {
+               schemaLocation += " http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd\n";
+           }
+       }
+
+       return beans;
    }
 
    private WebAppDescriptor addPersistenceContextRef(WebAppDescriptor webXML)
