@@ -83,9 +83,9 @@ public class SpringPlugin implements Plugin
 
    private TemplateResolver<ClassLoader> resolver;
 
-   private String APPLICATION_CONTEXT_TEMPLATE = "org/jboss/forge/applicationContext.xl";
-   private String MVC_CONTEXT_TEMPLATE = "org/jboss/forge/mvc-context.xl";
-   private String WEB_XML_TEMPLATE = "org/jboss/forge/web.xl";
+   private String APPLICATION_CONTEXT_TEMPLATE = "scaffold/spring/applicationContext.xl";
+   private String MVC_CONTEXT_TEMPLATE = "scaffold/spring/mvc-context.xl";
+   private String WEB_XML_TEMPLATE = "scaffold/spring/web.xl";
 
    private CompiledTemplateResource applicationContextTemplate;
    private CompiledTemplateResource mvcContextTemplate;
