@@ -302,6 +302,7 @@ public class SpringPlugin implements Plugin
 
        context.put("projectName", meta.getProjectName());
        context.put("persistenceUnit", persistence.getConfig().listUnits().get(0).getName());
+       context.put("mvcContextFile", filename);
 
        ScaffoldUtil.createOrOverwrite(this.prompt, resources.getResource("META-INF/spring/applicationContext.xml"),
                applicationContextTemplate.render(context), overwrite);
