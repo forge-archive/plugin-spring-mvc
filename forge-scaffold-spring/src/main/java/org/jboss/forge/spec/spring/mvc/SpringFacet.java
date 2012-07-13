@@ -71,13 +71,13 @@ public interface SpringFacet extends Facet
      * it were '/admin', a new servlet named 'admin' would be created, mapping to '/admin'.
      */
 
-    void addServlet(String servletName);
+    void addServlet(String servletName, String contextFile);
 
     /**
      * Add a servlet mapped to '/', with the name 'root', assuming one does not exist already.
      */
 
-    void addRootServlet();
+    void addRootServlet(String contextFile);
 
     /**
      * Given a servlet name, return whether or not the application's web.xml file contains a servlet definition with that
