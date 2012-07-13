@@ -231,7 +231,7 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
     }
 
     @Override
-    public void addServlet(String servletName)
+    public void addServlet(String context, String servletName)
     {
         servletName = processServletName(servletName);
         ServletFacet serv = project.getFacet(ServletFacet.class);
@@ -243,15 +243,14 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
         }
 
         ServletDef servlet = webXml.servlet(servletName, SPRING_DISPATCHER_SERVLET, new String[] {"/" + servletName + "/*"});
-        servlet.initParam("contextConfigLocation", "/WEB-INF/" + servletName.replace(' ', '-').toLowerCase() + "-mvc-context.xml");
+        servlet.initParam("contextConfigLocation", context);
         servlet.loadOnStartup(1);
         serv.saveConfig(webXml);
     }
 
     @Override
-    public void addRootServlet()
+    public void addRootServlet(String contextFile)
     {
-        MetadataFacet meta = project.getFacet(MetadataFacet.class);
         ServletFacet serv = project.getFacet(ServletFacet.class);
         WebAppDescriptor webXml = serv.getConfig();
 
@@ -261,7 +260,7 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
         }
 
         ServletDef servlet = webXml.servlet("root", SPRING_DISPATCHER_SERVLET, new String[] {"/"});
-        servlet.initParam("contextConfigLocation", "/WEB-INF/" + meta.getProjectName().replace(' ','-').toLowerCase() + "-mvc-context.xml");
+        servlet.initParam("contextConfigLocation", contextFile);
         servlet.loadOnStartup(1);
         serv.saveConfig(webXml);
     }
