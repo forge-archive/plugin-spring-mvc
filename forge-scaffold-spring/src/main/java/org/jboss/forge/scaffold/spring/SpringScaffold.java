@@ -277,6 +277,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                 this.mvcContextTemplate.render(context), overwrite));
 
         context.put("projectName", meta.getProjectName());
+        context.put("mvcContextFile", filename);
 
         if (!web.getWebResource("WEB-INF/web.xml").exists())
         {
