@@ -34,7 +34,6 @@ import org.jboss.forge.resources.FileResource;
 import org.jboss.forge.scaffold.spring.AbstractSpringScaffoldTest;
 import org.jboss.forge.shell.exceptions.PluginExecutionException;
 import org.jboss.forge.shell.util.Streams;
-import org.jboss.seam.render.template.resolver.MetaInfClassLoaderTemplateResolver;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;

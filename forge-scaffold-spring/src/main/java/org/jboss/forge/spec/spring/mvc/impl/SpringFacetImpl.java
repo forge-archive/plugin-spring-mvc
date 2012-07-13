@@ -47,6 +47,8 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
 
     private final DependencyInstaller installer;
 
+    private String APPLICATION_CONTEXT_LOCATION;
+
     private ServletMappingHelper servletMappingHelper = new ServletMappingHelper();
 
     private static final String SPRING_VERSION = "3.1.1.RELEASE";
@@ -125,6 +127,8 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
                     deps.addDirectDependency(requirement);
                 }
             }
+
+            APPLICATION_CONTEXT_LOCATION = "META-INF/spring/applicationContext.xml";
         }
 
         return true;
@@ -145,11 +149,16 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
     {
         ResourceFacet resources = project.getFacet(ResourceFacet.class);
 
-        return resources.getResource("META-INF/spring/applicationContext.xml");
+        if (APPLICATION_CONTEXT_LOCATION == null)
+        {
+            setContextFileLocation("META-INF/spring/applicationContext.xml");
+        }
+
+        return resources.getResource(APPLICATION_CONTEXT_LOCATION);
     }
 
     @Override
-    public FileResource<?> getMvcContextFile(String targetDir)
+    public FileResource<?> getMVCContextFile(String targetDir)
     {
         WebResourceFacet web = project.getFacet(WebResourceFacet.class);
 
@@ -222,43 +231,54 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
     }
 
     @Override
-    public void addServlet(String servletName)
+    public void addServlet(String context, String servletName)
     {
         servletName = processServletName(servletName);
         ServletFacet serv = project.getFacet(ServletFacet.class);
         WebAppDescriptor webXml = serv.getConfig();
+
+        if (hasServlet("/" + servletName + "/*"))
+        {
+            return;
+        }
 
         ServletDef servlet = webXml.servlet(servletName, SPRING_DISPATCHER_SERVLET, new String[] {"/" + servletName + "/*"});
-        servlet.initParam("contextConfigLocation", "/WEB-INF/" + servletName.replace(' ', '-').toLowerCase() + "-mvc-context.xml");
+        servlet.initParam("contextConfigLocation", context);
         servlet.loadOnStartup(1);
         serv.saveConfig(webXml);
     }
 
     @Override
-    public void addRootServlet()
+    public void addRootServlet(String contextFile)
     {
-        MetadataFacet meta = project.getFacet(MetadataFacet.class);
         ServletFacet serv = project.getFacet(ServletFacet.class);
         WebAppDescriptor webXml = serv.getConfig();
+
+        if (hasServlet("/"))
+        {
+            return;
+        }
 
         ServletDef servlet = webXml.servlet("root", SPRING_DISPATCHER_SERVLET, new String[] {"/"});
-        servlet.initParam("contextConfigLocation", "/WEB-INF/" + meta.getProjectName().replace(' ','-').toLowerCase() + "-mvc-context.xml");
+        servlet.initParam("contextConfigLocation", contextFile);
         servlet.loadOnStartup(1);
         serv.saveConfig(webXml);
     }
 
     @Override
-    public boolean hasServlet(String servletName)
+    public boolean hasServlet(String servletMapping)
     {
         ServletFacet serv = project.getFacet(ServletFacet.class);
         WebAppDescriptor webXml = serv.getConfig();
-        servletName = processServletName(servletName);
 
         for (ServletDef servlet : webXml.getServlets())
         {
-            if (servlet.getName().equals(servletName))
+            for (ServletMappingDef mapping : servlet.getMappings())
             {
-                return true;
+                if (mapping.getUrlPatterns().contains(servletMapping))
+                {
+                    return true;
+                }
             }
         }
 
@@ -393,6 +413,26 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
         }
 
         return null;
+    }
+
+    public boolean setContextFileLocation(String location)
+    {
+        ResourceFacet resources = project.getFacet(ResourceFacet.class);
+
+        if (location.equals("META-INF/spring/applicationContext.xml") ||
+                resources.getResource(location).exists())
+        {
+            APPLICATION_CONTEXT_LOCATION = location;
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public String getContextFileLocation()
+    {
+        return APPLICATION_CONTEXT_LOCATION;
     }
 
     /**
