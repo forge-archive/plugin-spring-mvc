@@ -394,17 +394,17 @@ public class SpringPlugin implements Plugin
            exceptionMappings.createChild("props").createChild("prop").text("error").attribute("key", "java.lang.Exception");
        }
 
-       if (beans.get("mvc:annotation-driven") == null)
+       if (beans.getSingle("mvc:annotation-driven") == null)
        {
            beans.createChild("mvc:annotation-driven");
        }
 
-       if (beans.get("mvc:resources") == null)
+       if (beans.getSingle("mvc:resources") == null)
        {
            beans.createChild("mvc:resources").attribute("location", "/").attribute("mapping", "/static/**");
        }
 
-       if (beans.get("mvc:default-servlet-handler") == null)
+       if (beans.getSingle("mvc:default-servlet-handler") == null)
        {
            beans.createChild("mvc:default-servlet-handler");
        }
