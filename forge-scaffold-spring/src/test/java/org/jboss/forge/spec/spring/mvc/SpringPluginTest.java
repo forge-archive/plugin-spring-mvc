@@ -54,6 +54,25 @@ public class SpringPluginTest extends AbstractShellTest
     }
 
     @Test
+    public void testSetContextFileLocation() throws Exception
+    {
+        getShell().setOutputStream(System.out);
+        Project project = initializeJavaProject();
+        queueInputLines("HIBERNATE", "JBOSS_AS7", "", "");
+        getShell().execute("persistence setup");
+        queueInputLines("Y", "");
+        getShell().execute("spring setup");
+
+        ResourceFacet resources = project.getFacet(ResourceFacet.class);
+        SpringFacet spring = project.getFacet(SpringFacet.class);
+        resources.createResource("".toCharArray(), "META-INF/test-business-context.xml");
+
+        getShell().execute("spring context-location --location META-INF/test-business-context.xml");
+
+        Assert.assertEquals("META-INF/test-business-context.xml", spring.getContextFileLocation());
+    }
+
+    @Test
     public void testMVCFromTemplate() throws Exception
     {
         Project project = initializeJavaProject();
