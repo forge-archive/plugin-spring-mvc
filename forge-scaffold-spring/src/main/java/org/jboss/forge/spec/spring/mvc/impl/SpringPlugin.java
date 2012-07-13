@@ -408,6 +408,8 @@ public class SpringPlugin implements Plugin
        {
            beans.createChild("mvc:default-servlet-handler");
        }
+
+       web.createWebResource(XMLParser.toXMLString(beans), mvcContextFilename);
    }
 
    protected void updateWebXML(String targetDir)
