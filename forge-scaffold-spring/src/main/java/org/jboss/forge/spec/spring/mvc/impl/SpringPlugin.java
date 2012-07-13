@@ -216,6 +216,8 @@ public class SpringPlugin implements Plugin
                        .attribute("id", "entityManagerFactory")
                        .attribute("jndi-name", "java:jboss/" + unitName + "/persistence");
        }
+
+       resources.createResource(XMLParser.toXMLString(beans).toCharArray(), spring.getContextFileLocation());
    }
 
    @Command("mvc-from-template")
@@ -298,7 +300,7 @@ public class SpringPlugin implements Plugin
            }
        }
 
-       updateWebXML(targetDir);
+       updateWebXML(targetDir, mvcContext);
        generateMVCContext(mvcContext, mvcPackage);
    }
 
@@ -412,7 +414,7 @@ public class SpringPlugin implements Plugin
        web.createWebResource(XMLParser.toXMLString(beans), mvcContextFilename);
    }
 
-   protected void updateWebXML(String targetDir)
+   protected void updateWebXML(String mvcContext, String targetDir)
    {
        MetadataFacet meta = project.getFacet(MetadataFacet.class);
        ServletFacet servlet = project.getFacet(ServletFacet.class);
@@ -434,19 +436,19 @@ public class SpringPlugin implements Plugin
        {
            if (this.prompt.promptBoolean("Change the application's display name to " + meta.getProjectName() + "?"))
            {
-               webXML.displayName(meta.getProjectName());
+               webXML = webXML.displayName(meta.getProjectName());
            }
        }
        else
        {
-           webXML.displayName(meta.getProjectName());
+           webXML= webXML.displayName(meta.getProjectName());
        }
 
        // Add the application context file to web.xml's <context-param>
 
        if (webXML.getContextParam("contextConfigLocation") == null)
        {
-           webXML.contextParam("contextConfigLocation", "classpath:/" + spring.getContextFileLocation());
+           webXML = webXML.contextParam("contextConfigLocation", "classpath:/" + spring.getContextFileLocation());
        }
        else
        {
@@ -455,7 +457,7 @@ public class SpringPlugin implements Plugin
            if (!contextConfigLocation.contains(spring.getContextFileLocation()))
            {
                contextConfigLocation += ", classpath:/" + spring.getContextFileLocation();
-               webXML.contextParam("contextConfigLocation", contextConfigLocation);
+               webXML = webXML.contextParam("contextConfigLocation", contextConfigLocation);
            }
        }
 
@@ -463,7 +465,7 @@ public class SpringPlugin implements Plugin
 
        if (!webXML.getListeners().contains("org.springframework.web.context.ContextLoaderListener"))
        {
-           webXML.listener("org.springframework.web.context.ContextLoaderListener");
+           webXML = webXML.listener("org.springframework.web.context.ContextLoaderListener");
        }
 
        // Add a reference to the application's persistence unit as well as an OpenEntityManagerInView bean
@@ -476,11 +478,11 @@ public class SpringPlugin implements Plugin
 
        if (targetDir.equals("/") || targetDir.isEmpty())
        {
-           spring.addRootServlet();
+           spring.addRootServlet(mvcContext);
        }
        else
        {
-           spring.addServlet(targetDir);
+           spring.addServlet(targetDir, mvcContext);
        }
    }
 
@@ -593,7 +595,7 @@ public class SpringPlugin implements Plugin
        servlet.saveConfig(webXML);
        Node webapp = XMLParser.parse(web.getWebResource("WEB-INF/web.xml").getResourceInputStream());
 
-       if (webapp.get("persistence-context-ref") == null)
+       if (webapp.getSingle("persistence-context-ref") == null)
        {
            PersistenceFacet persistence = project.getFacet(PersistenceFacet.class);
 
