@@ -104,7 +104,7 @@ public class SpringPlugin implements Plugin
    }
 
    @SetupCommand
-   public void setup(PipeOut out, @Option(required=false, defaultValue="META-INF/spring/applicationContext.xml",
+   public void setup(PipeOut out, @Option(required=false, name="location", defaultValue="META-INF/spring/applicationContext.xml",
                        description="Location of the application context XML file.") String location)
    {
        if (!project.hasFacet(SpringFacet.class))
@@ -143,8 +143,8 @@ public class SpringPlugin implements Plugin
    }
 
    @Command("context-location")
-   public void setApplicationContextLocation(@Option(required=true, name="Application Context Location",
-                   description="applicationContext.xml location") String location, final PipeOut out)
+   public void setApplicationContextLocation(@Option(required=true, name="location",
+                   description="Location of Application Context XML file") String location, final PipeOut out)
    {
       SpringFacet spring = project.getFacet(SpringFacet.class);
 
@@ -159,7 +159,7 @@ public class SpringPlugin implements Plugin
    }
 
    @Command("persistence")
-   public void generateApplicationContext(@Option(required=false, name="DAO Package") String repoPackage)
+   public void generateApplicationContext(@Option(required=false, name="--daoPackage", description="DAO/Repository Package") String repoPackage)
    {
        MetadataFacet meta = project.getFacet(MetadataFacet.class);
        ResourceFacet resources = project.getFacet(ResourceFacet.class);
@@ -220,10 +220,10 @@ public class SpringPlugin implements Plugin
 
    @Command("mvc-from-template")
    public void generateMVCFromTemplate(@Option(required=false, defaultValue="true", name="overwrite") boolean overwrite,
-                   @Option(required=false, name="MVC Package") String mvcPackage,
-                   @Option(required=false, name="MVC Context File") String mvcContext,
-                   @Option(required=false, name="DAO Package") String repoPackage,
-                   @Option(required=false, name="Target Directory") String targetDir)
+                   @Option(required=false, name="mvcPackage", description="MVC Controller Package") String mvcPackage,
+                   @Option(required=false, name="mvcContext", description="MVC Context File Location") String mvcContext,
+                   @Option(required=false, name="daoPackage", description="DAO/Repository Package") String repoPackage,
+                   @Option(required=false, name="targetDir", description="Target Directory") String targetDir)
    {
        Map<Object, Object> context = CollectionUtils.newHashMap();
        MetadataFacet meta = project.getFacet(MetadataFacet.class);
@@ -267,9 +267,9 @@ public class SpringPlugin implements Plugin
    }
 
    @Command("mvc")
-   public void updateMVC( @Option(required=false, name="MVC Package") String mvcPackage,
-                   @Option(required=false, name="MVC Context File Location") String mvcContext,
-                   @Option(required=false, name="Target Directory") String targetDir)
+   public void updateMVC( @Option(required=false, name="mvcPackage", description="MVC Controller Package") String mvcPackage,
+                   @Option(required=false, name="mvcContext", description="MVC Context File Location") String mvcContext,
+                   @Option(required=false, name="targetDir", description="Target Directory") String targetDir)
    {
        MetadataFacet meta = project.getFacet(MetadataFacet.class);
 
