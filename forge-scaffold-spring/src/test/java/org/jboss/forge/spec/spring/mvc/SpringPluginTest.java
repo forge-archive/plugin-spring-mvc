@@ -24,8 +24,15 @@ package org.jboss.forge.spec.spring.mvc;
 
 import junit.framework.Assert;
 
+import org.jboss.forge.parser.xml.Node;
+import org.jboss.forge.parser.xml.XMLParser;
 import org.jboss.forge.project.Project;
+import org.jboss.forge.project.facets.MetadataFacet;
+import org.jboss.forge.project.facets.ResourceFacet;
+import org.jboss.forge.project.facets.WebResourceFacet;
+import org.jboss.forge.spec.javaee.ServletFacet;
 import org.jboss.forge.test.AbstractShellTest;
+import org.jboss.shrinkwrap.descriptor.api.spec.servlet.web.WebAppDescriptor;
 import org.junit.Test;
 
 /**
@@ -39,23 +46,130 @@ public class SpringPluginTest extends AbstractShellTest
     {
         getShell().setOutputStream(System.out);
         Project project = initializeJavaProject();
+        queueInputLines("HIBERNATE", "JBOSS_AS7", "", "");
+        getShell().execute("persistence setup");
         queueInputLines("Y", "");
         getShell().execute("spring setup");
         Assert.assertTrue(project.hasFacet(SpringFacet.class));
     }
 
     @Test
-    public void testSpringConfig() throws Exception
+    public void testMVCFromTemplate() throws Exception
     {
         Project project = initializeJavaProject();
+        queueInputLines("HIBERNATE", "JBOSS_AS7", "", "");
+        getShell().execute("persistence setup");
         queueInputLines("", "");
         getShell().execute("spring setup");
-        Assert.assertTrue(project.hasFacet(SpringFacet.class));
 
         queueInputLines("", "", "");
-        getShell().execute("spring mvc-from-template --mvcContext mvc-context.xml");
+        getShell().execute("spring mvc-from-template");
         Assert.assertTrue(project.getProjectRoot().getChild("src/main/webapp/WEB-INF/web.xml").exists());
         Assert.assertTrue(project.getProjectRoot().getChild("src/main/resources/META-INF/spring/applicationContext.xml").exists());
-        Assert.assertTrue(project.getProjectRoot().getChild("src/main/webapp/WEB-INF/mvc-context.xml").exists());
+        Assert.assertTrue(project.getProjectRoot().getChild("src/main/webapp/WEB-INF/test-mvc-context.xml").exists());
+    }
+
+    @Test
+    public void testMVC() throws Exception
+    {
+        Project project = initializeJavaProject();
+        queueInputLines("HIBERNATE", "JBOSS_AS7", "", "");
+        getShell().execute("persistence setup");
+        queueInputLines("", "");
+        getShell().execute("spring setup");
+
+        getShell().execute("spring mvc --mvcContext /WEB-INF/servlet-context.xml --targetDir /admin --mvcPackage test.mvc.package");
+
+        MetadataFacet meta = project.getFacet(MetadataFacet.class);
+        ServletFacet servlet = project.getFacet(ServletFacet.class);
+        SpringFacet spring = project.getFacet(SpringFacet.class);
+        WebResourceFacet web = project.getFacet(WebResourceFacet.class);
+
+        WebAppDescriptor webXML = servlet.getConfig();
+
+        Assert.assertNotNull(webXML);
+        Assert.assertTrue(webXML.getContextParam("contextConfigLocation").contains("classpath:/" + spring.getContextFileLocation()));
+        Assert.assertTrue(webXML.getListeners().contains("org.springframework.web.context.ContextLoaderListener"));
+
+        Node webapp = XMLParser.parse(servlet.getConfigFile().getResourceInputStream());
+
+        Assert.assertTrue(webapp.getSingle("display-name").getText().equals(meta.getProjectName()));
+        Assert.assertNotNull(webapp.getSingle("persistence-context-ref"));
+
+        Node dispatcherServlet = webapp.getSingle("servlet");
+        Assert.assertTrue(dispatcherServlet.getSingle("servlet-name").getText().equals("admin"));
+        Assert.assertTrue(dispatcherServlet.getSingle("servlet-class").getText().equals("org.springframework.web.servlet.DispatcherServlet"));
+
+        Node param = dispatcherServlet.getSingle("init-param").getSingle("param-value");
+        Assert.assertTrue(param.getText().equals("/WEB-INF/servlet-context.xml"));
+
+        Node servletMapping = webapp.getSingle("servlet-mapping");
+        Assert.assertTrue(servletMapping.getSingle("url-pattern").getText().equals("/admin/*"));
+        Assert.assertTrue(servletMapping.getSingle("servlet-name").getText().equals("admin"));
+
+        Node beans = XMLParser.parse(web.getWebResource("WEB-INF/servlet-context.xml").getResourceInputStream());
+
+        Assert.assertNotNull(beans.getAttribute("xmlns"));
+        Assert.assertNotNull(beans.getAttribute("xmlns:context"));
+        Assert.assertNotNull(beans.getAttribute("xmlns:mvc"));
+        Assert.assertNotNull(beans.getAttribute("xsi:schemaLocation"));
+
+        Node mvcScan = beans.getSingle("context:component-scan");
+        Assert.assertNotNull(mvcScan);
+        Assert.assertEquals("test.mvc.package", mvcScan.getAttribute("base-package"));
+        Assert.assertNotNull(beans.getSingle("mvc:annotation-driven"));
+        Assert.assertNotNull(beans.getSingle("mvc:resources"));
+        // Should this element be added for non-root servlets?
+        //Assert.assertNotNull(beans.getSingle("mvc:default-servlet-handler"));
+
+        boolean viewResolver = false;
+
+        for (Node bean : beans.get("bean"))
+        {
+            if (bean.getAttribute("id") != null && bean.getAttribute("id").equals("viewResolver"))
+            {
+                viewResolver = true;
+            }
+        }
+
+        Assert.assertTrue(viewResolver);
+    }
+
+    @Test
+    public void testGenerateApplicationContext() throws Exception
+    {
+        Project project = initializeJavaProject();
+        queueInputLines("HIBERNATE", "JBOSS_AS7", "", "");
+        getShell().execute("persistence setup");
+        queueInputLines("", "");
+        getShell().execute("spring setup");
+
+        getShell().execute("spring persistence");
+
+        ResourceFacet resources = project.getFacet(ResourceFacet.class);
+        SpringFacet spring = project.getFacet(SpringFacet.class);
+
+        Node beans = XMLParser.parse(resources.getResource(spring.getContextFileLocation()).getResourceInputStream());
+
+        Assert.assertNotNull(beans.getAttribute("xmlns"));
+        Assert.assertNotNull(beans.getAttribute("xmlns:context"));
+        Assert.assertNotNull(beans.getAttribute("xmlns:jee"));
+        Assert.assertNotNull(beans.getAttribute("xmlns:tx"));
+        Assert.assertNotNull(beans.getAttribute("xsi:schemaLocation"));
+
+        Node scan = beans.getSingle("context:component-scan");
+        Assert.assertEquals("com.test.repo", scan.getAttribute("base-package"));
+
+        Assert.assertNotNull(beans.getSingle("tx:annotation-driven"));
+        Assert.assertNotNull(beans.getSingle("tx:jta-transaction-manager"));
+
+        Node entityManager = beans.getSingle("bean");
+        Assert.assertEquals("entityManager", entityManager.getAttribute("id"));
+        Assert.assertEquals("org.springframework.orm.jpa.support.SharedEntityManagerBean", entityManager.getAttribute("class"));
+
+        Node entityManagerFactory = beans.getSingle("jee:jndi-lookup");
+        Assert.assertEquals("entityManagerFactory", entityManagerFactory.getAttribute("id"));
+        Assert.assertEquals("javax.persistence.EntityManagerFactory", entityManagerFactory.getAttribute("expected-type"));
+        Assert.assertEquals("java:jboss/forge-default/persistence", entityManagerFactory.getAttribute("jndi-name"));
     }
 }
