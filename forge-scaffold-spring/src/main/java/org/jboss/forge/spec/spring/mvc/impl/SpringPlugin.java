@@ -165,11 +165,15 @@ public class SpringPlugin implements Plugin
        ResourceFacet resources = project.getFacet(ResourceFacet.class);
        SpringFacet spring = project.getFacet(SpringFacet.class);
 
-       Node beans = XMLParser.parse(resources.getResource(spring.getContextFileLocation()).getResourceInputStream());
+       Node beans;
 
-       if (beans == null)
+       if (!resources.getResource(spring.getContextFileLocation()).exists())
        {
            beans = new Node("beans");
+       }
+       else
+       {
+           beans = XMLParser.parse(resources.getResource(spring.getContextFileLocation()).getResourceInputStream());
        }
 
        addXMLSchema(beans, true);
@@ -241,7 +245,7 @@ public class SpringPlugin implements Plugin
        {
            if (targetDir.isEmpty() || targetDir.equals("/"))
            {
-               mvcContext = "WEB-INF/" + meta.getTopLevelPackage().replace(' ', '-').toLowerCase() + "-mvc-context.xml";              
+               mvcContext = "/WEB-INF/" + meta.getProjectName().replace(' ', '-').toLowerCase() + "-mvc-context.xml";              
            }
            else
            {
@@ -264,7 +268,7 @@ public class SpringPlugin implements Plugin
 
    @Command("mvc")
    public void updateMVC( @Option(required=false, name="MVC Package") String mvcPackage,
-                   @Option(required=false, name="DAO Package") String repoPackage,
+                   @Option(required=false, name="MVC Context File Location") String mvcContext,
                    @Option(required=false, name="Target Directory") String targetDir)
    {
        MetadataFacet meta = project.getFacet(MetadataFacet.class);
@@ -276,18 +280,26 @@ public class SpringPlugin implements Plugin
 
        targetDir = processTargetDir(targetDir);
 
-       updateWebXML(targetDir);
-
        if (mvcPackage == null)
        {
            mvcPackage = meta.getTopLevelPackage() + ".mvc";
            mvcPackage += (targetDir.isEmpty()) ? ".root" : targetDir.replace('/', '.');
        }
 
-       if (repoPackage == null)
+       if (mvcContext == null)
        {
-           repoPackage = meta.getTopLevelPackage() + ".repo";
+           if (targetDir.isEmpty())
+           {
+               mvcContext = "/WEB-INF/" + meta.getProjectName().replace(' ', '-').toLowerCase() + "-mvc-context.xml";
+           }
+           else
+           {
+               mvcContext = "/WEB-INF/" + targetDir.replace('/', '-').toLowerCase() + "-mvc-context.xml";
+           }
        }
+
+       updateWebXML(targetDir);
+       generateMVCContext(mvcContext, mvcPackage);
    }
 
    protected void generateContextFiles(boolean overwrite, Map<Object, Object> context)
@@ -332,11 +344,15 @@ public class SpringPlugin implements Plugin
    {
        WebResourceFacet web = project.getFacet(WebResourceFacet.class);
 
-       Node beans = XMLParser.parse(web.getWebResource(mvcContextFilename).getResourceInputStream());
+       Node beans;
 
-       if (beans == null)
+       if (!web.getWebResource(mvcContextFilename).exists())
        {
            beans = new Node("beans");
+       }
+       else
+       {
+           beans = XMLParser.parse(web.getWebResource(mvcContextFilename).getResourceInputStream());
        }
 
        beans = addXMLSchema(beans, false);
@@ -401,6 +417,14 @@ public class SpringPlugin implements Plugin
        SpringFacet spring = project.getFacet(SpringFacet.class);
 
        WebAppDescriptor webXML = servlet.getConfig();
+
+       if (webXML == null)
+       {
+           Node webapp = new Node("webapp");
+           WebResourceFacet web = project.getFacet(WebResourceFacet.class);
+           web.createWebResource(XMLParser.toXMLString(webapp), "WEB-INF/web.xml");
+           webXML = servlet.getConfig();
+       }
 
        // If the application already has a name, prompt the user to change it to the project name
 
@@ -488,7 +512,7 @@ public class SpringPlugin implements Plugin
    {
        for (Node child : beans.getChildren())
        {
-           if (child.getAttribute("id").equals(id))
+           if (child.getAttribute("id") != null && child.getAttribute("id").equals(id))
            {
                return true;
            }
@@ -512,6 +536,7 @@ public class SpringPlugin implements Plugin
        beans.attribute(XMLNS_PREFIX + "xsi", "http://www.w3.org/2001/XMLSchema-instance");
 
        String schemaLocation = beans.getAttribute("xsi:schemaLocation");
+       schemaLocation = (schemaLocation == null) ? new String() : schemaLocation;
 
        if (!schemaLocation.contains("http://www.springframework.org/schema/beans " +
        		"http://www.springframework.org/schema/beans/spring-beans.xsd"))
@@ -553,18 +578,22 @@ public class SpringPlugin implements Plugin
            }
        }
 
+       beans.attribute("xsi:schemaLocation", schemaLocation);
+
        return beans;
    }
 
    private WebAppDescriptor addPersistenceContextRef(WebAppDescriptor webXML)
    {
-       Node webapp = XMLParser.parse(webXML.toString());
+       ServletFacet servlet = project.getFacet(ServletFacet.class);
+       WebResourceFacet web = project.getFacet(WebResourceFacet.class);
+
+       servlet.saveConfig(webXML);
+       Node webapp = XMLParser.parse(web.getWebResource("WEB-INF/web.xml").getResourceInputStream());
 
        if (webapp.get("persistence-context-ref") == null)
        {
            PersistenceFacet persistence = project.getFacet(PersistenceFacet.class);
-           ServletFacet servlet = project.getFacet(ServletFacet.class);
-           WebResourceFacet web = project.getFacet(WebResourceFacet.class);
 
            Node persistenceContextRef = new Node("persistence-context-ref", webapp);
            String unitName = persistence.getConfig().listUnits().get(0).getName();
