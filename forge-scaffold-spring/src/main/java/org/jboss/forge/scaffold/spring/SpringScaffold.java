@@ -237,11 +237,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         mvcPackage = meta.getTopLevelPackage() + mvcPackage;
         context.put("mvcPackage", mvcPackage);
 
-        if (!targetDir.startsWith("/"))
-            targetDir = "/" + targetDir;
-
-        if (!targetDir.endsWith("/"))
-            targetDir += "/";
+        targetDir = processTargetDir(targetDir);
+        targetDir = "/" + targetDir + "/";
 
         context.put("repoPackage", meta.getTopLevelPackage() + ".repo");
 
@@ -291,11 +288,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
             if (targetDir.equals("/"))
             {
-                spring.addRootServlet();
+                spring.addRootServlet(meta.getProjectName().replace(' ', '-').toLowerCase() + "-mvc-context.xml");
             }
             else
             {
-                spring.addServlet(targetDir);
+                targetDir = processTargetDir(targetDir);
+                spring.addServlet(targetDir, targetDir.replace(' ', '-').toLowerCase() + "-mvc-context.xml");
             }
         }
 
@@ -377,8 +375,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
                 findEntityRelationships(entity, context);
 
-                targetDir = (targetDir.startsWith("/")) ? targetDir : "/" + targetDir;
-                targetDir = (targetDir.endsWith("/")) ? targetDir : targetDir + "/";
+                targetDir = processTargetDir(targetDir);
+                targetDir = "/" + targetDir + "/";
 
                 context.put("targetDir", targetDir);
                 context.put("entityName", StringUtils.uncamelCase(entity.getName()));
@@ -1132,5 +1130,13 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
         JavaClass entityConverter = JavaParser.parse(JavaClass.class, this.entityConverterTemplate.render(context));
         java.saveJavaSource(entityConverter);
+    }
+
+    private String processTargetDir(String targetDir)
+    {
+        targetDir = (targetDir.startsWith("/")) ? targetDir.substring(1) : targetDir;
+        targetDir = (targetDir.endsWith("/")) ? targetDir.substring(0, targetDir.length()) : targetDir;
+
+        return targetDir;
     }
 }
