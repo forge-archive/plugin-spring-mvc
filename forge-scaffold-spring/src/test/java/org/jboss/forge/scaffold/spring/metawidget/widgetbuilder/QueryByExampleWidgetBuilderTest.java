@@ -59,7 +59,7 @@ public class QueryByExampleWidgetBuilderTest
        StaticWidget widget = widgetBuilder.buildWidget(PROPERTY, attributes, new StaticJavaMetawidget());
 
        assertEquals(
-                "String abc = this.search.getAbc();if (abc != null && !\"\".equals(abc)) { predicatesList.add(builder.like(root.<String>get(\"abc\"), '%' + abc + '%')); }",
+                "String abc = search.getAbc();if (abc != null && !\"\".equals(abc)) { predicatesList.add(builder.like(root.<String>get(\"abc\"), '%' + abc + '%')); }",
                 widget.toString());
     }
 
@@ -72,7 +72,7 @@ public class QueryByExampleWidgetBuilderTest
        StaticWidget widget = widgetBuilder.buildWidget(PROPERTY, attributes, new StaticJavaMetawidget());
 
        assertEquals(
-                "int abc = this.search.getAbc();if (abc != 0) { predicatesList.add(builder.equal(root.get(\"abc\"), abc)); }",
+                "int abc = search.getAbc();if (abc != 0) { predicatesList.add(builder.equal(root.get(\"abc\"), abc)); }",
                 widget.toString());
     }
 
@@ -86,7 +86,7 @@ public class QueryByExampleWidgetBuilderTest
        StaticWidget widget = widgetBuilder.buildWidget(PROPERTY, attributes, new StaticJavaMetawidget());
 
        assertEquals(
-                "Foo abc = this.search.getAbc();if (abc != null) { predicatesList.add(builder.equal(root.get(\"abc\"), abc)); }",
+                "Foo abc = search.getAbc();if (abc != null) { predicatesList.add(builder.equal(root.get(\"abc\"), abc)); }",
                 widget.toString());
     }
 
@@ -100,7 +100,7 @@ public class QueryByExampleWidgetBuilderTest
       StaticWidget widget = widgetBuilder.buildWidget(PROPERTY, attributes, new StaticJavaMetawidget());
 
       assertEquals(
-               "Foo abc = this.search.getAbc();if (abc != null && abc.getId() != null) { predicatesList.add(builder.equal(root.get(\"abc\"),abc)); }",
+               "Foo abc = search.getAbc();if (abc != null && abc.getId() != null) { predicatesList.add(builder.equal(root.get(\"abc\"),abc)); }",
                widget.toString());
    }
 }
