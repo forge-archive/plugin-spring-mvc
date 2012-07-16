@@ -258,10 +258,8 @@ public class SpringEntityWidgetBuilder
             }
             else
             {
-                cell.getChildren().add(createLink);
+                return select;
             }
-
-            return cell;
         }
 
         if (clazz != null)
