@@ -406,6 +406,8 @@ public class SpringPlugin implements Plugin
            beans.createChild("mvc:resources").attribute("location", "/").attribute("mapping", "/static/**");
        }
 
+       // Only add <mvc:default-servlet-handler/> to servlets mapped to '/'
+
        if (beans.getSingle("mvc:default-servlet-handler") == null)
        {
            beans.createChild("mvc:default-servlet-handler");
