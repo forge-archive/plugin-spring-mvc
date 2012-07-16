@@ -239,7 +239,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         context.put("mvcPackage", mvcPackage);
 
         targetDir = processTargetDir(targetDir);
-        targetDir = "/" + targetDir + "/";
+        targetDir = (targetDir.isEmpty()) ? "/" : "/" + targetDir + "/";
 
         context.put("repoPackage", meta.getTopLevelPackage() + ".repo");
 
@@ -380,7 +380,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                 findEntityRelationships(entity, context);
 
                 targetDir = processTargetDir(targetDir);
-                targetDir = "/" + targetDir + "/";
+                targetDir = (targetDir.isEmpty()) ? "/" : "/" + targetDir + "/";
 
                 context.put("targetDir", targetDir);
                 context.put("entityName", StringUtils.uncamelCase(entity.getName()));
