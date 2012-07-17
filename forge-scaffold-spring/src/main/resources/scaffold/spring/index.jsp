@@ -3,6 +3,9 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <div class="main">
+	<h2 class="success">
+		"Your application is running."
+	</h2>
 	<p>
 		<a target="_blank" href="https://docs.jboss.org/author/display/FORGE">Documentation</a> | 
 		<a target="_blank" href="http://twitter.com/intent/tweet?text=I+just+built+and+deployed+a+webapp+using+%23Forge,+from+%23JBoss+-+Super+easy!+(+http://jboss.org/forge+)">
