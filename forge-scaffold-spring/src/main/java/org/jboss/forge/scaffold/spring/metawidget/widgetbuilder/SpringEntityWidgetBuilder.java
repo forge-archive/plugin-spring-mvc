@@ -202,12 +202,16 @@ public class SpringEntityWidgetBuilder
 
             FormSelectTag select = new FormSelectTag();
 
-            if (!TRUE.equals(attributes.get(REQUIRED)) && TRUE.equals(attributes.get(ONE_TO_ONE)) || (!TRUE.equals((attributes.get(N_TO_MANY)))
+            if (TRUE.equals(attributes.get(ONE_TO_ONE)) || (!TRUE.equals((attributes.get(N_TO_MANY)))
                     && attributes.containsKey((REVERSE_PRIMARY_KEY_TYPE))))
             {
-                FormOptionTag emptyOption = new FormOptionTag();
-                emptyOption.putAttribute("value", "");
-                select.getChildren().add(emptyOption);
+                if (!TRUE.equals(attributes.get(REQUIRED)))
+                {
+                    FormOptionTag emptyOption = new FormOptionTag();
+                    emptyOption.putAttribute("value", "");
+                    select.getChildren().add(emptyOption);
+                }
+
                 FormOptionsTag options = new FormOptionsTag();
                 options.putAttribute("items", StaticJspUtils.wrapExpression(attributes.get(NAME)));
                 options.putAttribute("itemValue", "id");
