@@ -121,7 +121,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     private static final String APPLICATION_CONTEXT_TEMPLATE = "scaffold/spring/applicationContext.xl";
     private static final String MVC_CONTEXT_TEMPLATE = "scaffold/spring/mvc-context.xl";
     private static final String WEB_XML_TEMPLATE = "scaffold/spring/web.xl";
-    private static final String TILES_TEMPLATE = "scaffold/spring/tiles.xl";
 
     private static final String INDEX_CONTROLLER_TEMPLATE = "scaffold/spring/IndexControllerTemplate.jv";
     private static final String SPRING_CONTROLLER_TEMPLATE = "scaffold/spring/SpringControllerTemplate.jv";
@@ -149,7 +148,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     protected CompiledTemplateResource applicationContextTemplate;
     protected CompiledTemplateResource mvcContextTemplate;
     protected CompiledTemplateResource webXMLTemplate;
-    protected CompiledTemplateResource tilesTemplate;
 
     protected CompiledTemplateResource indexControllerTemplate;
     protected CompiledTemplateResource springControllerTemplate;
@@ -723,11 +721,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         if (this.webXMLTemplate == null)
         {
             this.webXMLTemplate = compiler.compile(WEB_XML_TEMPLATE);
-        }
-
-        if (this.tilesTemplate == null)
-        {
-            this.tilesTemplate = compiler.compile(TILES_TEMPLATE);
         }
 
         // Compile the DAO interface Java template.
