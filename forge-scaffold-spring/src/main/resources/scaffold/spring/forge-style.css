@@ -250,6 +250,15 @@ footer p {
 	padding-left: 25%;
 }
 
+#content input[type="text"] {
+
+/* 
+ * Bug with CSS causes text box 'height' attribute to be rendered as 10 px lower than what it is set to be.
+ */
+
+	height: 28px;
+}
+
 #content table .label {
 	width: 25%;
 	text-align: left;
