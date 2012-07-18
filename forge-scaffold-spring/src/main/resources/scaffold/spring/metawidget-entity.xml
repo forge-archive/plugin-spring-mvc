@@ -73,7 +73,7 @@
 		</widgetProcessors>
 
 		<layout>
-			<springTableLayout xmlns="java:org.metawidget.statically.spring.layout" config="org.metawidget.statically.html.layout.HtmlTableLayoutConfig">
+			<springScaffoldLayout xmlns="java:org.jboss.forge.scaffold.spring.metawidget.layout" config="org.metawidget.statically.html.layout.HtmlTableLayoutConfig">
 				<labelColumnStyleClass>
 					<string>label</string>
 				</labelColumnStyleClass>
@@ -83,7 +83,7 @@
 				<requiredColumnStyleClass>
 					<string>required</string>
 				</requiredColumnStyleClass>
-			</springTableLayout>
+			</springScaffoldLayout>
 		</layout>
 		
 	</staticSpringMetawidget>
