@@ -5,6 +5,10 @@
 
 <span class="search">
 	<form:form commandName="search" method="POST">
+
+		<form:hidden path="id"/>
+		<form:hidden path="version"/>
+
 		@{metawidget}
 	
 		<span class="buttons">

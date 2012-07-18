@@ -5,6 +5,9 @@
 
 <form:form commandName="@{ccEntity}">
 
+	<form:hidden path="id"/>
+	<form:hidden path="version"/>
+
 	@{metawidget}
 
 </form:form>
