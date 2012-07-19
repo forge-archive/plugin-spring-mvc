@@ -58,7 +58,6 @@
 			<compositeWidgetBuilder xmlns="java:org.metawidget.widgetbuilder.composite" config="CompositeWidgetBuilderConfig">
 				<widgetBuilders>
 					<array>
-						<jspEntityWidgetBuilder xmlns="java:org.jboss.forge.scaffold.spring.metawidget.widgetbuilder"/>
 						<readOnlyEntityWidgetBuilder xmlns="java:org.jboss.forge.scaffold.spring.metawidget.widgetbuilder"/>
 						<jspWidgetBuilder xmlns="java:org.metawidget.statically.jsp.widgetbuilder"/>
 					</array>
