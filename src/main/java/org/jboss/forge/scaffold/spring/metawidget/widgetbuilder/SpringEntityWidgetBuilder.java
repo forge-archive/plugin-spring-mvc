@@ -87,6 +87,7 @@ public class SpringEntityWidgetBuilder
     @Override
     public StaticXmlWidget buildWidget(String elementName, Map<String, String> attributes, StaticSpringMetawidget metawidget)
     {
+
         // Suppress nested INVERSE ONE_TO_ONE to avoid recursion.
 
         if (TRUE.equals(attributes.get(ONE_TO_ONE)) && TRUE.equals(attributes.get(INVERSE_RELATIONSHIP)))
@@ -162,6 +163,8 @@ public class SpringEntityWidgetBuilder
                     return cout;
                 }
             }
+
+            return null;
         }
 
         // Render collection tables with links.
