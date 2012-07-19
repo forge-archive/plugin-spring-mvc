@@ -230,9 +230,6 @@ public class SpringEntityWidgetBuilder
                 select.putAttribute("multiple", "multiple");
             }
 
-            HtmlTableCell cell = new HtmlTableCell();
-            cell.getChildren().add(select);
-
             // TODO: Find a way to direct this link to a create form for the top entity, not the member.
 
             String entityName = new String();
@@ -288,6 +285,11 @@ public class SpringEntityWidgetBuilder
                 }
     
                 return nestedMetawidget;
+            }
+
+            if (TRUE.equals(attributes.get("search")) && !clazz.equals(String.class))
+            {
+                return new StaticXmlStub();
             }
         }
 
