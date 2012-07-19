@@ -123,6 +123,9 @@ public class @{entity.getName()}Controller
 	{
 		@{entity.getName()} @{ccEntity} = @{ccEntity}Dao.getById(id);
 		model.addAttribute("@{ccEntity}", @{ccEntity});
+		@foreach{name : entityNames, ccClass : ccEntityClasses}
+		model.addAttribute("@{name}", @{ccClass}Dao.getAll());
+		@end{} 
 
 		if (edit == null || !edit.equals("true"))
 		{
@@ -131,9 +134,6 @@ public class @{entity.getName()}Controller
 
 		else
 		{
-			@foreach{name : entityNames, ccClass : ccEntityClasses}
-			model.addAttribute("@{name}", @{ccClass}Dao.getAll());
-			@end{} 
 			return "edit@{entity.getName()}";
 		}
 	}
@@ -161,7 +161,9 @@ public class @{entity.getName()}Controller
 		if(session.getAttribute("@{ccEntity}") != null){
 			model.addAttribute("@{ccEntity}", session.getAttribute("@{ccEntity}"));
 			session.removeAttribute("@{ccEntity}");
-		} else {
+		}
+		else
+		{
 			model.addAttribute("@{ccEntity}", new @{entity.getName()}());
 		}
 		return "create@{entity.getName()}";
