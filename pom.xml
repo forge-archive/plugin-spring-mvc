@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jboss.forge</groupId>
   <artifactId>forge-scaffold-spring</artifactId>
-  <version>1.0.0.Beta1</version>
+  <version>1.0.0.Final</version>
   <properties>
     <forge.test.version>1.0.5.Final</forge.test.version>
     <metawidget.version>2.3</metawidget.version>
