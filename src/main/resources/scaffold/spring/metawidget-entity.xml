@@ -129,12 +129,18 @@
 			</compositeInspector>
 		</inspector>
 
+		<inspectionResultProcessors>
+			<array>
+				<searchInspectionResultProcessor xmlns="java:org.jboss.forge.scaffold.spring.metawidget.inspectionresultprocessor" />
+			</array>
+		</inspectionResultProcessors>
+
 		<widgetBuilder>
 			<compositeWidgetBuilder xmlns="java:org.metawidget.widgetbuilder.composite" config="CompositeWidgetBuilderConfig">
 				<widgetBuilders>
 					<array>
 						<readOnlyWidgetBuilder xmlns="java:org.metawidget.statically.jsp.widgetbuilder"/>
-						<jspEntityWidgetBuilder xmlns="java:org.jboss.forge.scaffold.spring.metawidget.widgetbuilder"/>
+						<nToManyWidgetBuilder xmlns="java:org.jboss.forge.scaffold.spring.metawidget.widgetbuilder"/>
 						<jspWidgetBuilder xmlns="java:org.metawidget.statically.jsp.widgetbuilder"/>
 					</array>
 				</widgetBuilders>
