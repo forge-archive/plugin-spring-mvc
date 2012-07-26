@@ -24,7 +24,6 @@ package org.jboss.forge.scaffold.spring.metawidget.inspector.propertystyle;
 import java.text.MessageFormat;
 
 import org.jboss.forge.project.Project;
-import org.jboss.forge.scaffold.spring.metawidget.inspector.propertystyle.ForgePropertyStyleConfig;
 import org.metawidget.inspector.impl.propertystyle.javabean.JavaBeanPropertyStyleConfig;
 import org.metawidget.util.simple.ObjectUtils;
 
@@ -35,88 +34,86 @@ import org.metawidget.util.simple.ObjectUtils;
  */
 
 public class ForgePropertyStyleConfig
-   extends JavaBeanPropertyStyleConfig {
+         extends JavaBeanPropertyStyleConfig
+{
 
-    //
-    // Private members
-    //
+   //
+   // Private members
+   //
 
-    private Project project;
+   private Project project;
 
-    //
-    // Public methods
-    //
+   //
+   // Public methods
+   //
 
-    public ForgePropertyStyleConfig setProject(Project project)
-    {
-       this.project = project;
+   public ForgePropertyStyleConfig setProject(Project project)
+   {
+      this.project = project;
+      return this;
+   }
 
-       // Fluent interface
+   /**
+    * Overridden to use covariant return type.
+    *
+    * @return this, as part of a fluent interface
+    */
 
-       return this;
-    }
+   @Override
+   public ForgePropertyStyleConfig setPrivateFieldConvention(MessageFormat privateFieldConvention)
+   {
+      super.setPrivateFieldConvention(privateFieldConvention);
 
-    /**
-     * Overridden to use covariant return type.
-     *
-     * @return this, as part of a fluent interface
-     */
+      return this;
+   }
 
-    @Override
-    public ForgePropertyStyleConfig setPrivateFieldConvention(MessageFormat privateFieldConvention)
-    {
-       super.setPrivateFieldConvention(privateFieldConvention);
+   @Override
+   public boolean equals(Object that)
+   {
+      if (this == that)
+      {
+         return true;
+      }
 
-       return this;
-    }
+      if (!ObjectUtils.nullSafeClassEquals(this, that))
+      {
+         return false;
+      }
 
-    @Override
-    public boolean equals(Object that)
-    {
-       if (this == that)
-       {
-          return true;
-       }
+      if (this.project != ((ForgePropertyStyleConfig) that).project)
+      {
+         return false;
+      }
 
-       if (!ObjectUtils.nullSafeClassEquals(this, that))
-       {
-          return false;
-       }
+      return super.equals(that);
+   }
 
-       if (this.project != ((ForgePropertyStyleConfig) that).project)
-       {
-          return false;
-       }
+   @Override
+   public int hashCode()
+   {
 
-       return super.equals(that);
-    }
+      int hashCode = super.hashCode();
+      hashCode = 31 * hashCode + ObjectUtils.nullSafeHashCode(this.project);
 
-    @Override
-    public int hashCode()
-    {
+      return hashCode;
+   }
 
-       int hashCode = super.hashCode();
-       hashCode = 31 * hashCode + ObjectUtils.nullSafeHashCode(this.project);
+   //
+   // Protected methods
+   //
 
-       return hashCode;
-    }
+   protected Project getProject()
+   {
+      return this.project;
+   }
 
-    //
-    // Protected methods
-    //
+   /**
+    * Overridden so that is exposed to ForgePropertyStyle.
+    */
 
-    protected Project getProject()
-    {
-       return this.project;
-    }
-
-    /**
-     * Overridden so that is exposed to ForgePropertyStyle.
-     */
-
-    @Override
-    protected MessageFormat getPrivateFieldConvention()
-    {
-       return super.getPrivateFieldConvention();
-    }
- }
+   @Override
+   protected MessageFormat getPrivateFieldConvention()
+   {
+      return super.getPrivateFieldConvention();
+   }
+}
