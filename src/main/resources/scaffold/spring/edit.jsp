@@ -12,7 +12,7 @@
 
 	<span class="buttons">
 		<input type="submit" value="Save" class="btn btn-primary" onclick="document.pressed=this.value"/>
-		<a class="btn btn-primary" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}"/>">Cancel</a>
+		<a class="btn btn-primary" href="<c:url value="@{targetDir}@{entityPlural.toLowerCase()}/$${@{ccEntity}.id}"/>">Cancel</a>
 		<input type="submit" value="Delete" class="btn btn-primary" onclick="document.pressed=this.value"/>
 	</span>
 </form:form>
