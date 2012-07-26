@@ -7,7 +7,7 @@
   <version>1.0.1-SNAPSHOT</version>
   <properties>
     <forge.test.version>1.0.5.Final</forge.test.version>
-    <metawidget.version>2.3</metawidget.version>
+    <metawidget.version>2.4-SNAPSHOT</metawidget.version>
     <mvel.version>2.1.Beta7</mvel.version>
     <forge.api.version>1.0.5.Final</forge.api.version>
   </properties>
