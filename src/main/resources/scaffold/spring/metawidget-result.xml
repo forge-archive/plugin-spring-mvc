@@ -7,7 +7,7 @@
 						java:org.metawidget.inspector.composite http://metawidget.org/xsd/org.metawidget.inspector.composite-1.0.xsd"
 	version="1.0">
 
-	<!-- metawidget-results.xml is used to display the results of the -->
+	<!-- metawidget-result.xml is used to display the results of the -->
 	<!-- of the database search of the domain entity		          -->
 
 	<staticJspMetawidget xmlns="java:org.metawidget.statically.jsp">
@@ -25,13 +25,10 @@
 								</forgePropertyStyle>
 							</propertyStyle>
 						</propertyTypeInspector>
-						<forgeInspector xmlns="java:org.jboss.forge.scaffold.spring.metawidget.inspector" config="org.jboss.forge.scaffold.spring.metawidget.inspector.ForgeInspectorConfig">
+						<forgeInspector xmlns="java:org.jboss.forge.scaffold.spring.metawidget.inspector" config="org.metawidget.inspector.impl.BaseObjectInspectorConfig">
 							<propertyStyle>
 								<forgePropertyStyle refId="forgePropertyStyle"/>
 							</propertyStyle>
-							<annotationLookup>
-								<annotationLookup/>
-							</annotationLookup>
 						</forgeInspector>
 						<jpaInspector xmlns="java:org.metawidget.inspector.jpa" config="JpaInspectorConfig">
 							<propertyStyle>
@@ -50,7 +47,8 @@
 
 		<inspectionResultProcessors>
 			<array>
-				<forgeInspectionResultProcessor xmlns="java:org.jboss.forge.scaffold.spring.metawidget.processor"/>
+				<forgeInspectionResultProcessor xmlns="java:org.jboss.forge.scaffold.spring.metawidget.inspectionresultprocessor"/>
+				<searchResultInspectionResultProcessor xmlns="java:org.jboss.forge.scaffold.spring.metawidget.inspectionresultprocessor"/>
 			</array>
 		</inspectionResultProcessors>
 
