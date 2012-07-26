@@ -409,11 +409,11 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
                 if (!targetDir.equals("/"))
                 {
-                    addViewDefinition("standard", "/index", "Weclome to Forge", "Welcome to Forge", "Your application is running.",
+                    addViewDefinition("standard", "/index", "Weclome to Forge", "Welcome to Forge", "",
                             "/WEB-INF/views/index.jsp", definitions);
                 }
 
-                addViewDefinition(tile, targetDir + "index", "Welcome to Forge", "Welcome to Forge", "Your application is running.",
+                addViewDefinition(tile, targetDir + "index", "Welcome to Forge", "Welcome to Forge", "",
                         "/WEB-INF/views" + targetDir + "index.jsp", definitions);
 
                 // Add error page
@@ -578,6 +578,9 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         WebResourceFacet web = project.getFacet(WebResourceFacet.class);
 
         loadTemplates();
+
+        targetDir = targetDir.startsWith("/") ? targetDir : "/" + targetDir;
+        targetDir = targetDir.endsWith("/") ? targetDir : targetDir + "/";
 
         generateTemplates(targetDir, overwrite);
         HashMap<Object, Object> context = getTemplateContext(targetDir, template);
