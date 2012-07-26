@@ -66,7 +66,7 @@
 
   <error-page>
   	<exception-type>java.lang.Exception</exception-type>
-  	<location>/{targetDir}/error</location>
+  	<location>@{targetDir}error</location>
   </error-page>
   @end{}
 </web-app>
