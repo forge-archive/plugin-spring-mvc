@@ -1,8 +1,6 @@
 package org.jboss.forge.scaffold.spring.metawidget.widgetbuilder;
 
 import static org.metawidget.inspector.InspectionResultConstants.*;
-import static org.jboss.forge.scaffold.spring.metawidget.inspector.ForgeInspectionResultConstants.*;
-
 import java.util.Collection;
 import java.util.Map;
 
@@ -24,10 +22,17 @@ public class ReadOnlyEntityWidgetBuilder extends ReadOnlyWidgetBuilder
 
         if (clazz != null && Collection.class.isAssignableFrom(clazz))
         {
-            return null;
+            if (TRUE.equals(attributes.get("search-result")))
+            {
+                return new StaticXmlStub();
+            }
+            else
+            {
+                return null;
+            }
         }
 
-        if ((TRUE.equals(attributes.get(N_TO_MANY)) || attributes.containsKey(INVERSE_RELATIONSHIP)) && WidgetBuilderUtils.isReadOnly(attributes))
+        if (attributes.containsKey(INVERSE_RELATIONSHIP) && WidgetBuilderUtils.isReadOnly(attributes))
         {
             return new StaticXmlStub();
         }
