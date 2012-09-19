@@ -6,10 +6,10 @@
   <artifactId>forge-scaffold-spring</artifactId>
   <version>1.0.1-SNAPSHOT</version>
   <properties>
-    <forge.test.version>1.0.5.Final</forge.test.version>
-    <metawidget.version>2.4-SNAPSHOT</metawidget.version>
+    <forge.test.version>1.0.6.Final</forge.test.version>
+    <metawidget.version>2.4</metawidget.version>
     <mvel.version>2.1.Beta7</mvel.version>
-    <forge.api.version>1.0.5.Final</forge.api.version>
+    <forge.api.version>1.0.6.Final</forge.api.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -79,6 +79,12 @@
       <artifactId>forge-parser-java-api</artifactId>
       <version>${forge.api.version}</version>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.forge</groupId>
+      <artifactId>forge-scaffold-faces</artifactId>
+      <version>${forge.api.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jboss.forge</groupId>
