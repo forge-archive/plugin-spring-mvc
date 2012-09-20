@@ -29,6 +29,8 @@ import static org.metawidget.inspector.spring.SpringInspectionResultConstants.*;
 import java.util.Collection;
 import java.util.Map;
 
+import javax.lang.model.type.PrimitiveType;
+
 import org.jboss.forge.env.Configuration;
 import org.jboss.forge.parser.java.util.Strings;
 import org.jboss.forge.scaffold.spring.SpringScaffold;
@@ -290,7 +292,7 @@ public class SpringEntityWidgetBuilder
                 return nestedMetawidget;
             }
 
-            if (TRUE.equals(attributes.get("search")) && !clazz.equals(String.class))
+            if (TRUE.equals(attributes.get("search")) && !clazz.equals(String.class) && !clazz.isPrimitive())
             {
                 return new StaticXmlStub();
             }
