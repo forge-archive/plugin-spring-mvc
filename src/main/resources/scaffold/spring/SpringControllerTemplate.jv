@@ -1,5 +1,6 @@
 package @{mvcPackage};
 
+import java.lang.reflect.Field;
 import java.util.List;
 
 import @{entity.getQualifiedName()};
