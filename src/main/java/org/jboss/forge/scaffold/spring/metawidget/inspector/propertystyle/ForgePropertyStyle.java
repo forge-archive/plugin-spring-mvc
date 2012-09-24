@@ -247,7 +247,7 @@ public class ForgePropertyStyle
          return null;
       }
 
-      if (!StringUtils.isCapitalized(propertyName))
+      if (!StringUtils.capitalize(propertyName).equals(propertyName))
       {
          return null;
       }
@@ -352,7 +352,7 @@ public class ForgePropertyStyle
 
       String propertyName = methodName.substring(ClassUtils.JAVABEAN_SET_PREFIX.length());
 
-      if (!StringUtils.isCapitalized(propertyName))
+      if (!StringUtils.capitalize(propertyName).equals(propertyName))
       {
          return null;
       }
@@ -390,7 +390,7 @@ public class ForgePropertyStyle
 
       // FORGE-402: support fields starting with capital letter
 
-      if (field == null && !StringUtils.isCapitalized(propertyName))
+      if (field == null && !StringUtils.capitalize(propertyName).equals(propertyName))
       {
          field = fieldHolder.getField(StringUtils.capitalize(propertyName));
       }

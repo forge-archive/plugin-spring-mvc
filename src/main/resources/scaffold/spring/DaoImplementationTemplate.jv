@@ -40,19 +40,16 @@ public class @{entity.getName()}DaoImpl implements @{entity.getName()}Dao
 	public void update(@{entity.getName()} entity)
 	{
 		entityManager.merge(entity);
-		return;
 	}
 
 	public void create(@{entity.getName()} entity)
 	{
-		entityManager.persist(entity);
-		return;
+		entityManager.merge(entity);
 	}
 	
 	public void delete(Long id)
 	{
 		entityManager.remove(entityManager.find(@{entity.getName()}.class, id));
-		return;
 	}
 	
 	public List<@{entity.getName()}> search(@{entity.getName()} search, Long first, Integer maxItems)
