@@ -123,6 +123,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     private static final String WEB_XML_TEMPLATE = "scaffold/spring/web.xl";
 
     private static final String INDEX_CONTROLLER_TEMPLATE = "scaffold/spring/IndexControllerTemplate.jv";
+    private static final String ERROR_RESOLVER_TEMPLATE = "scaffold/spring/ErrorResolverTemplate.jv";
     private static final String SPRING_CONTROLLER_TEMPLATE = "scaffold/spring/SpringControllerTemplate.jv";
     private static final String DAO_INTERFACE_TEMPLATE = "scaffold/spring/DaoInterfaceTemplate.jv";
     private static final String DAO_IMPLEMENTATION_TEMPLATE = "scaffold/spring/DaoImplementationTemplate.jv";
@@ -150,6 +151,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     protected CompiledTemplateResource webXMLTemplate;
 
     protected CompiledTemplateResource indexControllerTemplate;
+    protected CompiledTemplateResource errorResolverTemplate;
     protected CompiledTemplateResource springControllerTemplate;
     protected CompiledTemplateResource daoInterfaceTemplate;
     protected CompiledTemplateResource daoImplementationTemplate;
@@ -520,6 +522,12 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                 java.saveJavaSource(indexController);
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(indexController),
                         indexController.toString(), overwrite));
+                
+                // Create a Error Resolver for the root of the  servlet, using ErrorResolverTemplate.jv
+                JavaClass errorResolver = JavaParser.parse(JavaClass.class, this.errorResolverTemplate.render(context));
+                java.saveJavaSource(errorResolver);
+                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(errorResolver),
+                        errorResolver.toString(), overwrite));
 
                 // If we have not just generated an IndexController for the '/' directory, create one.
 
@@ -616,6 +624,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                 getClass().getResourceAsStream("/scaffold/spring/search.png"), overwrite);
         ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/true.png"), 
                 getClass().getResourceAsStream("/scaffold/spring/true.png"), overwrite);
+        ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("/resources/jboss-community.png"), 
+                getClass().getResourceAsStream("/scaffold/spring/jboss-community.png"), overwrite);
 
        return result;
     }
@@ -745,6 +755,13 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         if (this.indexControllerTemplate == null)
         {
             this.indexControllerTemplate = compiler.compile(INDEX_CONTROLLER_TEMPLATE);
+        }
+        
+        // Compile the Error Resolver Java template
+        
+        if (this.errorResolverTemplate == null)
+        {
+            this.errorResolverTemplate = compiler.compile(ERROR_RESOLVER_TEMPLATE);
         }
 
         // Compile the Spring MVC entity controller Java template.
