@@ -19,13 +19,7 @@
     </property>
   </bean>
 
-  <bean id="errorViewResolver" class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
-  	<property name="exceptionMappings">
-  		<props>
-  			<prop key="java.lang.Exception">/error</prop>
-  		</props>
-  	</property>
-  </bean>
+  <bean id="errorViewResolver" class="@{mvcPackage}.ErrorResolver"/>
 
   <mvc:annotation-driven/>
   <mvc:default-servlet-handler/>
