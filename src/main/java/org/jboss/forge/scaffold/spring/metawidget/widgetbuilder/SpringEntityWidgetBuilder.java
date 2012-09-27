@@ -171,7 +171,7 @@ public class SpringEntityWidgetBuilder
 
         // Render collection tables with links.
 
-        if (TRUE.equals(ONE_TO_ONE) && WidgetBuilderUtils.isReadOnly(attributes))
+        if (TRUE.equals(attributes.get(ONE_TO_ONE)) && WidgetBuilderUtils.isReadOnly(attributes))
         {
             // (we are about to create a nested metawidget, so we must prevent recursion)
 
@@ -266,6 +266,48 @@ public class SpringEntityWidgetBuilder
             {
                 return select;
             }
+        }
+        
+        if (TRUE.equals(attributes.get(MANY_TO_N))){
+        	// (we are about to create a nested metawidget, so we must prevent recursion)
+
+            if (ENTITY.equals(elementName))
+            {
+                return null;
+            }
+
+            // Use a dropdown menu with a create button.
+
+            FormSelectTag select = new FormSelectTag();
+
+            if (TRUE.equals(attributes.get(MANY_TO_N)))
+            {
+                if (!TRUE.equals(attributes.get(REQUIRED)))
+                {
+                    FormOptionTag emptyOption = new FormOptionTag();
+                    emptyOption.putAttribute("value", "");
+                    select.getChildren().add(emptyOption);
+                }
+
+                FormOptionsTag options = new FormOptionsTag();
+                options.putAttribute("items", StaticJspUtils.wrapExpression(attributes.get(NAME)));
+                options.putAttribute("itemValue", "id");
+                select.getChildren().add(options);
+            }
+            // TODO: Find a way to direct this link to a create form for the top entity, not the member.
+
+            String entityName = new String();
+            int lastIndexOf = attributes.get(TYPE).lastIndexOf(StringUtils.SEPARATOR_DOT_CHAR);
+            entityName = attributes.get(TYPE).substring(lastIndexOf + 1);
+
+            String controllerName = Noun.pluralOf(entityName).toLowerCase();
+            CoreUrl curl = new CoreUrl();
+            curl.setValue(getTargetDir() + controllerName + "/create");
+
+            HtmlAnchor createLink = new HtmlAnchor();
+            createLink.setTextContent("Create New " + StringUtils.uncamelCase(entityName));
+            createLink.putAttribute("href", curl.toString());
+            return select;
         }
 
         if (clazz != null)

@@ -93,7 +93,7 @@ public class ForgeInspector
                   .put(SPRING_LOOKUP,
                            StaticFacesUtils.wrapExpression(StringUtils.decapitalize(ClassUtils.getSimpleName(property
                                     .getType()))));
-
+         attributes.put(MANY_TO_N, TRUE);
          // Reverse primary key
 
          for (Property reverseProperty : getProperties(property.getType()).values())

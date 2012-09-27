@@ -9,6 +9,10 @@ import @{topLevelPackage}.repo.@{entity.getName()}Dao;
 import @{topLevelPackage}.repo.@{clazz}Dao;
 @end{}
 
+@foreach{clazz : importsToAdd}
+import @{clazz};
+@end{}
+
 import javax.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -124,17 +128,24 @@ public class @{entity.getName()}Controller
 	{
 		@{entity.getName()} @{ccEntity} = @{ccEntity}Dao.getById(id);
 		model.addAttribute("@{ccEntity}", @{ccEntity});
-		@foreach{name : entityNames, ccClass : ccEntityClasses}
-		model.addAttribute("@{name}", @{ccClass}Dao.getAll());
-		@end{} 
-
-		if (edit == null || !edit.equals("true"))
+		
+		if (edit == null || !"true".equals(edit))
 		{
+			@foreach{name : oneToMany, inverseName : inverseOneToMany, inverseClass: inverseOneToManyClass}
+			@{inverseClass.substring(0,1).toUpperCase()}@{inverseClass.substring(1)} @{name} = new @{inverseClass.substring(0,1).toUpperCase()}@{inverseClass.substring(1)}();
+	      	@{name}.set@{inverseName.substring(0,1).toUpperCase()}@{inverseName.substring(1)}(@{ccEntity});
+	
+			model.addAttribute("@{name}", @{inverseClass}Dao.search(@{name}, (long) 0, 1));
+			@end{} 
 			return "view@{entity.getName()}";
 		}
 
 		else
 		{
+			@foreach{name : entityNames, ccClass : ccEntityClasses}
+			model.addAttribute("@{name}", @{ccClass}Dao.getAll());
+			@end{}
+			removePreviousBidirectionalRelationships(@{ccEntity});
 			return "edit@{entity.getName()}";
 		}
 	}
@@ -142,6 +153,15 @@ public class @{entity.getName()}Controller
 	@RequestMapping(value="/{id}", method=RequestMethod.POST)
 	public String update@{entity.getName()}(@PathVariable("id") Long id, @{entity.getName()} @{ccEntity})
 	{
+	
+		@foreach{name : notNToN, dao : notNToNClasses}
+			if(@{ccEntity}.get@{name.substring(0,1).toUpperCase()}@{name.substring(1)}().getId() == null){
+				@{ccEntity}.set@{name.substring(0,1).toUpperCase()}@{name.substring(1)}(null);
+			}else{
+				@{ccEntity}.set@{name.substring(0,1).toUpperCase()}@{name.substring(1)}(${dao}Dao.getById(@{ccEntity}.get@{name.substring(0,1).toUpperCase()}@{name.substring(1)}().getId()));
+			}
+		@end{}
+		setBidirectionalRelationships(@{ccEntity});
 		@{ccEntity}Dao.update(@{ccEntity});
 		return "view@{entity.getName()}";
 	}
@@ -173,11 +193,14 @@ public class @{entity.getName()}Controller
 	@RequestMapping(value="/create", method=RequestMethod.POST)
 	public String create@{entity.getName()}(@{entity.getName()} @{ccEntity})
 	{
-		@foreach{name : notntomany}
+		@foreach{name : notNToN, dao : notNToNClasses}
 			if(@{ccEntity}.get@{name.substring(0,1).toUpperCase()}@{name.substring(1)}().getId() == null){
 				@{ccEntity}.set@{name.substring(0,1).toUpperCase()}@{name.substring(1)}(null);
+			}else{
+				@{ccEntity}.set@{name.substring(0,1).toUpperCase()}@{name.substring(1)}(${dao}Dao.getById(@{ccEntity}.get@{name.substring(0,1).toUpperCase()}@{name.substring(1)}().getId()));
 			}
 		@end{}
+		setBidirectionalRelationships(@{ccEntity});
 		@{ccEntity}Dao.create(@{ccEntity});
 		return "redirect:@{targetDir}@{entityPlural.toLowerCase()}";
 	}
@@ -187,5 +210,73 @@ public class @{entity.getName()}Controller
 	{
 		session.setAttribute("@{ccEntity}", search);
 		return "redirect:@{targetDir}@{entityPlural.toLowerCase()}/create";
+	}
+	
+	private void setBidirectionalRelationships(@{entity.getName()} @{ccEntity}){
+		// SetUp one to one relationships
+		@foreach{name : oneToOne, inverseName : inverseOneToOne}
+		if(@{ccEntity}.get@{name.substring(0,1).toUpperCase()}@{name.substring(1)}() != null){
+			@{ccEntity}.get@{name.substring(0,1).toUpperCase()}@{name.substring(1)}().set@{inverseName.substring(0,1).toUpperCase()}@{inverseName.substring(1)}(@{ccEntity});
+		}
+		@end{}
+		
+		// Set Up ManytoOne relationships
+		@foreach{name : manyToOne, inverseName : inverseManyToOne}
+		if(@{ccEntity}.get@{name.substring(0,1).toUpperCase()}@{name.substring(1)}() != null){
+			@{ccEntity}.get@{name.substring(0,1).toUpperCase()}@{name.substring(1)}().get@{inverseName.substring(0,1).toUpperCase()}@{inverseName.substring(1)}().add(@{ccEntity});
+		}
+		@end{}
+		
+		//Set Up OnetoMany relationships
+		@foreach{name : oneToMany, inverseName : inverseOneToMany, inverseClass: inverseOneToManyClass}
+		if(@{ccEntity}.get@{name.substring(0,1).toUpperCase()}@{name.substring(1)}()!=null){
+			for(@{inverseClass.substring(0,1).toUpperCase()}@{inverseClass.substring(1)} @{inverseClass} : @{ccEntity}.get@{name.substring(0,1).toUpperCase()}@{name.substring(1)}()){
+				@{inverseClass}.set@{inverseName.substring(0,1).toUpperCase()}@{inverseName.substring(1)}(@{ccEntity});
+			}
+		}
+		@end{}
+		
+		//Set Up ManyToMany relationships
+		@foreach{name : manyToMany, inverseName : inverseManyToMany, inverseClass: inverseManyToManyClass}
+		if(@{ccEntity}.get@{name.substring(0,1).toUpperCase()}@{name.substring(1)}()){
+			for(@{inverseClass.substring(0,1).toUpperCase()}@{inverseClass.substring(1)} @{inverseClass} : @{ccEntity}.get@{name.substring(0,1).toUpperCase()}@{name.substring(1)}()){
+				@{inverseClass}.get@{inverseName.substring(0,1).toUpperCase()}@{inverseName.substring(1)}().add(@{ccEntity}).
+			}
+		}
+		@end{}
+	}
+	
+	private void removePreviousBidirectionalRelationships(@{entity.getName()} @{ccEntity}){
+		// SetUp one to one relationships
+		@foreach{name : oneToOne, inverseName : inverseOneToOne}
+		if(@{ccEntity}.get@{name.substring(0,1).toUpperCase()}@{name.substring(1)}() != null){
+			@{ccEntity}.get@{name.substring(0,1).toUpperCase()}@{name.substring(1)}().set@{inverseName.substring(0,1).toUpperCase()}@{inverseName.substring(1)}(null);
+		}
+		@end{}
+		
+		// Set Up ManytoOne relationships
+		@foreach{name : manyToOne, inverseName : inverseManyToOne}
+		if(@{ccEntity}.get@{name.substring(0,1).toUpperCase()}@{name.substring(1)}() != null){
+			@{ccEntity}.get@{name.substring(0,1).toUpperCase()}@{name.substring(1)}().get@{inverseName.substring(0,1).toUpperCase()}@{inverseName.substring(1)}().remove(@{ccEntity});
+		}
+		@end{}
+		
+		//Set Up OnetoMany relationships
+		@foreach{name : oneToMany, inverseName : inverseOneToMany, inverseClass: inverseOneToManyClass}
+		if(@{ccEntity}.get@{name.substring(0,1).toUpperCase()}@{name.substring(1)}()!=null){
+			for(@{inverseClass.substring(0,1).toUpperCase()}@{inverseClass.substring(1)} @{inverseClass} : @{ccEntity}.get@{name.substring(0,1).toUpperCase()}@{name.substring(1)}()){
+				@{inverseClass}.set@{inverseName.substring(0,1).toUpperCase()}@{inverseName.substring(1)}(null);
+			}
+		}
+		@end{}
+		
+		//Set Up ManyToMany relationships
+		@foreach{name : manyToMany, inverseName : inverseManyToMany, inverseClass: inverseManyToManyClass}
+		if(@{ccEntity}.get@{name.substring(0,1).toUpperCase()}@{name.substring(1)}()){
+			for(@{inverseClass.substring(0,1).toUpperCase()}@{inverseClass.substring(1)} @{inverseClass} : @{ccEntity}.get@{name.substring(0,1).toUpperCase()}@{name.substring(1)}()){
+				@{inverseClass}.get@{inverseName.substring(0,1).toUpperCase()}@{inverseName.substring(1)}().remove(@{ccEntity}).
+			}
+		}
+		@end{}
 	}
 }
