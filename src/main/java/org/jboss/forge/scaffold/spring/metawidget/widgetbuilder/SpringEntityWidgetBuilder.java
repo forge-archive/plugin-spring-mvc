@@ -27,6 +27,8 @@ import static org.metawidget.inspector.InspectionResultConstants.*;
 import static org.metawidget.inspector.spring.SpringInspectionResultConstants.*;
 
 import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import javax.lang.model.type.PrimitiveType;
@@ -34,23 +36,32 @@ import javax.lang.model.type.PrimitiveType;
 import org.jboss.forge.env.Configuration;
 import org.jboss.forge.parser.java.util.Strings;
 import org.jboss.forge.scaffold.spring.SpringScaffold;
+import org.jboss.forge.scaffold.spring.metawidget.layout.FormErrorTag;
 import org.jvnet.inflector.Noun;
 import org.metawidget.iface.MetawidgetException;
 import org.metawidget.statically.BaseStaticXmlWidget;
 import org.metawidget.statically.StaticXmlStub;
 import org.metawidget.statically.StaticXmlWidget;
+import org.metawidget.statically.html.widgetbuilder.HtmlDiv;
 import org.metawidget.statically.html.widgetbuilder.HtmlInput;
+import org.metawidget.statically.html.widgetbuilder.HtmlTableBody;
 import org.metawidget.statically.html.widgetbuilder.HtmlTableCell;
+import org.metawidget.statically.html.widgetbuilder.HtmlTableRow;
 import org.metawidget.statically.jsp.StaticJspMetawidget;
 import org.metawidget.statically.jsp.StaticJspUtils;
 import org.metawidget.statically.jsp.widgetbuilder.CoreOut;
 import org.metawidget.statically.jsp.widgetprocessor.StandardBindingProcessor;
 import org.metawidget.statically.layout.SimpleLayout;
 import org.metawidget.statically.spring.StaticSpringMetawidget;
+import org.metawidget.statically.spring.widgetbuilder.FormCheckboxTag;
+import org.metawidget.statically.spring.widgetbuilder.FormInputTag;
 import org.metawidget.statically.spring.widgetbuilder.FormOptionTag;
 import org.metawidget.statically.spring.widgetbuilder.FormOptionsTag;
+import org.metawidget.statically.spring.widgetbuilder.FormPasswordTag;
 import org.metawidget.statically.spring.widgetbuilder.FormSelectTag;
+import org.metawidget.statically.spring.widgetbuilder.FormTextareaTag;
 import org.metawidget.statically.spring.widgetbuilder.SpringWidgetBuilder;
+import org.metawidget.util.CollectionUtils;
 import org.metawidget.util.WidgetBuilderUtils;
 import org.metawidget.util.simple.StringUtils;
 
@@ -66,6 +77,10 @@ public class SpringEntityWidgetBuilder
     //
     // Private statics
     //
+	private final static String			MAX_LENGTH			= "maxlength";
+	
+	
+	private static final List<Boolean>	LIST_BOOLEAN_VALUES	= CollectionUtils.unmodifiableList( Boolean.TRUE, Boolean.FALSE );
 
     /**
      * Current Forge configuration.  Useful to retrieve <code>targetDir</code>.
@@ -268,7 +283,7 @@ public class SpringEntityWidgetBuilder
             }
         }
 
-        if (clazz != null)
+        if (clazz != null && !HIDDEN.equals(attributes.get(HIDDEN)))
         {
             if (Collection.class.isAssignableFrom(clazz))
             {
@@ -296,6 +311,54 @@ public class SpringEntityWidgetBuilder
             {
                 return new StaticXmlStub();
             }
+            
+         // Primitives
+
+			if (clazz.isPrimitive()) {
+
+				if (char.class.equals(clazz)) {
+					attributes.put(MAXIMUM_LENGTH, "1");
+					return createFormInputTag(attributes);
+				}
+
+				return createFormInputTag(attributes);
+			}
+
+			// String
+
+			if (String.class.equals(clazz)) {
+				if (TRUE.equals(attributes.get(LARGE))) {
+					return createFormTextareaTag(attributes);
+				}
+
+				if (TRUE.equals(attributes.get(MASKED))) {
+					FormPasswordTag passwordTag = new FormPasswordTag();
+					passwordTag.putAttribute(MAX_LENGTH,
+							attributes.get(MAXIMUM_LENGTH));
+					return passwordTag;
+				}
+
+				return createFormInputTag(attributes);
+			}
+
+			// Character
+
+			if (Character.class.equals(clazz)) {
+				attributes.put(MAXIMUM_LENGTH, "1");
+				return createFormInputTag(attributes);
+			}
+
+			// Dates
+
+			if (Date.class.equals(clazz)) {
+				return createFormInputTag(attributes);
+			}
+
+			// Numbers
+
+			if (Number.class.isAssignableFrom(clazz)) {
+				return createFormInputTag(attributes);
+			}
         }
 
         return null;
@@ -334,4 +397,40 @@ public class SpringEntityWidgetBuilder
 
         return false;
     }
+    
+    private HtmlDiv createFormInputTag( Map<String, String> attributes ) {
+    	
+    	HtmlDiv row = new HtmlDiv();
+		FormInputTag input = new FormInputTag();
+		row.getChildren().add(input);
+		if ( !"".equals( attributes.get( MAXIMUM_LENGTH ))) {
+			input.putAttribute( MAX_LENGTH, attributes.get( MAXIMUM_LENGTH ) );
+		}
+		HtmlDiv innerDiv = new HtmlDiv();
+		innerDiv.putAttribute("class", "error");
+		FormErrorTag error = new FormErrorTag();
+		innerDiv.getChildren().add(error);
+		row.getChildren().add(innerDiv);
+		return row;
+	}
+    
+    
+	private StaticXmlWidget createFormTextareaTag( Map<String, String> attributes ) {
+
+		FormTextareaTag textarea = new FormTextareaTag();
+
+		String rows = attributes.get( "rows" );
+
+		if ( rows != null ) {
+			textarea.putAttribute( "rows", rows );
+		}
+
+		String cols = attributes.get( "cols" );
+
+		if ( cols != null ) {
+			textarea.putAttribute( "cols", cols );
+		}
+
+		return textarea;
+	}
 }

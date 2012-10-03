@@ -10,9 +10,12 @@ import @{topLevelPackage}.repo.@{clazz}Dao;
 @end{}
 
 import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,9 +41,13 @@ public class @{entity.getName()}Controller
 	@end{}
 	@RequestMapping(method=RequestMethod.GET)
 	public @ModelAttribute("@{entityPlural.toLowerCase()}")
-	List<@{entity.getName()}> view@{entityPlural}(@ModelAttribute("search") @{entity.getName()} search, @RequestParam(required=false) Long first, 
+	List<@{entity.getName()}> view@{entityPlural}(@Valid @ModelAttribute("search") @{entity.getName()} search, BindingResult result, @RequestParam(required=false) Long first, 
 			@RequestParam(required=false) Integer max, Model model)
 	{
+	
+		if(result.hasErrors()){
+			return @{ccEntity}Dao.getAll();
+		}
 		if (max == null || max <= 0)
 		{
 			max = 10;
@@ -77,9 +84,13 @@ public class @{entity.getName()}Controller
 	
 	@RequestMapping(method=RequestMethod.POST, params="search")
 	public @ModelAttribute("@{entityPlural.toLowerCase()}")
-	List<@{entity.getName()}> search@{entity.getName()}(@ModelAttribute("search") @{entity.getName()} search, @RequestParam(required=false) Long first, 
+	List<@{entity.getName()}> search@{entity.getName()}(@Valid @ModelAttribute("search") @{entity.getName()} search, BindingResult result, @RequestParam(required=false) Long first, 
 			@RequestParam(required=false) Integer max, Model model)
 	{
+	
+		if(result.hasErrors()){
+			return @{ccEntity}Dao.getAll();
+		}
 		if (max == null || max <= 0)
 		{
 			max = 10;
@@ -140,8 +151,11 @@ public class @{entity.getName()}Controller
 	}
 
 	@RequestMapping(value="/{id}", method=RequestMethod.POST)
-	public String update@{entity.getName()}(@PathVariable("id") Long id, @{entity.getName()} @{ccEntity})
+	public String update@{entity.getName()}(@PathVariable("id") Long id, @Valid @{entity.getName()} @{ccEntity}, BindingResult result)
 	{
+		if(result.hasErrors()){
+			return "edit@{entity.getName()}";
+		}
 		@{ccEntity}Dao.update(@{ccEntity});
 		return "view@{entity.getName()}";
 	}
@@ -171,20 +185,22 @@ public class @{entity.getName()}Controller
 	}
 
 	@RequestMapping(value="/create", method=RequestMethod.POST)
-	public String create@{entity.getName()}(@{entity.getName()} @{ccEntity})
+	public String create@{entity.getName()}(@Valid @{entity.getName()} @{ccEntity}, BindingResult result)
 	{
-		@foreach{name : notntomany}
-			if(@{ccEntity}.get@{name.substring(0,1).toUpperCase()}@{name.substring(1)}().getId() == null){
-				@{ccEntity}.set@{name.substring(0,1).toUpperCase()}@{name.substring(1)}(null);
-			}
-		@end{}
+		if(result.hasErrors()){
+			return "create@{entity.getName()}";
+		}
 		@{ccEntity}Dao.create(@{ccEntity});
 		return "redirect:@{targetDir}@{entityPlural.toLowerCase()}";
 	}
 	
 	@RequestMapping(method=RequestMethod.POST, params="create")
-	public String createNew@{entity.getName()}(@ModelAttribute("search") @{entity.getName()} search, HttpSession session)
+	public String createNew@{entity.getName()}(@Valid @ModelAttribute("search") @{entity.getName()} search, BindingResult result, HttpSession session)
 	{
+		if(result.hasErrors()){
+			session.setAttribute("@{ccEntity}", new @{entity.getName()}());
+			return "redirect:@{targetDir}@{entityPlural.toLowerCase()}/create";
+		}
 		session.setAttribute("@{ccEntity}", search);
 		return "redirect:@{targetDir}@{entityPlural.toLowerCase()}/create";
 	}
