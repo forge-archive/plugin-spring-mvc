@@ -309,6 +309,7 @@ public class SpringPlugin implements Plugin
        MetadataFacet meta = project.getFacet(MetadataFacet.class);
        PersistenceFacet persistence = project.getFacet(PersistenceFacet.class);
        ResourceFacet resources = project.getFacet(ResourceFacet.class);
+
        WebResourceFacet web = project.getFacet(WebResourceFacet.class);
 
        String filename = context.get("mvc-context-file").toString();
