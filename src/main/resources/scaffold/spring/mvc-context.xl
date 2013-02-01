@@ -19,8 +19,6 @@
     </property>
   </bean>
 
-  <bean id="errorViewResolver" class="@{mvcPackage}.ErrorResolver"/>
-
   <mvc:annotation-driven/>
   <mvc:default-servlet-handler/>
   <mvc:resources location="/" mapping="/static/**"/>

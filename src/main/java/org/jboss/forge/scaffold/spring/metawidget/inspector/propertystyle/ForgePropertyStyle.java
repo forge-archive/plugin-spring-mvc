@@ -274,7 +274,7 @@ public class ForgePropertyStyle
 
          // Get type
 
-         List<Parameter> parameters = method.getParameters();
+         List<?> parameters = method.getParameters();
 
          if (parameters.size() != 1)
          {
@@ -294,7 +294,7 @@ public class ForgePropertyStyle
          //
          // (explicitly set to null in case we encountered an imbalanced field/getter)
 
-         String type = parameters.get(0).getType();
+		String type = ((List<Parameter>)parameters).get(0).getType();
 
          Field<?> privateField = getPrivateField((FieldHolder<?>) clazz, propertyName);
 

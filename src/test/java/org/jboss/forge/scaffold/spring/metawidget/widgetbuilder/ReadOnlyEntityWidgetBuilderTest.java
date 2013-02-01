@@ -54,7 +54,7 @@ public class ReadOnlyEntityWidgetBuilderTest
         attributes.put(N_TO_MANY, TRUE);
 
         StaticXmlWidget widget = widgetBuilder.buildWidget(PROPERTY, attributes, metawidget);
-        Assert.assertEquals("<stub/>", widget.toString());
+        Assert.assertEquals("<c:out/>", widget.toString());
     }
 
     @Test
