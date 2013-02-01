@@ -173,7 +173,7 @@ public class @{entity.getName()}Controller
 	@RequestMapping(value="/create", method=RequestMethod.POST)
 	public String create@{entity.getName()}(@{entity.getName()} @{ccEntity})
 	{
-		@foreach{name : entityNames, ccClass : ccEntityClasses}
+		@foreach{name : notntomany}
 			if(@{ccEntity}.get@{name.substring(0,1).toUpperCase()}@{name.substring(1)}().getId() == null){
 				@{ccEntity}.set@{name.substring(0,1).toUpperCase()}@{name.substring(1)}(null);
 			}

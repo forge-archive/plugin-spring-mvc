@@ -46,19 +46,21 @@ public class SpringPluginTest extends AbstractShellTest
     {
         getShell().setOutputStream(System.out);
         Project project = initializeJavaProject();
-        queueInputLines("HIBERNATE", "JBOSS_AS7", "", "");
+        queueInputLines("HIBERNATE", "JBOSS_AS7", "", "", "");
         getShell().execute("persistence setup");
         queueInputLines("Y", "");
         getShell().execute("spring setup");
         Assert.assertTrue(project.hasFacet(SpringFacet.class));
     }
+    
+    
 
     @Test
     public void testSetContextFileLocation() throws Exception
     {
         getShell().setOutputStream(System.out);
         Project project = initializeJavaProject();
-        queueInputLines("HIBERNATE", "JBOSS_AS7", "", "");
+        queueInputLines("HIBERNATE", "JBOSS_AS7", "", "", "");
         getShell().execute("persistence setup");
         queueInputLines("Y", "");
         getShell().execute("spring setup");
@@ -76,7 +78,7 @@ public class SpringPluginTest extends AbstractShellTest
     public void testMVCFromTemplate() throws Exception
     {
         Project project = initializeJavaProject();
-        queueInputLines("HIBERNATE", "JBOSS_AS7", "", "");
+        queueInputLines("HIBERNATE", "JBOSS_AS7", "", "", "");
         getShell().execute("persistence setup");
         queueInputLines("", "");
         getShell().execute("spring setup");
@@ -92,7 +94,7 @@ public class SpringPluginTest extends AbstractShellTest
     public void testMVC() throws Exception
     {
         Project project = initializeJavaProject();
-        queueInputLines("HIBERNATE", "JBOSS_AS7", "", "");
+        queueInputLines("HIBERNATE", "JBOSS_AS7", "", "", "");
         getShell().execute("persistence setup");
         queueInputLines("", "");
         getShell().execute("spring setup");
@@ -158,9 +160,9 @@ public class SpringPluginTest extends AbstractShellTest
     public void testGenerateApplicationContext() throws Exception
     {
         Project project = initializeJavaProject();
-        queueInputLines("HIBERNATE", "JBOSS_AS7", "", "");
+        queueInputLines("HIBERNATE", "JBOSS_AS7", "", "", "");
         getShell().execute("persistence setup");
-        queueInputLines("", "");
+        queueInputLines("", "", "");
         getShell().execute("spring setup");
 
         getShell().execute("spring persistence");
@@ -191,4 +193,5 @@ public class SpringPluginTest extends AbstractShellTest
         Assert.assertEquals("javax.persistence.EntityManagerFactory", entityManagerFactory.getAttribute("expected-type"));
         Assert.assertEquals("java:jboss/forge-default/persistence", entityManagerFactory.getAttribute("jndi-name"));
     }
+    
 }

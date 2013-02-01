@@ -6,10 +6,10 @@
   <artifactId>forge-scaffold-spring</artifactId>
   <version>1.0.1-SNAPSHOT</version>
   <properties>
-    <forge.test.version>1.1.0.Final</forge.test.version>
+    <forge.test.version>1.2.0.Final</forge.test.version>
     <metawidget.version>2.4</metawidget.version>
     <mvel.version>2.1.Beta7</mvel.version>
-    <forge.api.version>1.1.0.Final</forge.api.version>
+    <forge.api.version>1.2.0.Final</forge.api.version>
   </properties>
   <dependencyManagement>
     <dependencies>
