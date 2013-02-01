@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,7 @@ import javax.persistence.OneToOne;
 
 import org.jboss.forge.env.Configuration;
 import org.jboss.forge.parser.JavaParser;
+import org.jboss.forge.parser.java.Annotation;
 import org.jboss.forge.parser.java.Field;
 import org.jboss.forge.parser.java.Import;
 import org.jboss.forge.parser.java.JavaClass;
@@ -61,6 +63,7 @@ import org.jboss.forge.project.facets.events.InstallFacets;
 import org.jboss.forge.resources.FileResource;
 import org.jboss.forge.resources.Resource;
 import org.jboss.forge.resources.ResourceFilter;
+import org.jboss.forge.resources.java.JavaResource;
 import org.jboss.forge.scaffold.AccessStrategy;
 import org.jboss.forge.scaffold.ScaffoldProvider;
 import org.jboss.forge.scaffold.TemplateStrategy;
@@ -123,7 +126,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     private static final String WEB_XML_TEMPLATE = "scaffold/spring/web.xl";
 
     private static final String INDEX_CONTROLLER_TEMPLATE = "scaffold/spring/IndexControllerTemplate.jv";
-    private static final String ERROR_RESOLVER_TEMPLATE = "scaffold/spring/ErrorResolverTemplate.jv";
     private static final String SPRING_CONTROLLER_TEMPLATE = "scaffold/spring/SpringControllerTemplate.jv";
     private static final String DAO_INTERFACE_TEMPLATE = "scaffold/spring/DaoInterfaceTemplate.jv";
     private static final String DAO_IMPLEMENTATION_TEMPLATE = "scaffold/spring/DaoImplementationTemplate.jv";
@@ -151,7 +153,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     protected CompiledTemplateResource webXMLTemplate;
 
     protected CompiledTemplateResource indexControllerTemplate;
-    protected CompiledTemplateResource errorResolverTemplate;
     protected CompiledTemplateResource springControllerTemplate;
     protected CompiledTemplateResource daoInterfaceTemplate;
     protected CompiledTemplateResource daoImplementationTemplate;
@@ -184,6 +185,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     protected StaticJspMetawidget resultMetawidget;
     protected StaticJavaMetawidget qbeMetawidget;
     protected StaticSpringMetawidget searchMetawidget;
+    protected StaticSpringMetawidget viewjspMetawidget;
 
     protected TemplateResolver<ClassLoader> resolver;
     protected ShellPrompt prompt;
@@ -338,6 +340,10 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         this.searchMetawidget = new StaticSpringMetawidget();
         this.searchMetawidget.setConfigReader(configReader);
         this.searchMetawidget.setConfig("scaffold/spring/metawidget-search.xml");
+        
+        this.viewjspMetawidget = new StaticSpringMetawidget();
+        this.viewjspMetawidget.setConfigReader(configReader);
+        this.viewjspMetawidget.setConfig("scaffold/spring/metawidget-jsp-entity.xml");
     }
 
     @Override
@@ -472,8 +478,10 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
                 // Generate view
 
-                this.entityMetawidget.setReadOnly(true);
-                writeMetawidget(context, this.entityMetawidget, this.viewTemplateMetawidgetIndent, "metawidget");
+                this.viewjspMetawidget.setValue(ccEntity);
+                this.viewjspMetawidget.setPath(entity.getQualifiedName());
+                this.viewjspMetawidget.setReadOnly(true);
+                writeMetawidget(context, this.viewjspMetawidget, this.viewTemplateMetawidgetIndent, "metawidget");
     
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/views" + targetDir + entity.getName()
                         + "/view" + entity.getName() + ".jsp"), this.viewTemplate.render(context), overwrite));
@@ -510,7 +518,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                         daoImplementation.toString(), overwrite));
     
                 // Create a Spring MVC controller for the passed entity, using SpringControllerTemplate.jv
-    
+                extractNonNToN(entity, context);
                 JavaClass entityController = JavaParser.parse(JavaClass.class, this.springControllerTemplate.render(context));
                 java.saveJavaSource(entityController);
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(entityController),
@@ -523,12 +531,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                 result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(indexController),
                         indexController.toString(), overwrite));
                 
-                // Create a Error Resolver for the root of the  servlet, using ErrorResolverTemplate.jv
-                JavaClass errorResolver = JavaParser.parse(JavaClass.class, this.errorResolverTemplate.render(context));
-                java.saveJavaSource(errorResolver);
-                result.add(ScaffoldUtil.createOrOverwrite(this.prompt, java.getJavaResource(errorResolver),
-                        errorResolver.toString(), overwrite));
-
                 // If we have not just generated an IndexController for the '/' directory, create one.
 
                 if (!targetDir.equals("/"))
@@ -562,6 +564,20 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 
         return result;
     }
+
+	private void extractNonNToN(JavaClass entity, Map<Object, Object> context) {
+		@SuppressWarnings("unchecked")
+		List<String> names = (List<String>) context.get("entityNames");
+		List<String> notnToMany = new ArrayList<String>();
+		for (String string : names) {
+			for (Annotation<JavaClass> ntomany : entity.getField(string).getAnnotations()) {
+				if(!(ntomany.getName().contains("ManyToOne") || ntomany.getName().contains("ManyToMany") || ntomany.getName().contains("OneToMany")))
+					notnToMany.add(string);
+				
+			}
+		}
+		context.put("notntomany", notnToMany);
+	}
 
     @Override
     @SuppressWarnings("unchecked")    
@@ -757,13 +773,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
             this.indexControllerTemplate = compiler.compile(INDEX_CONTROLLER_TEMPLATE);
         }
         
-        // Compile the Error Resolver Java template
-        
-        if (this.errorResolverTemplate == null)
-        {
-            this.errorResolverTemplate = compiler.compile(ERROR_RESOLVER_TEMPLATE);
-        }
-
         // Compile the Spring MVC entity controller Java template.
         
         if (this.springControllerTemplate == null)
@@ -1101,9 +1110,9 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
             {
                 return imp.getQualifiedName();
             }
-        }
+        }       
 
-        return null;
+        return entity.getPackage() + "." + clazz;
     }
 
     @SuppressWarnings("unchecked")
@@ -1111,10 +1120,18 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
     {
         MetadataFacet meta = project.getFacet(MetadataFacet.class);
         JavaSourceFacet java = project.getFacet(JavaSourceFacet.class);
+        
+        
 
         context.put("topLevelPackage", meta.getTopLevelPackage());
 
-        JavaClass conversionService = JavaParser.parse(JavaClass.class, this.conversionServiceTemplate.render(context));
+        JavaClass conversionService;
+        try{
+			conversionService = (JavaClass) java.getJavaResource(context.get("topLevelPackage").toString().replace(".", "/") + "/conversion/CustomConversionService").getJavaSource();
+        }catch (Exception e) {
+        	conversionService = JavaParser.parse(JavaClass.class, this.conversionServiceTemplate.render(context));
+		}
+        
         String customConversionService = meta.getTopLevelPackage() + ".conversion.ConversionService";
 
         if (java.getJavaResource(customConversionService).exists())

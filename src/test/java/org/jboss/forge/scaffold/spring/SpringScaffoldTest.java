@@ -86,7 +86,7 @@ public class SpringScaffoldTest extends AbstractSpringScaffoldTest
         Assert.assertEquals(meta.getTopLevelPackage() + ".mvc.root", beans.get("context:component-scan").get(0).getAttribute("base-package"));
         Assert.assertFalse(beans.get("mvc:annotation-driven").isEmpty());
         Assert.assertFalse(beans.get("mvc:default-servlet-handler").isEmpty());
-        Assert.assertEquals(3, beans.get("bean").size());
+        Assert.assertEquals(2, beans.get("bean").size());
 
         FileResource<?> page = web.getWebResource("WEB-INF/layouts/pageTemplate.jsp");
         Assert.assertTrue(page.exists());
@@ -169,18 +169,8 @@ public class SpringScaffoldTest extends AbstractSpringScaffoldTest
         	.append(CRLF);
         metawidget.append("\t\t\t\t<td class=\"component\">")
                 .append(CRLF);
-        metawidget.append("\t\t\t\t\t<div>")
+        metawidget.append("\t\t\t\t\t<form:input path=\"firstName\"/>")
         	.append(CRLF);
-        metawidget.append("\t\t\t\t\t\t<form:input path=\"firstName\"/>")
-        	.append(CRLF);
-        metawidget.append("\t\t\t\t\t\t<div class=\"error\">")
-        	.append(CRLF);
-        metawidget.append("\t\t\t\t\t\t\t<form:errors path=\"firstName\"/>")
-        	.append(CRLF);
-        metawidget.append("\t\t\t\t\t\t</div>")
-        	.append(CRLF);
-        metawidget.append("\t\t\t\t\t</div>")
-    		.append(CRLF);
         metawidget.append("\t\t\t\t</td>")
                 .append(CRLF);
         metawidget.append("\t\t\t\t<td class=\"required\"/>")
@@ -198,17 +188,7 @@ public class SpringScaffoldTest extends AbstractSpringScaffoldTest
 			.append(CRLF);
 		metawidget.append("\t\t\t\t<td class=\"component\">")
 		        .append(CRLF);
-		metawidget.append("\t\t\t\t\t<div>")
-			.append(CRLF);
-		metawidget.append("\t\t\t\t\t\t<form:input path=\"lastName\"/>")
-			.append(CRLF);
-		metawidget.append("\t\t\t\t\t\t<div class=\"error\">")
-			.append(CRLF);
-		metawidget.append("\t\t\t\t\t\t\t<form:errors path=\"lastName\"/>")
-			.append(CRLF);
-		metawidget.append("\t\t\t\t\t\t</div>")
-			.append(CRLF);
-		metawidget.append("\t\t\t\t\t</div>")
+		metawidget.append("\t\t\t\t\t<form:input path=\"lastName\"/>")
 			.append(CRLF);
 		metawidget.append("\t\t\t\t</td>")
 		        .append(CRLF);
@@ -498,7 +478,7 @@ public class SpringScaffoldTest extends AbstractSpringScaffoldTest
 			.append(CRLF);
 		metawidget.append("\t\t\t\t<td class=\"component\">")
 		        .append(CRLF);
-		metawidget.append("\t\t\t\t\t\t<form:input path=\"lastName\"/>")
+		metawidget.append("\t\t\t\t\t<form:input path=\"lastName\"/>")
 			.append(CRLF);
 		metawidget.append("\t\t\t\t</td>")
 		        .append(CRLF);
