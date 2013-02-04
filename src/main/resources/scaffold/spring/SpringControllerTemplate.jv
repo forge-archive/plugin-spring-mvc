@@ -272,9 +272,9 @@ public class @{entity.getName()}Controller
 		
 		//Set Up ManyToMany relationships
 		@foreach{name : manyToMany, inverseName : inverseManyToMany, inverseClass: inverseManyToManyClass}
-		if(@{ccEntity}.get@{name.substring(0,1).toUpperCase()}@{name.substring(1)}()){
+		if(@{ccEntity}.get@{name.substring(0,1).toUpperCase()}@{name.substring(1)}() != null){
 			for(@{inverseClass.substring(0,1).toUpperCase()}@{inverseClass.substring(1)} @{inverseClass} : @{ccEntity}.get@{name.substring(0,1).toUpperCase()}@{name.substring(1)}()){
-				@{inverseClass}.get@{inverseName.substring(0,1).toUpperCase()}@{inverseName.substring(1)}().remove(@{ccEntity}).
+				@{inverseClass}.get@{inverseName.substring(0,1).toUpperCase()}@{inverseName.substring(1)}().remove(@{ccEntity});
 			}
 		}
 		@end{}

@@ -106,7 +106,7 @@ public class SpringEntityWidgetBuilderTest
         attributes.put(N_TO_MANY, TRUE);
         StaticWidget widget = widgetBuilder.buildWidget(PROPERTY, attributes, metawidget);
 
-        String result = "<form:select itemValue=\"id\" items=\"${springentitywidgetbuildertest$bars}\" multiple=\"multiple\"/>";
+        String result = "<form:select itemValue=\"id\" items=\"${bars}\" multiple=\"multiple\"/>";
         Assert.assertEquals(result, widget.toString());
     }
 

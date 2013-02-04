@@ -593,7 +593,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 						oneToOne.add(string);
 						inverseOneToOne.add(mappedBy);
 					}
-					break;
 				} else if(relation.getName().contains("ManyToOne")){
 					if(mappedBy != null && !("".equals(mappedBy))){
 						String clazz = entity.getField(string).getStringInitializer();
@@ -601,8 +600,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 						importsToAdd.add(entity.getImport(clazz).getQualifiedName());										
 						manyToOne.add(string);
 						inverseManyToOne.add(mappedBy);
-					}
-					break;					
+					}					
 				} else if(relation.getName().contains("ManyToMany")){
 					if(mappedBy != null && !("".equals(mappedBy))){
 						
@@ -613,7 +611,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 						manyToMany.add(string);
 						inverseManyToMany.add(mappedBy);
 					}
-					break;
 				} else if(relation.getName().contains("OneToMany")){
 					if(mappedBy != null && !("".equals(mappedBy))){
 						String clazz = entity.getField(string).getStringInitializer();
@@ -623,7 +620,6 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
 						oneToMany.add(string);
 						inverseOneToMany.add(mappedBy);
 					}
-					break;
 				}				
 			}
 		}

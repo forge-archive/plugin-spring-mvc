@@ -226,7 +226,11 @@ public class SpringEntityWidgetBuilder
             {
                 int lastIndexOf = attributes.get(PARAMETERIZED_TYPE).lastIndexOf(StringUtils.SEPARATOR_DOT_CHAR);
                 String expression = attributes.get(PARAMETERIZED_TYPE).substring(lastIndexOf + 1);
-                select.putAttribute("items", StaticJspUtils.wrapExpression(Noun.pluralOf(expression).toLowerCase()));
+                String items = attributes.get(NAME);
+                if (items == null || items.isEmpty()){
+                	items = Noun.pluralOf(expression).toLowerCase();
+                }
+                select.putAttribute("items", StaticJspUtils.wrapExpression(items));
                 select.putAttribute("itemValue", "id");
             }
 

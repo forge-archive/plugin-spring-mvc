@@ -73,7 +73,7 @@ public class ForgeInspectorTest
       assertEquals(PROPERTY, property.getNodeName());
       assertEquals("manyToOne", property.getAttribute(NAME));
       assertEquals("#{forgeInspectorTest$Bar}", property.getAttribute(SPRING_LOOKUP));
-      assertEquals(2, property.getAttributes().getLength());
+      assertEquals(3, property.getAttributes().getLength());
 
       property = XmlUtils.getNextSiblingElement(property);
       assertEquals(PROPERTY, property.getNodeName());
