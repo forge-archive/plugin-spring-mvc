@@ -41,6 +41,12 @@ public interface SpringFacet extends Facet
      */
 
     FileResource<?> getMVCContextFile(String targetDir);
+    
+    /**
+     * Get the servlet XML context file for the specified targetDir of the application.
+     */
+
+    FileResource<?> getSecurityContextFile(String targetDir);
 
     /**
      * Get this application's currently configured servlet mappings from the web.xml

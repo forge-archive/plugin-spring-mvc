@@ -226,6 +226,35 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
             return web.getWebResource(filename);
         }
     }
+    
+    @Override
+    public FileResource<?> getSecurityContextFile(String targetDir)
+    {
+        WebResourceFacet web = project.getFacet(WebResourceFacet.class);
+
+        if (targetDir.equals("/") || targetDir.isEmpty())
+        {
+            MetadataFacet meta = project.getFacet(MetadataFacet.class);
+
+            return web.getWebResource("WEB-INF/" + meta.getProjectName().replace(' ', '-').toLowerCase() + "-security-context.xml");
+        }
+        else
+        {
+            while (targetDir.startsWith("/"))
+            {
+                targetDir = targetDir.substring(1);
+            }
+
+            while (targetDir.endsWith("/"))
+            {
+                targetDir = targetDir.substring(0, targetDir.length()-1);
+            }
+
+            String filename = "WEB-INF/" + targetDir.replace('/', '-').toLowerCase() + "-security-context.xml";
+
+            return web.getWebResource(filename);
+        }
+    }
 
     @Override
     public List<String> getSpringServletMappings()

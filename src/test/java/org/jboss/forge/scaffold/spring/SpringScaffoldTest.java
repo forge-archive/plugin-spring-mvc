@@ -366,7 +366,6 @@ public class SpringScaffoldTest extends AbstractSpringScaffoldTest
 		        .append(CRLF);        
 		metawidget.append("\t\t</tr>")
 			.append(CRLF);
-
 		metawidget.append("\t\t<tr>")
 			.append(CRLF);
 		metawidget.append("\t\t\t<th class=\"label\">")
@@ -718,7 +717,6 @@ public class SpringScaffoldTest extends AbstractSpringScaffoldTest
 		        .append(CRLF);        
 		metawidget.append("\t\t</tr>")
 			.append(CRLF);
-
 		metawidget.append("\t\t<tr>")
 			.append(CRLF);
 		metawidget.append("\t\t\t<th class=\"label\">")

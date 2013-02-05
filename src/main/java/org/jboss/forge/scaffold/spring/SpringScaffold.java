@@ -260,7 +260,7 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
         persistence.saveConfig(descriptor);
 
         List<Resource<?>> result = generateIndex(targetDir, template, overwrite);
-
+        
         result.add(ScaffoldUtil.createOrOverwrite(this.prompt, resources.getResource("META-INF/spring/applicationContext.xml"), 
                 this.applicationContextTemplate.render(context), overwrite));
 
@@ -300,8 +300,8 @@ public class SpringScaffold extends BaseFacet implements ScaffoldProvider
                 spring.addServlet(targetDir, targetDir.replace('/', '-').toLowerCase() + "-mvc-context.xml");
             }
         }
-
         result.add(setupTilesLayout(targetDir));
+        
 
         return result;
     }

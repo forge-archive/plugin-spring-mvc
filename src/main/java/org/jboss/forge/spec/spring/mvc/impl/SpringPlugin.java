@@ -21,6 +21,8 @@
  */
 package org.jboss.forge.spec.spring.mvc.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import javax.enterprise.event.Event;
@@ -138,16 +140,6 @@ public class SpringPlugin implements Plugin
            else
            {
                ShellMessages.error(out, "Could not change application context location, no file found at src/main/resources/" + location);
-           }
-           
-           if(this.prompt.promptBoolean("Would you like to add spring security?", false)){
-	           MetadataFacet meta = project.getFacet(MetadataFacet.class);
-	
-	           String securityContext = "/WEB-INF/"
-						+ meta.getProjectName().replace(' ', '-').toLowerCase()
-						+ "-security-context.xml";
-	           String targetDir = this.prompt.prompt("Target Dir? (Default is: " + securityContext + ")", "");
-	           updateSecurity(targetDir);
            }
        }
    }
@@ -316,7 +308,7 @@ public class SpringPlugin implements Plugin
    
    @Command("security")
    public void updateSecurity(@Option(required=false, name="targetDir", description="Target Directory") String targetDir)
-   {
+   {		
        SpringFacet spring = project.getFacet(SpringFacet.class);
        MetadataFacet meta = project.getFacet(MetadataFacet.class);
        
@@ -375,12 +367,52 @@ public class SpringPlugin implements Plugin
            .attribute("access", "ROLE_ADMIN");
            http.createChild("remember-me");
        }
-       if(!hasChildNamed(beans, "user-service")){
-    	   Node userService = new Node("user-service", beans);
-    	   userService.attribute("id", "userService");
-    	   userService.createChild("user").attribute("name", "admin").attribute("password", "admin").attribute("authorities", "ROLE_ADMIN");
+       List<String> possibleAuthenciationTechniques = new ArrayList<String>();
+       possibleAuthenciationTechniques.add("Embedded");
+       if (project.hasFacet(PersistenceFacet.class)){
+    	   possibleAuthenciationTechniques.add("JDBC");
        }
-       
+       possibleAuthenciationTechniques.add("LDAP");
+       int authenciationMethod = this.prompt.promptChoice("Type of User Authenciation", possibleAuthenciationTechniques);
+       switch (authenciationMethod) {
+       		case 0:
+       			if(!hasChildNamed(beans, "user-service")){
+       				Node userService = new Node("user-service", beans);
+       				userService.attribute("id", "userService");
+       				String username = this.prompt.prompt("Admin User Name?", "admin");
+       				String password = this.prompt.promptSecret("Admin Password?", "adminPass");
+       				userService.createChild("user").attribute("name", username).attribute("password", password).attribute("authorities", "ROLE_ADMIN");
+       			}
+       			break;
+       		case 1:
+       			if(!hasChildNamed(beans, "jdbc-user-service")){
+       				Node userService = new Node("jdbc-user-service", beans);
+				    userService.attribute("id", "userService");
+				    String dataSourceBean = this.prompt.prompt("JDBC Data Source Reference Bean?", "dataSource");
+				    userService.attribute("data-source-ref", dataSourceBean);
+       			}
+       			break;
+       		case 2:
+       			if(!hasChildNamed(beans, "ldap-user-service")){
+       				Node userService = new Node("ldap-user-service", beans);
+				    userService.attribute("id", "userService");
+				    userService.attribute("user-search-filter", "(uid={0})");
+				    userService.attribute("group-search-filter", "member={0}");				    
+       			}
+       			if(!hasChildNamed(beans, "ldap-server")){
+       				Node ldapServer = new Node("ldap-server", beans);
+				    String urlOrLDIF = this.prompt.prompt("Enter url to remote LDAP server or ldif file on classpath");
+				    if (urlOrLDIF.endsWith("ldif")){
+				    	ldapServer.attribute("ldif", urlOrLDIF);
+				    }
+				    else{
+				    	ldapServer.attribute("url", urlOrLDIF);
+				    }				    
+       			}
+       			break;
+       		default:
+       		break;
+       }
        if(!hasChildNamed(beans, "authentication-manager")){
     	   Node authentiation = new Node("authentication-manager", beans);
     	   authentiation.createChild("authentication-provider").attribute("user-service-ref", "userService");
@@ -544,6 +576,7 @@ public class SpringPlugin implements Plugin
 	   if(targetDir.startsWith("/")){
 		   targetDir = targetDir.substring(1);
 	   }
+	   
 	   if(!webXML.getContextParam("contextConfigLocation").contains(targetDir)){
 		   webXML.contextParam("contextConfigLocation", webXML.getContextParam("contextConfigLocation") + ", " + targetDir);
 	   }
