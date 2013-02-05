@@ -76,6 +76,12 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
     
     private static final Dependency JAVA_VALIDATION = DependencyBuilder.create("javax.validation:validation-api");
 
+    private static final Dependency SPRING_SECURITY = DependencyBuilder.create("org.springframework.security:spring-security-core:${spring.version}");
+
+    private static final Dependency SPRING_SECURITY_CONFIG = DependencyBuilder.create("org.springframework.security:spring-security-config:${spring.version}");
+
+    private static final Dependency SPRING_SECURITY_WEB = DependencyBuilder.create("org.springframework.security:spring-security-web:${spring.version}");
+    
     @Inject
     public SpringFacetImpl(final DependencyInstaller installer)
     {
@@ -135,8 +141,41 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
 
         return true;
     }
+    
+    @Override
+    public boolean installSecurity()
+    {
+        for (Dependency requirement : getRequiredSecurityDependencies())
+        {
+            if (!this.installer.isInstalled(project, requirement))
+            {
+                DependencyFacet deps = project.getFacet(DependencyFacet.class);
 
-    protected List<Dependency> getRequiredDependencies()
+                if (!deps.hasDirectManagedDependency(JAVAEE6))
+                {
+                    this.installer.installManaged(project, JAVAEE6);
+                }
+
+                if (requirement.getGroupId().equals("org.springframework"))
+                {
+                    deps.setProperty("spring.version", SPRING_VERSION);
+                }
+
+                if (!requirement.equals(JAVAEE6))
+                {
+                    deps.addDirectDependency(requirement);
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private List<Dependency> getRequiredSecurityDependencies() {
+    	  return Arrays.asList(SPRING_SECURITY, SPRING_SECURITY_CONFIG, SPRING_SECURITY_WEB);      
+	}
+
+	protected List<Dependency> getRequiredDependencies()
     {
         return Arrays.asList(SPRING_ASM, SPRING_BEANS, SPRING_CONTEXT, SPRING_CONTEXT_SUPPORT,
                 SPRING_CORE, SPRING_EXPRESSION, SPRING_ORM, SPRING_TX, SPRING_WEB, SPRING_WEB_MVC, JAVA_VALIDATION);        

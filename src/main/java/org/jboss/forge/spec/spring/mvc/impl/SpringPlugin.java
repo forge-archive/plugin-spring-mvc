@@ -139,6 +139,16 @@ public class SpringPlugin implements Plugin
            {
                ShellMessages.error(out, "Could not change application context location, no file found at src/main/resources/" + location);
            }
+           
+           if(this.prompt.promptBoolean("Would you like to add spring security?", false)){
+	           MetadataFacet meta = project.getFacet(MetadataFacet.class);
+	
+	           String securityContext = "/WEB-INF/"
+						+ meta.getProjectName().replace(' ', '-').toLowerCase()
+						+ "-security-context.xml";
+	           String targetDir = this.prompt.prompt("Target Dir? (Default is: " + securityContext + ")", "");
+	           updateSecurity(targetDir);
+           }
        }
    }
 
@@ -303,26 +313,133 @@ public class SpringPlugin implements Plugin
        updateWebXML(targetDir, mvcContext);
        generateMVCContext(mvcContext, mvcPackage);
    }
-
-   protected void generateContextFiles(boolean overwrite, Map<Object, Object> context)
+   
+   @Command("security")
+   public void updateSecurity(@Option(required=false, name="targetDir", description="Target Directory") String targetDir)
    {
+       SpringFacet spring = project.getFacet(SpringFacet.class);
        MetadataFacet meta = project.getFacet(MetadataFacet.class);
-       PersistenceFacet persistence = project.getFacet(PersistenceFacet.class);
-       ResourceFacet resources = project.getFacet(ResourceFacet.class);
+       
+       if(spring.installSecurity()){
+    	   System.out.println("Sucessfully installed spring security");
+       }
+       if (targetDir == null)
+       {
+           targetDir = new String();
+       }
+
+       targetDir = processTargetDir(targetDir);
+       
+       String securityContext = new String();
+		if (targetDir.isEmpty()) {
+			securityContext = "/WEB-INF/"
+					+ meta.getProjectName().replace(' ', '-').toLowerCase()
+					+ "-security-context.xml";
+		} else {
+			if(!targetDir.endsWith("/")){
+				targetDir += "/";
+			}
+			securityContext = "/WEB-INF/" + targetDir + meta.getProjectName().replace(' ', '-').toLowerCase()
+					+ "-security-context.xml";
+		}
+
+       updateWebXML(securityContext);
+       generateSecurity(securityContext);
+   }
+
+   private void generateSecurity(String securityContext) {
 
        WebResourceFacet web = project.getFacet(WebResourceFacet.class);
 
-       String filename = context.get("mvc-context-file").toString();
-       loadTemplates();
+       Node beans;
+       
+       if (!web.getWebResource(securityContext).exists())
+       {
+           beans = new Node("beans:beans");
+           beans.attribute("xsi:schemaLocation", "http://www.springframework.org/schema/beans\nhttp://www.springframework.org/schema/security\n"
+        		   + "http//www.springframework.org/schema/security/spring-security-3.0.xsd");
+       }
+       else
+       {
+           beans = XMLParser.parse(web.getWebResource(securityContext).getResourceInputStream());
+       }
+       
+       beans = addXMLSchemaSecurity(beans, false);
+       if (!hasChildNamed(beans, "http"))
+       {
+           Node http = new Node("http", beans);
+           http.attribute("auto-config", "true");
+           http.createChild("intercept-url").attribute("pattern", "/**/create*")
+                       .attribute("access", "ROLE_ADMIN");
+           http.createChild("intercept-url").attribute("pattern", "/**/edit*")
+           .attribute("access", "ROLE_ADMIN");
+           http.createChild("remember-me");
+       }
+       if(!hasChildNamed(beans, "user-service")){
+    	   Node userService = new Node("user-service", beans);
+    	   userService.attribute("id", "userService");
+    	   userService.createChild("user").attribute("name", "admin").attribute("password", "admin").attribute("authorities", "ROLE_ADMIN");
+       }
+       
+       if(!hasChildNamed(beans, "authentication-manager")){
+    	   Node authentiation = new Node("authentication-manager", beans);
+    	   authentiation.createChild("authentication-provider").attribute("user-service-ref", "userService");
+       }
+       web.createWebResource(XMLParser.toXMLString(beans), securityContext);
+	
+   }
 
-       context.put("projectName", meta.getProjectName());
-       context.put("persistenceUnit", persistence.getConfig().listUnits().get(0).getName());
-       context.put("mvcContextFile", filename);
+	private Node addXMLSchemaSecurity(Node beans, boolean b) {
+		beans.attribute(XMLNS_PREFIX + "beans", "http://www.springframework.org/schema/beans");
+		beans.attribute("xmlns", "http://www.springframework.org/schema/security");
+	    beans.attribute(XMLNS_PREFIX + "xsi", "http://www.w3.org/2001/XMLSchema-instance");
 
-       ScaffoldUtil.createOrOverwrite(this.prompt, resources.getResource("META-INF/spring/applicationContext.xml"),
-               applicationContextTemplate.render(context), overwrite);
-       ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/web.xml"), webXmlTemplate.render(context), overwrite);
-       ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(filename), mvcContextTemplate.render(context), overwrite);
+	    String schemaLocation = beans.getAttribute("");
+	    schemaLocation = (schemaLocation == null) ? new String() : schemaLocation;
+
+	    if (!schemaLocation.contains("http://www.springframework.org/schema/beans " +
+	    	"http://www.springframework.org/schema/beans/spring-beans.xsd"))
+	    {
+	    	schemaLocation += " http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd";
+	    }
+
+	    if (!schemaLocation.contains("http://www.springframework.org/schema/security " +
+	    		"http://www.springframework.org/schema/security/spring-security-3.0.xsd"))
+	    {
+	    	schemaLocation += " http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd";
+	    }
+	    beans.attribute("xsi:schemaLocation", schemaLocation);
+
+	    return beans;
+	}
+
+	private boolean hasChildNamed(Node beans, String string) {
+		for(Node child : beans.getChildren()){
+			if(child.getName() != null && child.getName().equals(string)){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	protected void generateContextFiles(boolean overwrite, Map<Object, Object> context)
+	{
+		MetadataFacet meta = project.getFacet(MetadataFacet.class);
+		PersistenceFacet persistence = project.getFacet(PersistenceFacet.class);
+		ResourceFacet resources = project.getFacet(ResourceFacet.class);
+		WebResourceFacet web = project.getFacet(WebResourceFacet.class);
+
+		String filename = context.get("mvc-context-file").toString();	
+		loadTemplates();
+
+		context.put("projectName", meta.getProjectName());
+		context.put("persistenceUnit", persistence.getConfig().listUnits().get(0).getName());
+       	context.put("mvcContextFile", filename);
+
+       	ScaffoldUtil.createOrOverwrite(this.prompt, resources.getResource("META-INF/spring/applicationContext.xml"),
+       			applicationContextTemplate.render(context), overwrite);
+       	ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource("WEB-INF/web.xml"), webXmlTemplate.render(context), overwrite);
+       	ScaffoldUtil.createOrOverwrite(this.prompt, web.getWebResource(filename), mvcContextTemplate.render(context), overwrite);
    }
 
    protected void loadTemplates()
@@ -416,6 +533,22 @@ public class SpringPlugin implements Plugin
 
        web.createWebResource(XMLParser.toXMLString(beans), mvcContextFilename);
    }
+   
+   protected void updateWebXML(String targetDir){
+       ServletFacet servlet = project.getFacet(ServletFacet.class);
+
+       WebAppDescriptor webXML = servlet.getConfig();
+  	   //Add security filter if asked for one
+	   webXML = addSecurity(targetDir, webXML);
+	   // Add to context param if not there
+	   if(targetDir.startsWith("/")){
+		   targetDir = targetDir.substring(1);
+	   }
+	   if(!webXML.getContextParam("contextConfigLocation").contains(targetDir)){
+		   webXML.contextParam("contextConfigLocation", webXML.getContextParam("contextConfigLocation") + ", " + targetDir);
+	   }
+       servlet.saveConfig(webXML);
+   }
 
    protected void updateWebXML(String mvcContext, String targetDir)
    {
@@ -489,6 +622,23 @@ public class SpringPlugin implements Plugin
        }
    }
 
+	private WebAppDescriptor addSecurity(String targetDir,
+			WebAppDescriptor webXML) {
+		String security = new String();
+		if (targetDir.contains("-security-context.xml")) {
+			for (FilterDef filter : webXML.getFilters()) {
+				if (filter.getFilterClass().contains("org.springframework.web.filter.DelegatingFilterProxy")) {
+					security = filter.getFilterClass();
+					break;
+				}
+			}
+		}
+		if (security.isEmpty() && targetDir.contains("-security-context.xml")) {
+			webXML = webXML.filter("springSecurityFilterChain", "org.springframework.web.filter.DelegatingFilterProxy", new String[] {"/*"});
+		}
+		return webXML;
+	}
+
    private Node addContextComponentScan(Node beans, String basePackage)
    {
        if (hasContextComponentScan(beans, basePackage))
@@ -542,7 +692,7 @@ public class SpringPlugin implements Plugin
        beans.attribute(XMLNS_PREFIX + "context", "http://www.springframework.org/schema/context");
        beans.attribute(XMLNS_PREFIX + "xsi", "http://www.w3.org/2001/XMLSchema-instance");
 
-       String schemaLocation = beans.getAttribute("xsi:schemaLocation");
+       String schemaLocation = beans.getAttribute("");
        schemaLocation = (schemaLocation == null) ? new String() : schemaLocation;
 
        if (!schemaLocation.contains("http://www.springframework.org/schema/beans " +

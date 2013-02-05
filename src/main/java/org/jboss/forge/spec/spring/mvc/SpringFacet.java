@@ -107,4 +107,6 @@ public interface SpringFacet extends Facet
      */
 
     Resource<?> getResourceForWebPath(String path);
+
+	boolean installSecurity();
 }
