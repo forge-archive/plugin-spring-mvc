@@ -69,7 +69,7 @@ public class ReadOnlyEntityWidgetBuilderTest
         attributes.put(INVERSE_RELATIONSHIP, TRUE);
 
         StaticXmlWidget widget = widgetBuilder.buildWidget(PROPERTY, attributes, metawidget);
-        Assert.assertEquals("<stub/>", widget.toString());
+        Assert.assertEquals("<c:out/>", widget.toString());
     }
 
     @Test

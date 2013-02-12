@@ -29,9 +29,13 @@ public class @{entityName}Converter implements GenericConverter
 	public Object convert(Object source, TypeDescriptor sourceType, TypeDescriptor targetType)
 	{
 		String idString = source.toString();
-		Long id = Long.valueOf(idString);
-
-		@{entityName} @{ccEntity} = @{ccEntity}Dao.getById(id);
+		@{entityName} @{ccEntity} = null;
+		try{
+			Long id = Long.valueOf(idString);
+			@{ccEntity} = @{ccEntity}Dao.getById(id);
+		}catch(Exception e){
+			
+		}
 		return @{ccEntity};
 	}
 }

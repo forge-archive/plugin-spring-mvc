@@ -27,6 +27,8 @@ import static org.metawidget.inspector.InspectionResultConstants.*;
 import static org.metawidget.inspector.spring.SpringInspectionResultConstants.*;
 
 import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import javax.lang.model.type.PrimitiveType;
@@ -34,23 +36,32 @@ import javax.lang.model.type.PrimitiveType;
 import org.jboss.forge.env.Configuration;
 import org.jboss.forge.parser.java.util.Strings;
 import org.jboss.forge.scaffold.spring.SpringScaffold;
+import org.jboss.forge.scaffold.spring.metawidget.layout.FormErrorTag;
 import org.jvnet.inflector.Noun;
 import org.metawidget.iface.MetawidgetException;
 import org.metawidget.statically.BaseStaticXmlWidget;
 import org.metawidget.statically.StaticXmlStub;
 import org.metawidget.statically.StaticXmlWidget;
+import org.metawidget.statically.html.widgetbuilder.HtmlDiv;
 import org.metawidget.statically.html.widgetbuilder.HtmlInput;
+import org.metawidget.statically.html.widgetbuilder.HtmlTableBody;
 import org.metawidget.statically.html.widgetbuilder.HtmlTableCell;
+import org.metawidget.statically.html.widgetbuilder.HtmlTableRow;
 import org.metawidget.statically.jsp.StaticJspMetawidget;
 import org.metawidget.statically.jsp.StaticJspUtils;
 import org.metawidget.statically.jsp.widgetbuilder.CoreOut;
 import org.metawidget.statically.jsp.widgetprocessor.StandardBindingProcessor;
 import org.metawidget.statically.layout.SimpleLayout;
 import org.metawidget.statically.spring.StaticSpringMetawidget;
+import org.metawidget.statically.spring.widgetbuilder.FormCheckboxTag;
+import org.metawidget.statically.spring.widgetbuilder.FormInputTag;
 import org.metawidget.statically.spring.widgetbuilder.FormOptionTag;
 import org.metawidget.statically.spring.widgetbuilder.FormOptionsTag;
+import org.metawidget.statically.spring.widgetbuilder.FormPasswordTag;
 import org.metawidget.statically.spring.widgetbuilder.FormSelectTag;
+import org.metawidget.statically.spring.widgetbuilder.FormTextareaTag;
 import org.metawidget.statically.spring.widgetbuilder.SpringWidgetBuilder;
+import org.metawidget.util.CollectionUtils;
 import org.metawidget.util.WidgetBuilderUtils;
 import org.metawidget.util.simple.StringUtils;
 
@@ -66,6 +77,10 @@ public class SpringEntityWidgetBuilder
     //
     // Private statics
     //
+	private final static String			MAX_LENGTH			= "maxlength";
+	
+	
+	private static final List<Boolean>	LIST_BOOLEAN_VALUES	= CollectionUtils.unmodifiableList( Boolean.TRUE, Boolean.FALSE );
 
     /**
      * Current Forge configuration.  Useful to retrieve <code>targetDir</code>.
@@ -171,7 +186,7 @@ public class SpringEntityWidgetBuilder
 
         // Render collection tables with links.
 
-        if (TRUE.equals(ONE_TO_ONE) && WidgetBuilderUtils.isReadOnly(attributes))
+        if (TRUE.equals(attributes.get(ONE_TO_ONE)) && WidgetBuilderUtils.isReadOnly(attributes))
         {
             // (we are about to create a nested metawidget, so we must prevent recursion)
 
@@ -226,7 +241,11 @@ public class SpringEntityWidgetBuilder
             {
                 int lastIndexOf = attributes.get(PARAMETERIZED_TYPE).lastIndexOf(StringUtils.SEPARATOR_DOT_CHAR);
                 String expression = attributes.get(PARAMETERIZED_TYPE).substring(lastIndexOf + 1);
-                select.putAttribute("items", StaticJspUtils.wrapExpression(Noun.pluralOf(expression).toLowerCase()));
+                String items = attributes.get(NAME);
+                if (items == null || items.isEmpty()){
+                	items = Noun.pluralOf(expression).toLowerCase();
+                }
+                select.putAttribute("items", StaticJspUtils.wrapExpression(items));
                 select.putAttribute("itemValue", "id");
             }
 
@@ -267,8 +286,50 @@ public class SpringEntityWidgetBuilder
                 return select;
             }
         }
+        
+        if (TRUE.equals(attributes.get(MANY_TO_N))){
+        	// (we are about to create a nested metawidget, so we must prevent recursion)
 
-        if (clazz != null)
+            if (ENTITY.equals(elementName))
+            {
+                return null;
+            }
+
+            // Use a dropdown menu with a create button.
+
+            FormSelectTag select = new FormSelectTag();
+
+            if (TRUE.equals(attributes.get(MANY_TO_N)))
+            {
+                if (!TRUE.equals(attributes.get(REQUIRED)))
+                {
+                    FormOptionTag emptyOption = new FormOptionTag();
+                    emptyOption.putAttribute("value", "");
+                    select.getChildren().add(emptyOption);
+                }
+
+                FormOptionsTag options = new FormOptionsTag();
+                options.putAttribute("items", StaticJspUtils.wrapExpression(attributes.get(NAME)));
+                options.putAttribute("itemValue", "id");
+                select.getChildren().add(options);
+            }
+            // TODO: Find a way to direct this link to a create form for the top entity, not the member.
+
+            String entityName = new String();
+            int lastIndexOf = attributes.get(TYPE).lastIndexOf(StringUtils.SEPARATOR_DOT_CHAR);
+            entityName = attributes.get(TYPE).substring(lastIndexOf + 1);
+
+            String controllerName = Noun.pluralOf(entityName).toLowerCase();
+            CoreUrl curl = new CoreUrl();
+            curl.setValue(getTargetDir() + controllerName + "/create");
+
+            HtmlAnchor createLink = new HtmlAnchor();
+            createLink.setTextContent("Create New " + StringUtils.uncamelCase(entityName));
+            createLink.putAttribute("href", curl.toString());
+            return select;
+        }
+
+        if (clazz != null && !HIDDEN.equals(attributes.get(HIDDEN)))
         {
             if (Collection.class.isAssignableFrom(clazz))
             {
@@ -296,6 +357,54 @@ public class SpringEntityWidgetBuilder
             {
                 return new StaticXmlStub();
             }
+            
+         // Primitives
+
+			if (clazz.isPrimitive()) {
+
+				if (char.class.equals(clazz)) {
+					attributes.put(MAXIMUM_LENGTH, "1");
+					return createFormInputTag(attributes);
+				}
+
+				return createFormInputTag(attributes);
+			}
+
+			// String
+
+			if (String.class.equals(clazz)) {
+				if (TRUE.equals(attributes.get(LARGE))) {
+					return createFormTextareaTag(attributes);
+				}
+
+				if (TRUE.equals(attributes.get(MASKED))) {
+					FormPasswordTag passwordTag = new FormPasswordTag();
+					passwordTag.putAttribute(MAX_LENGTH,
+							attributes.get(MAXIMUM_LENGTH));
+					return passwordTag;
+				}
+
+				return createFormInputTag(attributes);
+			}
+
+			// Character
+
+			if (Character.class.equals(clazz)) {
+				attributes.put(MAXIMUM_LENGTH, "1");
+				return createFormInputTag(attributes);
+			}
+
+			// Dates
+
+			if (Date.class.equals(clazz)) {
+				return createFormInputTag(attributes);
+			}
+
+			// Numbers
+
+			if (Number.class.isAssignableFrom(clazz)) {
+				return createFormInputTag(attributes);
+			}
         }
 
         return null;
@@ -334,4 +443,40 @@ public class SpringEntityWidgetBuilder
 
         return false;
     }
+    
+    private HtmlDiv createFormInputTag( Map<String, String> attributes ) {
+    	
+    	HtmlDiv row = new HtmlDiv();
+		FormInputTag input = new FormInputTag();
+		row.getChildren().add(input);
+		if ( !"".equals( attributes.get( MAXIMUM_LENGTH ))) {
+			input.putAttribute( MAX_LENGTH, attributes.get( MAXIMUM_LENGTH ) );
+		}
+		HtmlDiv innerDiv = new HtmlDiv();
+		innerDiv.putAttribute("class", "error");
+		FormErrorTag error = new FormErrorTag();
+		innerDiv.getChildren().add(error);
+		row.getChildren().add(innerDiv);
+		return row;
+	}
+    
+    
+	private StaticXmlWidget createFormTextareaTag( Map<String, String> attributes ) {
+
+		FormTextareaTag textarea = new FormTextareaTag();
+
+		String rows = attributes.get( "rows" );
+
+		if ( rows != null ) {
+			textarea.putAttribute( "rows", rows );
+		}
+
+		String cols = attributes.get( "cols" );
+
+		if ( cols != null ) {
+			textarea.putAttribute( "cols", cols );
+		}
+
+		return textarea;
+	}
 }
