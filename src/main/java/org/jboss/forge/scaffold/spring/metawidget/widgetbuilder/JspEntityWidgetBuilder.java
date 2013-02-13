@@ -71,7 +71,7 @@ public class JspEntityWidgetBuilder extends JspWidgetBuilder {
         {
             return new StaticXmlStub();
         }
-
+        
         StaticXmlWidget table = super.createDataTableComponent(elementName, attributes, metawidget);
         table.putAttribute("class", "data-table");
 
@@ -91,7 +91,7 @@ public class JspEntityWidgetBuilder extends JspWidgetBuilder {
         // Note: we don't just do N_TO_MANY values, as Collections are sometimes not annotated.
 
         // Get actual class or type, defaulting to a String if none is found.
-
+    	
         Class<?> clazz = WidgetBuilderUtils.getActualClassOrType(columnAttributes, String.class);
 
         if (clazz != null && Collection.class.isAssignableFrom(clazz))
@@ -100,14 +100,14 @@ public class JspEntityWidgetBuilder extends JspWidgetBuilder {
         }
 
         // FORGE-448: Don't display "owner" when showing relationships.
-
+        
         String columnName = columnAttributes.get(NAME);
 
         if (columnName.equals(tableAttributes.get(INVERSE_RELATIONSHIP)))
         {
             return;
         }
-
+        forEach.putAttribute("items", StaticJspUtils.wrapExpression(metawidget.getAttribute("value") + "." + StaticJspUtils.unwrapExpression(forEach.getAttribute("items"))));
         // Create the column.
 
         super.addColumnComponent(row, forEach, tableAttributes, elementName, columnAttributes, metawidget);

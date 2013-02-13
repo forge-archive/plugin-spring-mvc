@@ -73,7 +73,15 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
     private static final Dependency SPRING_WEB = DependencyBuilder.create("org.springframework:spring-web:${spring.version}");
 
     private static final Dependency SPRING_WEB_MVC = DependencyBuilder.create("org.springframework:spring-webmvc:${spring.version}");
+    
+    private static final Dependency JAVA_VALIDATION = DependencyBuilder.create("javax.validation:validation-api");
 
+    private static final Dependency SPRING_SECURITY = DependencyBuilder.create("org.springframework.security:spring-security-core:${spring.version}");
+
+    private static final Dependency SPRING_SECURITY_CONFIG = DependencyBuilder.create("org.springframework.security:spring-security-config:${spring.version}");
+
+    private static final Dependency SPRING_SECURITY_WEB = DependencyBuilder.create("org.springframework.security:spring-security-web:${spring.version}");
+    
     @Inject
     public SpringFacetImpl(final DependencyInstaller installer)
     {
@@ -133,11 +141,44 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
 
         return true;
     }
+    
+    @Override
+    public boolean installSecurity()
+    {
+        for (Dependency requirement : getRequiredSecurityDependencies())
+        {
+            if (!this.installer.isInstalled(project, requirement))
+            {
+                DependencyFacet deps = project.getFacet(DependencyFacet.class);
 
-    protected List<Dependency> getRequiredDependencies()
+                if (!deps.hasDirectManagedDependency(JAVAEE6))
+                {
+                    this.installer.installManaged(project, JAVAEE6);
+                }
+
+                if (requirement.getGroupId().equals("org.springframework"))
+                {
+                    deps.setProperty("spring.version", SPRING_VERSION);
+                }
+
+                if (!requirement.equals(JAVAEE6))
+                {
+                    deps.addDirectDependency(requirement);
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private List<Dependency> getRequiredSecurityDependencies() {
+    	  return Arrays.asList(SPRING_SECURITY, SPRING_SECURITY_CONFIG, SPRING_SECURITY_WEB);      
+	}
+
+	protected List<Dependency> getRequiredDependencies()
     {
         return Arrays.asList(SPRING_ASM, SPRING_BEANS, SPRING_CONTEXT, SPRING_CONTEXT_SUPPORT,
-                SPRING_CORE, SPRING_EXPRESSION, SPRING_ORM, SPRING_TX, SPRING_WEB, SPRING_WEB_MVC);        
+                SPRING_CORE, SPRING_EXPRESSION, SPRING_ORM, SPRING_TX, SPRING_WEB, SPRING_WEB_MVC, JAVA_VALIDATION);        
     }
 
     /*
@@ -181,6 +222,35 @@ public class SpringFacetImpl extends BaseFacet implements SpringFacet
             }
 
             String filename = "WEB-INF/" + targetDir.replace('/', '-').toLowerCase() + "-mvc-context.xml";
+
+            return web.getWebResource(filename);
+        }
+    }
+    
+    @Override
+    public FileResource<?> getSecurityContextFile(String targetDir)
+    {
+        WebResourceFacet web = project.getFacet(WebResourceFacet.class);
+
+        if (targetDir.equals("/") || targetDir.isEmpty())
+        {
+            MetadataFacet meta = project.getFacet(MetadataFacet.class);
+
+            return web.getWebResource("WEB-INF/" + meta.getProjectName().replace(' ', '-').toLowerCase() + "-security-context.xml");
+        }
+        else
+        {
+            while (targetDir.startsWith("/"))
+            {
+                targetDir = targetDir.substring(1);
+            }
+
+            while (targetDir.endsWith("/"))
+            {
+                targetDir = targetDir.substring(0, targetDir.length()-1);
+            }
+
+            String filename = "WEB-INF/" + targetDir.replace('/', '-').toLowerCase() + "-security-context.xml";
 
             return web.getWebResource(filename);
         }

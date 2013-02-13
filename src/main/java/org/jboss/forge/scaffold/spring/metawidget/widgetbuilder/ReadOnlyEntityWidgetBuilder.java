@@ -34,7 +34,7 @@ public class ReadOnlyEntityWidgetBuilder extends ReadOnlyWidgetBuilder
 
         if (attributes.containsKey(INVERSE_RELATIONSHIP) && WidgetBuilderUtils.isReadOnly(attributes))
         {
-            return new StaticXmlStub();
+            return new CoreOut();
         }
 
         if (widget == null && WidgetBuilderUtils.isReadOnly(attributes))

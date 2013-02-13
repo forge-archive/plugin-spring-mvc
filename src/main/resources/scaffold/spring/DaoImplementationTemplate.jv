@@ -13,6 +13,10 @@ import javax.persistence.criteria.Root;
 
 import @{entity.getQualifiedName()};
 
+@foreach{clazz : qbeMetawidgetImports}
+import @{clazz};
+@end{}
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,7 +48,7 @@ public class @{entity.getName()}DaoImpl implements @{entity.getName()}Dao
 
 	public void create(@{entity.getName()} entity)
 	{
-		entityManager.merge(entity);
+		entityManager.persist(entity);
 	}
 	
 	public void delete(Long id)

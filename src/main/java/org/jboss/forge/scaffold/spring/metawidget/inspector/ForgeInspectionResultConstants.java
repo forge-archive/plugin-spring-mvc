@@ -34,6 +34,8 @@ public final class ForgeInspectionResultConstants
    //
 
    public static final String N_TO_MANY = "n-to-many";
+   
+   public static final String MANY_TO_N = "many-to-n";
 
    public static final String ONE_TO_ONE = "one-to-one";
 
