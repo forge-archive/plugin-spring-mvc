@@ -21,8 +21,6 @@
  */
 package org.jboss.forge.spec.spring.mvc.impl;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import javax.enterprise.event.Event;
@@ -305,154 +303,6 @@ public class SpringPlugin implements Plugin
        updateWebXML(targetDir, mvcContext);
        generateMVCContext(mvcContext, mvcPackage);
    }
-   
-   @Command("security")
-   public void updateSecurity(@Option(required=false, name="targetDir", description="Target Directory") String targetDir)
-   {		
-       SpringFacet spring = project.getFacet(SpringFacet.class);
-       MetadataFacet meta = project.getFacet(MetadataFacet.class);
-       
-       if(spring.installSecurity()){
-    	   System.out.println("Sucessfully installed spring security");
-       }
-       if (targetDir == null)
-       {
-           targetDir = new String();
-       }
-
-       targetDir = processTargetDir(targetDir);
-       
-       String securityContext = new String();
-		if (targetDir.isEmpty()) {
-			securityContext = "/WEB-INF/"
-					+ meta.getProjectName().replace(' ', '-').toLowerCase()
-					+ "-security-context.xml";
-		} else {
-			if(!targetDir.endsWith("/")){
-				targetDir += "/";
-			}
-			securityContext = "/WEB-INF/" + targetDir + meta.getProjectName().replace(' ', '-').toLowerCase()
-					+ "-security-context.xml";
-		}
-
-       updateWebXML(securityContext);
-       generateSecurity(securityContext);
-   }
-
-   private void generateSecurity(String securityContext) {
-
-       WebResourceFacet web = project.getFacet(WebResourceFacet.class);
-
-       Node beans;
-       
-       if (!web.getWebResource(securityContext).exists())
-       {
-           beans = new Node("beans:beans");
-           beans.attribute("xsi:schemaLocation", "http://www.springframework.org/schema/beans\nhttp://www.springframework.org/schema/security\n"
-        		   + "http//www.springframework.org/schema/security/spring-security-3.0.xsd");
-       }
-       else
-       {
-           beans = XMLParser.parse(web.getWebResource(securityContext).getResourceInputStream());
-       }
-       
-       beans = addXMLSchemaSecurity(beans, false);
-       if (!hasChildNamed(beans, "http"))
-       {
-           Node http = new Node("http", beans);
-           http.attribute("auto-config", "true");
-           http.createChild("intercept-url").attribute("pattern", "/**/create*")
-                       .attribute("access", "ROLE_ADMIN");
-           http.createChild("intercept-url").attribute("pattern", "/**/edit*")
-           .attribute("access", "ROLE_ADMIN");
-           http.createChild("remember-me");
-       }
-       List<String> possibleAuthenciationTechniques = new ArrayList<String>();
-       possibleAuthenciationTechniques.add("Embedded");
-       if (project.hasFacet(PersistenceFacet.class)){
-    	   possibleAuthenciationTechniques.add("JDBC");
-       }
-       possibleAuthenciationTechniques.add("LDAP");
-       int authenciationMethod = this.prompt.promptChoice("Type of User Authenciation", possibleAuthenciationTechniques);
-       switch (authenciationMethod) {
-       		case 0:
-       			if(!hasChildNamed(beans, "user-service")){
-       				Node userService = new Node("user-service", beans);
-       				userService.attribute("id", "userService");
-       				String username = this.prompt.prompt("Admin User Name?", "admin");
-       				String password = this.prompt.promptSecret("Admin Password?", "adminPass");
-       				userService.createChild("user").attribute("name", username).attribute("password", password).attribute("authorities", "ROLE_ADMIN");
-       			}
-       			break;
-       		case 1:
-       			if(!hasChildNamed(beans, "jdbc-user-service")){
-       				Node userService = new Node("jdbc-user-service", beans);
-				    userService.attribute("id", "userService");
-				    String dataSourceBean = this.prompt.prompt("JDBC Data Source Reference Bean?", "dataSource");
-				    userService.attribute("data-source-ref", dataSourceBean);
-       			}
-       			break;
-       		case 2:
-       			if(!hasChildNamed(beans, "ldap-user-service")){
-       				Node userService = new Node("ldap-user-service", beans);
-				    userService.attribute("id", "userService");
-				    userService.attribute("user-search-filter", "(uid={0})");
-				    userService.attribute("group-search-filter", "member={0}");				    
-       			}
-       			if(!hasChildNamed(beans, "ldap-server")){
-       				Node ldapServer = new Node("ldap-server", beans);
-				    String urlOrLDIF = this.prompt.prompt("Enter url to remote LDAP server or ldif file on classpath");
-				    if (urlOrLDIF.endsWith("ldif")){
-				    	ldapServer.attribute("ldif", urlOrLDIF);
-				    }
-				    else{
-				    	ldapServer.attribute("url", urlOrLDIF);
-				    }				    
-       			}
-       			break;
-       		default:
-       		break;
-       }
-       if(!hasChildNamed(beans, "authentication-manager")){
-    	   Node authentiation = new Node("authentication-manager", beans);
-    	   authentiation.createChild("authentication-provider").attribute("user-service-ref", "userService");
-       }
-       web.createWebResource(XMLParser.toXMLString(beans), securityContext);
-	
-   }
-
-	private Node addXMLSchemaSecurity(Node beans, boolean b) {
-		beans.attribute(XMLNS_PREFIX + "beans", "http://www.springframework.org/schema/beans");
-		beans.attribute("xmlns", "http://www.springframework.org/schema/security");
-	    beans.attribute(XMLNS_PREFIX + "xsi", "http://www.w3.org/2001/XMLSchema-instance");
-
-	    String schemaLocation = beans.getAttribute("");
-	    schemaLocation = (schemaLocation == null) ? new String() : schemaLocation;
-
-	    if (!schemaLocation.contains("http://www.springframework.org/schema/beans " +
-	    	"http://www.springframework.org/schema/beans/spring-beans.xsd"))
-	    {
-	    	schemaLocation += " http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd";
-	    }
-
-	    if (!schemaLocation.contains("http://www.springframework.org/schema/security " +
-	    		"http://www.springframework.org/schema/security/spring-security-3.0.xsd"))
-	    {
-	    	schemaLocation += " http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd";
-	    }
-	    beans.attribute("xsi:schemaLocation", schemaLocation);
-
-	    return beans;
-	}
-
-	private boolean hasChildNamed(Node beans, String string) {
-		for(Node child : beans.getChildren()){
-			if(child.getName() != null && child.getName().equals(string)){
-				return true;
-			}
-		}
-		return false;
-	}
 
 	protected void generateContextFiles(boolean overwrite, Map<Object, Object> context)
 	{
@@ -566,22 +416,6 @@ public class SpringPlugin implements Plugin
        web.createWebResource(XMLParser.toXMLString(beans), mvcContextFilename);
    }
    
-   protected void updateWebXML(String targetDir){
-       ServletFacet servlet = project.getFacet(ServletFacet.class);
-
-       WebAppDescriptor webXML = servlet.getConfig();
-  	   //Add security filter if asked for one
-	   webXML = addSecurity(targetDir, webXML);
-	   // Add to context param if not there
-	   if(targetDir.startsWith("/")){
-		   targetDir = targetDir.substring(1);
-	   }
-	   
-	   if(!webXML.getContextParam("contextConfigLocation").contains(targetDir)){
-		   webXML.contextParam("contextConfigLocation", webXML.getContextParam("contextConfigLocation") + ", " + targetDir);
-	   }
-       servlet.saveConfig(webXML);
-   }
 
    protected void updateWebXML(String mvcContext, String targetDir)
    {
@@ -654,23 +488,6 @@ public class SpringPlugin implements Plugin
            spring.addServlet(targetDir, mvcContext);
        }
    }
-
-	private WebAppDescriptor addSecurity(String targetDir,
-			WebAppDescriptor webXML) {
-		String security = new String();
-		if (targetDir.contains("-security-context.xml")) {
-			for (FilterDef filter : webXML.getFilters()) {
-				if (filter.getFilterClass().contains("org.springframework.web.filter.DelegatingFilterProxy")) {
-					security = filter.getFilterClass();
-					break;
-				}
-			}
-		}
-		if (security.isEmpty() && targetDir.contains("-security-context.xml")) {
-			webXML = webXML.filter("springSecurityFilterChain", "org.springframework.web.filter.DelegatingFilterProxy", new String[] {"/*"});
-		}
-		return webXML;
-	}
 
    private Node addContextComponentScan(Node beans, String basePackage)
    {
